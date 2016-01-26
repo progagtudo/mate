@@ -11,3 +11,7 @@ def client(request):
 def test_hello_world(client):
     answer = client.get('/')
     assert b'Hello World!' in answer.data
+
+
+def test_always_failing():
+    assert 1 == 0
