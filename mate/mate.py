@@ -1,4 +1,5 @@
 from . import app, __version__
+from . import login
 
 @app.route('/')
 def hello_world():
