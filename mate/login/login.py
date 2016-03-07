@@ -41,12 +41,12 @@ def auth(func):
     @wraps(func)
     def decorated_func(*args, **kwargs):
         try:
-            jwt.decode(request.headers.get('MATE-Client-Auth'))
+            jwt.decode(request.headers.get('MATE-Client-Auth'), key="SECRET")
         except jwt.ExpiredSignatureError:
             print("Der Token ist abgelaufen")
 
         except jwt.DecodeError:
             print("Irgendwas ist kaputt")
-            return "", 403
+            raise
         return func(*args, **kwargs)
     return decorated_func
