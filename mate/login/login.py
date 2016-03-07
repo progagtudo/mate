@@ -1,8 +1,12 @@
+from datetime import datetime, timedelta
+from functools import wraps
+
+import jwt
 from flask import jsonify, request
 
 from mate import app
-from mate.model.stub_login_type_holder import StubLoginTypeHolder
-from mate.login.stub_verifier import StubVerifier
+from mate.login.helper.stub_login_type_holder import StubLoginTypeHolder
+from mate.login.helper.stub_verifier import StubVerifier
 
 stub_login_type_holder = StubLoginTypeHolder()
 
@@ -28,6 +32,21 @@ def login_customer():
     if StubVerifier.verify(request.headers.get('MATE-Client-Auth')):
         # Do something with content
         print("WARNING: Not doing anything useful!")
-        return jsonify({"JWT": "fubar"})
+        token = jwt.encode({"exp": datetime.utcnow() + timedelta(hours=1)}, "SECRET")
+        return jsonify({"JWT": token.decode("utf-8")})
     else:
         return "", 403
+
+def auth(func):
+    @wraps(func)
+    def decorated_func(*args, **kwargs):
+        try:
+            jwt.decode(request.headers.get('MATE-Client-Auth'))
+        except jwt.ExpiredSignatureError:
+            print("Der Token ist abgelaufen")
+
+        except jwt.DecodeError:
+            print("Irgendwas ist kaputt")
+            return "", 403
+        return func(*args, **kwargs)
+    return decorated_func
