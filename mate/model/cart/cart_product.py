@@ -3,7 +3,7 @@ from mate.model.abstract_model import AbstractModel
 
 class CartProduct(AbstractModel):
     def __init__(self):
-        self.productID = 0
+        self.product_id = 0
         self.price = 0
 
     @classmethod
@@ -12,9 +12,10 @@ class CartProduct(AbstractModel):
         :param json_array: a python object from json
         """
         instance = cls()
-        instance.productID = json_array["productID"]
+        instance.product_id = json_array["product_id"]
         instance.price = json_array["price"]
         return instance
 
     def verify(self):
-        pass
+        return False
+

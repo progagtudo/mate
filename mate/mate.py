@@ -1,3 +1,4 @@
+from mate.model.cart.cart import Cart
 from . import app, __version__
 
 @app.route('/')
@@ -11,4 +12,5 @@ def version():
     return __version__
 
 if __name__ == '__main__':
+    print(Cart.json_scheme)
     app.run()
