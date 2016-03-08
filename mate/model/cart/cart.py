@@ -1,9 +1,10 @@
 from mate.model.abstract_model import AbstractModel
 from mate.model.cart.cart_product import CartProduct
+from jsonschema import validate
 
 
 class Cart(AbstractModel):
-    _json_scheme = {"$schema": "http://json-schema.org/draft-04/schema#", "id": "http://jsonschema.net",
+    json_scheme = {"$schema": "http://json-schema.org/draft-04/schema#", "id": "http://jsonschema.net",
                     "type": "object", "properties": {
                     "products": {"id": "http://jsonschema.net/products", "type": "array",
                          "items": {"id": "http://jsonschema.net/products/0", "type": "object", "properties": {
@@ -17,12 +18,13 @@ class Cart(AbstractModel):
         self.amount = 0
 
     @classmethod
-    def from_json(cls, json_array):
+    def from_json(cls, json):
         """init an Cart from incoming json dict
-        :param json_array: a python object from json
+        :param json: a python object from json
         """
+        validate(json, cls.json_scheme)
         instance = cls()
-        for json_product in json_array["products"]:
+        for json_product in json["products"]:
             a_product = CartProduct.from_json(json_product)
             instance.products.append(a_product)
             instance.amount += a_product.price
