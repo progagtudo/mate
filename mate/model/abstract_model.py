@@ -3,7 +3,6 @@ from abc import ABCMeta, abstractmethod, abstractproperty
 
 class AbstractModel(metaclass=ABCMeta):
 
-    _json_scheme = None
 
     @classmethod
     @abstractmethod
@@ -14,7 +13,7 @@ class AbstractModel(metaclass=ABCMeta):
     def verify(self):
         pass
 
-    @property
+    @abstractproperty
     def json_scheme(self):
-        return self._json_scheme
+        return None
 
