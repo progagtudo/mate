@@ -39,7 +39,7 @@ class Cart(AbstractModel):
 
     def __init__(self):
         self.products = []
-        self.amount = 0
+        self.price_amount = 0
 
     @classmethod
     def from_json(cls, json):
@@ -51,7 +51,7 @@ class Cart(AbstractModel):
         for json_product in json["products"]:
             a_product = CartProduct.from_json(json_product)
             instance.products.append(a_product)
-            instance.amount += a_product.price
+            instance.price_amount += a_product.price
         return instance
 
     def verify(self):
