@@ -1,11 +1,12 @@
 from abc import ABCMeta, abstractmethod, abstractproperty
+from typing import Any, Dict
 
 
 class AbstractModel(metaclass=ABCMeta):
 
     @classmethod
     @abstractmethod
-    def from_json(cls, json):
+    def from_json(cls, json: Dict[str, Any]) -> 'AbstractModel':
         pass
 
     @abstractmethod
@@ -13,6 +14,5 @@ class AbstractModel(metaclass=ABCMeta):
         pass
 
     @abstractproperty
-    def json_scheme(self):
+    def json_scheme(self) -> str:
         return None
-

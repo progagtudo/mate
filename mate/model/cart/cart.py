@@ -1,3 +1,5 @@
+from typing import Dict, Any
+
 from mate.model.abstract_model import AbstractModel
 from mate.model.cart.cart_product import CartProduct
 from jsonschema import validate
@@ -35,14 +37,14 @@ class Cart(AbstractModel):
             }
         },
         "required": ["products", "amount"]
-    }
+    }  # type: str
 
     def __init__(self):
         self.products = []
         self.price_amount = 0
 
     @classmethod
-    def from_json(cls, json):
+    def from_json(cls, json: Dict[str, Any]) -> 'Cart':
         """init an Cart from incoming json dict
         :param json: a python object from json
         """
