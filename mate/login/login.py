@@ -29,16 +29,18 @@ def login_customer():
     else:
         return "", 403
 
-def auth(func):
-    @wraps(func)
-    def decorated_func(*args, **kwargs):
-        try:
-            jwt.decode(request.headers.get('MATE-Client-Auth'), key="SECRET")
-        except jwt.ExpiredSignatureError:
-            print("Der Token ist abgelaufen")
 
-        except jwt.DecodeError:
-            print("Irgendwas ist kaputt")
-            raise
-        return func(*args, **kwargs)
-    return decorated_func
+def auth(func):
+    def decorator(func):
+        @wraps(func)
+        def decorated_func(*args, **kwargs):
+            try:
+                jwt.decode(request.headers.get('MATE-Client-Auth'), key="SECRET")
+            except jwt.ExpiredSignatureError:
+                print("Der Token ist abgelaufen")
+
+            except jwt.DecodeError:
+                print("Irgendwas ist kaputt")
+                raise
+            return func(*args, **kwargs)
+        return decorated_func
