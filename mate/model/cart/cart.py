@@ -37,7 +37,7 @@ class Cart(AbstractModel):
             }
         },
         "required": ["products", "amount"]
-    }  # type: str
+    }  # type: dict
 
     def __init__(self):
         self.products = []
