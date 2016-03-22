@@ -1,18 +1,8 @@
-from abc import ABCMeta, abstractmethod, abstractproperty
-from typing import Any, Dict
+from schematics import Model
+from schematics.types import BaseType
+from schematics.types.compound import DictType
 
 
-class AbstractModel(metaclass=ABCMeta):
-
-    @classmethod
-    @abstractmethod
-    def from_json(cls, json: Dict[str, Any]) -> 'AbstractModel':
-        pass
-
-    @abstractmethod
-    def verify(self):
-        pass
-
-    @abstractproperty
-    def json_scheme(self) -> str:
-        return None
+class AbstractModel(Model):
+    # TODO: This currently accepts all types as key. Is it sufficient to only allow Strings?
+    json_scheme = DictType(BaseType, required=True)  # type: dict

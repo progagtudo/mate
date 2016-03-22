@@ -1,30 +1,25 @@
-from typing import Any, Dict
+from schematics.types import IntType, DecimalType
 
 from mate.model.abstract_model import AbstractModel
-from jsonschema import validate
 
 
 class CartProduct(AbstractModel):
-    json_scheme = {"$schema": "http://json-schema.org/draft-04/schema#", "id": "http://jsonschema.net",
-                   "type": "object",
-                   "properties": {"product_id": {"id": "http://jsonschema.net/product_id", "type": "integer"},
-                                  "price": {"id": "http://jsonschema.net/price", "type": "integer"}},
-                   "required": ["product_id", "price"]}  # type: str
+    # TODO: Not sure if something here should be required
+    product_id = IntType()  # type: int
+    price = DecimalType()  # type: float
 
-    def __init__(self):
-        self.product_id = 0  # type: int
-        self.price = 0  # type: float
-
-    @classmethod
-    def from_json(cls, json: Dict[str, Any]) -> 'CartProduct':
-        """inits an CartProduct from incoming json dict
-        :param json: a python object from json
-        """
-        validate(json, cls.json_scheme)
-        instance = cls()
-        instance.product_id = json["product_id"]
-        instance.price = json["price"]
-        return instance
-
-    def verify(self):
-        return False
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        # We need to set attribute contents here!
+        self.json_scheme = {
+            "$schema": "http://json-schema.org/draft-04/schema#",
+            "id": "http://jsonschema.net",
+            "type": "object",
+            "properties": {
+                "product_id": {
+                    "id": "http://jsonschema.net/product_id",
+                    "type": "integer"},
+                "price": {
+                    "id": "http://jsonschema.net/price",
+                    "type": "integer"}},
+            "required": ["product_id", "price"]}
