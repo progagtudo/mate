@@ -1,10 +1,12 @@
 from datetime import datetime, timedelta
 from functools import wraps
+from typing import List
 
 import jwt
 from flask import jsonify, request
 
 from mate import app
+from mate.helper.config_holder import ConfigHolder
 from mate.login.helper.stub_login_type_holder import StubLoginTypeHolder
 from mate.login.helper.stub_verifier import StubVerifier
 
@@ -16,7 +18,7 @@ def login_types(username):
     if username in stub_login_type_holder.login_types :
         return jsonify({"types": stub_login_type_holder.login_types[username]})
     else:
-        return "OMFG!", 500
+        return "Could not find user!", 500
 
 
 @app.route("/login/customer")
@@ -30,7 +32,7 @@ def login_customer():
         return "", 403
 
 
-def auth(func):
+def auth(authtype:str, rights:List[str] = None):
     def decorator(func):
         @wraps(func)
         def decorated_func(*args, **kwargs):
@@ -38,9 +40,19 @@ def auth(func):
                 jwt.decode(request.headers.get('MATE-Client-Auth'), key="SECRET")
             except jwt.ExpiredSignatureError:
                 print("Der Token ist abgelaufen")
-
+                return "Authentication error", 401
             except jwt.DecodeError:
                 print("Irgendwas ist kaputt")
-                raise
+                return "Authentication error", 401
+            except:
+                print("Irgendwas ist kaputt")
+                return "Authentication error", 401
             return func(*args, **kwargs)
         return decorated_func
+    return decorator
+
+def validate_client(authkey:str):
+    try:
+        jwt.decode(authkey, key=ConfigHolder.jwt_secret_client)
+    except jwt.InvalidTokenError:
+        return
