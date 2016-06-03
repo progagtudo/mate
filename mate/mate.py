@@ -1,10 +1,14 @@
+from mate.login.login import auth, AuthType
 from mate.model.cart.cart import Cart
-from mate.login.login import auth
 from . import app, __version__
+
+# DO NOT REMOVE !!
+# noinspection PyUnresolvedReferences
 from mate import storage
+# noinspection PyUnresolvedReferences
+from mate.login import login_routes
+# DO NOT REMOVE
 
-
-from . import login
 
 @app.route('/')
 def hello_world():
@@ -12,7 +16,7 @@ def hello_world():
     return 'Hello World!'
 
 @app.route('/version')
-@auth
+@auth(AuthType.client)
 def version():
     """Returns API-Version"""
     return __version__

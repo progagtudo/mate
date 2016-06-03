@@ -1,43 +1,42 @@
-from datetime import datetime, timedelta
+from enum import Enum
 from functools import wraps
+from typing import Dict
 from typing import List
 
 import jwt
-from flask import jsonify, request
+from flask import request
 
-from mate import app
 from mate.helper.config_holder import ConfigHolder
 from mate.login.helper.stub_login_type_holder import StubLoginTypeHolder
-from mate.login.helper.stub_verifier import StubVerifier
 
 stub_login_type_holder = StubLoginTypeHolder()
 
 
-@app.route("/login_types/<username>")
-def login_types(username):
-    if username in stub_login_type_holder.login_types :
-        return jsonify({"types": stub_login_type_holder.login_types[username]})
-    else:
-        return "Could not find user!", 500
+class AuthType(Enum):
+    client = 1
+    customer = 2
+    salesp = 3
 
 
-@app.route("/login/customer")
-def login_customer():
-    if StubVerifier.verify(request.headers.get('MATE-Client-Auth')):
-        # Do something with content
-        print("WARNING: Not doing anything useful!")
-        token = jwt.encode({"exp": datetime.utcnow() + timedelta(hours=1)}, "SECRET")
-        return jsonify({"JWT": token.decode("utf-8")})
-    else:
-        return "", 403
+class ValidationError(Exception):
+    def __init__(self, value):
+        self.value = value
+
+    def __str__(self):
+        return repr(self.value)
 
 
-def auth(authtype:str, rights:List[str] = None):
+def auth(authtype: AuthType, rights: List[str] = None):
     def decorator(func):
         @wraps(func)
         def decorated_func(*args, **kwargs):
             try:
-                jwt.decode(request.headers.get('MATE-Client-Auth'), key="SECRET")
+                if authtype == AuthType.client:
+                    validate_client(request.headers.get(ConfigHolder.jwt_header_client))
+                elif authtype == AuthType.customer:
+                    pass
+                elif authtype == AuthType.salesp:
+                    pass
             except jwt.ExpiredSignatureError:
                 print("Der Token ist abgelaufen")
                 return "Authentication error", 401
@@ -51,8 +50,21 @@ def auth(authtype:str, rights:List[str] = None):
         return decorated_func
     return decorator
 
-def validate_client(authkey:str):
-    try:
-        jwt.decode(authkey, key=ConfigHolder.jwt_secret_client)
-    except jwt.InvalidTokenError:
-        return
+
+def validate_client(authkey: str):
+    # hier wird ein jwt.InvalidTokenError geworfen
+    payload = jwt.decode(authkey, key=ConfigHolder.jwt_secret_client) # type: Dict
+    # TODO: replace with real logger!
+    # client jwt must have 'clnt' as the subject
+    if payload.get("sub") != "clnt":
+        raise ValidationError
+    # TODO: check permissions?
+    print("Client ", payload.get("mate.tpe"), " validiert.")
+
+
+def validate_client_login() -> bool:
+    # TODO: this should do something with the DB and stuff
+    print("WARNING: Not doing anything useful!")
+    return True
+
+
