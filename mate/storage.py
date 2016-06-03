@@ -4,6 +4,7 @@ from jsonschema import validate
 from flask import request, jsonify
 from mate import app
 from mate.model import storage_modul
+from mate.login import login_routes
 
 
 def check_storage_id(storage_id):
@@ -18,7 +19,8 @@ def check_storage_id(storage_id):
 
 
 @app.route("/storage/", methods=["GET"])
-# @auth
+# ToDo: Check if Client is allowed to list storages
+@auth(AuthType.client)
 def list_storage():
     """
     list all storages
@@ -32,7 +34,7 @@ def list_storage():
     previous = None
     if (offset - limit) >= 0:
         previous = "/storage/?limit={0}&offset={1}".format(limit, (offset - limit))
-
+    # ToDo: Generate JSON and return
     response = {
         "next": next_link,
         "previous": previous,
@@ -56,7 +58,7 @@ def add_storage():
     a_storage = storage_modul.from_json_new_object(json.loads(data))
     # TODO: create storage in DB
     a_storage.storage_id = 12 # TODO: add id from DB to Object.
-    #print("added stub id to storage") # remove print when ToDo is done
+    print("added stub id to storage") # remove print when ToDo is done
     return jsonify(a_storage)
 
 @app.route("/storage/<int:storage_id>/", methods=["PATCH"])
@@ -78,4 +80,6 @@ def delete_storage(storage_id):
     if storage_id < 0:
         print("storage_id is to low")
         return "storage_id is to low", 500
-
+    else
+        # ToDo: delete storage
+        return "", 200
