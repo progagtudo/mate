@@ -9,7 +9,7 @@ class Storage(AbstractModel):
     name = StringType(required=True)  # type: str
     description = StringType(required=True)  # type: str
     is_sale_allowed = BooleanType(required=True)  # type: bool
-    storage_amounts = ListType(StorageAmount, required=True)  # type: List
+    storage_amounts = ListType(StorageAmount, required=True)  # type: List[StorageAmount]
 
 
 def __init__(self, **kwargs):

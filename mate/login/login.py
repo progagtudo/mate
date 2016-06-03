@@ -53,7 +53,7 @@ def auth(authtype: AuthType, rights: List[str] = None):
 
 def validate_client(authkey: str):
     # hier wird ein jwt.InvalidTokenError geworfen
-    payload = jwt.decode(authkey, key=ConfigHolder.jwt_secret_client) # type: Dict
+    payload = jwt.decode(authkey, key=ConfigHolder.jwt_secret_client)  # type: Dict
     # TODO: replace with real logger!
     # client jwt must have 'clnt' as the subject
     if payload.get("sub") != "clnt":
@@ -64,6 +64,7 @@ def validate_client(authkey: str):
 
 def validate_client_login() -> bool:
     # TODO: this should do something with the DB and stuff
+    # TODO: check for some kind of secret
     print("WARNING: Not doing anything useful!")
     return True
 

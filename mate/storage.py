@@ -1,10 +1,10 @@
 import json
 
-from jsonschema import validate
 from flask import request, jsonify
+
 from mate import app
+from mate.login.login import auth, AuthType
 from mate.model import storage_modul
-from mate.login import login_routes
 
 
 def check_storage_id(storage_id):
@@ -52,8 +52,6 @@ def add_storage():
     :return: new storage
     """
     data = request.json
-    print(j)
-    validate(json.load(data), storage_modul.json_scheme_new_object)
     print("test12")
     a_storage = storage_modul.from_json_new_object(json.loads(data))
     # TODO: create storage in DB
@@ -80,6 +78,6 @@ def delete_storage(storage_id):
     if storage_id < 0:
         print("storage_id is to low")
         return "storage_id is to low", 500
-    else
+    else:
         # ToDo: delete storage
         return "", 200

@@ -37,12 +37,13 @@ def login_client():
         # Do something with content
         print("WARNING: Not doing anything useful!")
         # TODO: this should contain the correct client type and permissions
+        # TODO: mate.prm should contain array of permissions
         token = jwt.encode({
-            "exp": datetime.utcnow() + timedelta(hours=1),
+            "exp": datetime.utcnow() + timedelta(hours=24),
             "sub": "clnt",
             "nbf": datetime.utcnow(),
             "mate.tpe": "dummyclient",
             "mate.prm": ""}, ConfigHolder.jwt_secret_client)
         return jsonify({"JWT": token.decode("utf-8")})
     else:
-        return "", 403
+        return "Client Authentication failed", 403
