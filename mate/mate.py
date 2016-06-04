@@ -4,7 +4,7 @@ from . import app, __version__
 
 # DO NOT REMOVE !!
 # noinspection PyUnresolvedReferences
-from mate import storage
+from mate import storage, sale
 # noinspection PyUnresolvedReferences
 from mate.login import login_routes
 # DO NOT REMOVE
@@ -14,6 +14,7 @@ from mate.login import login_routes
 def hello_world():
     """Return 'Hello World!' on every Request."""
     return 'Hello World!'
+
 
 @app.route('/version')
 @auth(AuthType.client)

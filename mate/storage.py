@@ -20,7 +20,7 @@ def check_storage_id(storage_id):
 
 @app.route("/storage/", methods=["GET"])
 # ToDo: Check if Client is allowed to list storages
-@auth(AuthType.client)
+# @auth(AuthType.client)
 def list_storage():
     """
     list all storages
