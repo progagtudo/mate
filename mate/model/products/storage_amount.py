@@ -1,6 +1,10 @@
-from schematics.types import IntType
+from schematics.types import IntType, BaseType
 
 from mate.model.abstract_model import AbstractModel
+
+
+class StorageAmountType(BaseType):
+    pass
 
 
 class StorageAmount(AbstractModel):

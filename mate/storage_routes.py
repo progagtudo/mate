@@ -4,7 +4,7 @@ from flask import request, jsonify
 
 from mate import app
 from mate.login.login import auth, AuthType
-from mate.model import storage_modul
+from mate.model.storage.storage import Storage
 
 
 def check_storage_id(storage_id):
@@ -53,7 +53,7 @@ def add_storage():
     """
     data = request.json
     print("test12")
-    a_storage = storage_modul.from_json_new_object(json.loads(data))
+    a_storage = Storage.from_json_new_object(json.loads(data))
     # TODO: create storage in DB
     a_storage.storage_id = 12 # TODO: add id from DB to Object.
     print("added stub id to storage") # remove print when ToDo is done
@@ -66,7 +66,7 @@ def update_storage(storage_id):
     print("test")
     data = request.data
     #validate(data, storage_modul.json_scheme_new_object)
-    a_storage = storage_modul.from_json_new_object(json.loads(data))
+    a_storage = Storage.from_json_new_object(json.loads(data))
     a_storage.storage_id = storage_id
     # TODO: check if storage exists in DB
     # TODO: update storage

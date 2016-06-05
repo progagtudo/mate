@@ -4,7 +4,7 @@ from . import app, __version__
 
 # DO NOT REMOVE !!
 # noinspection PyUnresolvedReferences
-from mate import storage, sale
+from mate import storage_routes, sale_routes
 # noinspection PyUnresolvedReferences
 from mate.login import login_routes
 # DO NOT REMOVE
