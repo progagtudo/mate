@@ -15,8 +15,8 @@ class Customer(Person):
     @classmethod
     def dummy(cls):
         instance = cls()
-        instance.first_name = "Boaty"
-        instance.last_name = "McBoatface"
+        instance.first_name = "Sternhart"
+        instance.last_name = "Beffen"
         instance.active = True
         instance.email = "test@example.com"
         instance.needs_balance_auth = True
