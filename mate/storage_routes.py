@@ -4,6 +4,7 @@ from flask import request, jsonify
 
 from mate import app
 from mate.login.login import auth, AuthType
+from mate.model.products.sale_product import SaleProduct
 from mate.model.storage.storage import Storage
 
 
@@ -18,7 +19,7 @@ def check_storage_id(storage_id):
         pass
 
 
-@app.route("/storage/", methods=["GET"])
+@app.route("/storages", methods=["GET"])
 # ToDo: Check if Client is allowed to list storages
 # @auth(AuthType.client)
 def list_storage():
@@ -30,10 +31,10 @@ def list_storage():
     limit = request.args.get("limit", 20, type=int)
     offset = request.args.get("offset", 0, type=int)
 
-    next_link = "/storage/?limit={0}&offset={1}".format(limit, (offset + limit))
+    next_link = "/storages?limit={0}&offset={1}".format(limit, (offset + limit))
     previous = None
     if (offset - limit) >= 0:
-        previous = "/storage/?limit={0}&offset={1}".format(limit, (offset - limit))
+        previous = "/storages?limit={0}&offset={1}".format(limit, (offset - limit))
     # ToDo: Generate JSON and return
     response = {
         "next": next_link,
@@ -81,3 +82,26 @@ def delete_storage(storage_id):
     else:
         # ToDo: delete storage
         return "", 200
+
+@app.route("/storage/<int:storage_id>/products", methods=["GET"])
+def product_storage(storage_id):
+    if(storage_id < 0):
+        return ""
+    product_type = request.args.get("product_type", "", type=str) #TODO: find resonable standard value
+    limit = request.args.get("limit", 20, type=int)
+    offset = request.args.get("offset", 0, type=int)
+    next_link = "/storage/{0}/products?product_type={1}&limit={2}&offset={3}".format(storage_id, product_type, limit, (offset + limit))
+    previous_link = None
+    if (offset - limit) >= 0:
+        previous_link = "/storage/{0}/products?product_type={1}&limit={2}&offset={3}".format(storage_id, product_type, limit, (offset - limit))
+
+    products = [SaleProduct.dummy(), SaleProduct.dummy()] # TODO: Find Products in Storage via DB
+
+    response = {
+        "next": next_link,
+        "previous": previous_link,
+        "products": products
+    }
+
+    return response
+
