@@ -8,13 +8,12 @@ from mate.model.person.customer import Customer
 from mate.model.products.sale_product import SaleProduct
 
 
-@app.route("/getBarcode", methods=["GET"])
+@app.route("/barcode/<string:code>", methods=["GET"])
+@auth(AuthType.client)
 @auth(AuthType.salesp)
-def get_barcode():
-    barcode = request.headers.get('code')
-    print("hallo")
-    if barcode != None:
-        print("barcode: " + barcode)
+def get_barcode(code):
+    if code is not None:
+        print("barcode: " + code)
         # ToDo: find customer
         customer = Customer.dummy().to_primitive('customer')
         # ToDo: find product
@@ -27,12 +26,14 @@ def get_barcode():
             "product": product
         })
     else:
-        return "No Barcode", 400
+        return "No Barcode provided", 400
 
 
-@app.route("/getBalance", methods=["GET"])
+@app.route("/customer/<int:id>/balance", methods=["GET"])
+@auth(AuthType.client)
 @auth(AuthType.salesp)
 @auth(AuthType.customer)
-def get_balance():
+def get_balance(id):
+
     customer = Customer.dummy().to_primitive('balance')
     pass

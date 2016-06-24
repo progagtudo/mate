@@ -22,6 +22,11 @@ def version():
     """Returns API-Version"""
     return __version__
 
+@app.route('/teapot')
+def teapot():
+    """Return HTTP Error 418"""
+    return "I'm a teapot", 418
+
 if __name__ == '__main__':
     print(Cart.json_scheme)
     app.run()
