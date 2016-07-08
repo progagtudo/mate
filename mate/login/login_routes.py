@@ -8,8 +8,16 @@ from mate.helper.config_holder import ConfigHolder
 from mate.login.login import stub_login_type_holder, auth, AuthType, validate_client_login
 
 
-@app.route("/login_types/<username>")
-def login_types(username):
+@app.route("/login_types/<string:username>/string:user_type")
+@auth(AuthType.client)
+def login_types(username: str, user_type: str):
+    """ This method searches the available login types for the given user, user type (customer or staff) and client"""
+
+    # Return an error if the client specified a wrong user type
+    if user_type not in ["customer", "staff"]:
+        return "Wrong type supplied. Valid values: customer, staff", 400
+    # Find username in DB and search for applicable login types for given user, type and client combination
+    # TODO: implement actual DB logic
     if username in stub_login_type_holder.login_types:
         return jsonify({"types": stub_login_type_holder.login_types[username]})
     else:
