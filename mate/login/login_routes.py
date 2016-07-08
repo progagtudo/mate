@@ -17,6 +17,16 @@ def login_types(username: str, user_type: str):
     if user_type not in ["customer", "staff"]:
         return "Wrong type supplied. Valid values: customer, staff", 400
     # Find username in DB and search for applicable login types for given user, type and client combination
+    # SELECT act.Name AS CredentialTypeName
+    #   FROM mate.ClientType    AS clt
+    #   JOIN mate.CredentialUse AS cu ON clt.ClientTypeID = cu.ClientTypeID
+    #   JOIN mate.Credentials   AS c  ON cu.CredentialID  = c.CredentialID
+    #   JOIN mate.AvailableCredentialTypes AS act ON c.CredentialType = act.CredentialType
+    #   WHERE clt.ClientType         = ?
+    #     AND   c.CredentialKey      = ?
+    #     AND   c.IsSalesPersonLogin = ?
+    #
+
     # TODO: implement actual DB logic
     if username in stub_login_type_holder.login_types:
         return jsonify({"types": stub_login_type_holder.login_types[username]})
