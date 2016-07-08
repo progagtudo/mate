@@ -1,3 +1,5 @@
+import psycopg2
+
 from mate.login.login import auth, AuthType
 from mate.model.cart.cart import Cart
 from . import app, __version__
@@ -27,6 +29,15 @@ def teapot():
     """Return HTTP Error 418"""
     return "I'm a teapot", 418
 
-if __name__ == '__main__':
-    print(Cart.json_scheme)
+def init_db_conn():
+    print("Initializing DB connection...")
+    # app.g.db = psycopg2.connect("dbname=mate user=postgres")
+
+
+def startup():
+    init_db_conn()
     app.run()
+
+
+if __name__ == '__main__':
+    startup()
