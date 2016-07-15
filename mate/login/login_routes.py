@@ -1,14 +1,18 @@
+import json
 from datetime import datetime, timedelta
 
 import jwt
 from flask import jsonify
+from flask import request
 
 from mate import app
 from mate.helper.config_holder import ConfigHolder
 from mate.login.login import stub_login_type_holder, auth, AuthType, validate_client_login
+from mate.mate import get_db
 
 
-@app.route("/login_types/<string:username>/string:user_type")
+# noinspection SqlResolve
+@app.route("/login_types/<string:username>/<string:user_type>")
 @auth(AuthType.client)
 def login_types(username: str, user_type: str):
     """ This method searches the available login types for the given user, user type (customer or staff) and client"""
@@ -18,21 +22,15 @@ def login_types(username: str, user_type: str):
         return "Wrong type supplied. Valid values: customer, staff", 400
     # Find username in DB and search for applicable login types for given user, type and client combination
 
-    cursor = app.g.db.cursor()
-    cursor.execute("""SELECT act.Name AS CredentialTypeName
-      FROM mate.ClientType    AS clt
-      JOIN mate.CredentialUse AS cu ON clt.ClientTypeID = cu.ClientTypeID
-      JOIN mate.Credentials   AS c  ON cu.CredentialID  = c.CredentialID
-      JOIN mate.AvailableCredentialTypes AS act ON c.CredentialType = act.CredentialType
-      WHERE clt.ClientType         = %s
-        AND   c.CredentialKey      = %s
-        AND   c.IsSalesPersonLogin = %s""")
-    result = cursor.fetchmany()
-    # TODO: implement actual DB logic
-    if username in stub_login_type_holder.login_types:
-        return jsonify({"types": stub_login_type_holder.login_types[username]})
-    else:
-        return "Could not find user!", 500
+
+    # Check if the user exists
+
+    if get_db().check_if_user_exists(username):
+        return "Could not find user!", 404
+    client_name = jwt.decode(request.headers.get(ConfigHolder.jwt_header_client), key=ConfigHolder.jwt_secret_client)[
+        'mate.tpe']
+
+    return jsonify({"types": get_db().get_login_types(client_name, username, user_type == 'staff')})
 
 
 @app.route("/login/customer")

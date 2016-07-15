@@ -1,4 +1,4 @@
 # This just starts the server
-import mate.mate as mate
+from mate import app
 
-mate.startup()
+app.run(debug=True)
