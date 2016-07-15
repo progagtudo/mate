@@ -34,6 +34,28 @@ def get_barcode(code):
 @auth(AuthType.salesp)
 @auth(AuthType.customer)
 def get_balance(id):
+    valid_customer = False
+    # TODO check customer JWT
+    if not valid_customer:
+        return "Customer is not valid", 403
 
-    customer = Customer.dummy().to_primitive('balance')
-    pass
+    # TODO find customer balance
+    balance = Customer.dummy().to_primitive('balance')
+    return jsonify({
+        "value": balance
+    })
+
+@app.route("/sale/sellCart")
+@auth(AuthType.client)
+@auth(AuthType.salesp)
+@auth(AuthType.customer)
+def get_sellcart():
+    success = False
+    # TODO get auth and cart from JWT
+    if not success:
+        # TODO return fixed cart on error
+        pass
+
+
+
+
