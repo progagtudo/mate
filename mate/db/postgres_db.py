@@ -27,7 +27,7 @@ class PostgresDB(AbstractDB):
         WHERE clt.name               = %s
           AND   c.CredentialKey      = %s
           AND   c.IsSalesPersonLogin = %s""", (client_name, username, is_staff))
-        result = cursor.fetchmany()
+        result = cursor.fetchall()
         cursor.close()
         return result
 
@@ -43,6 +43,9 @@ class PostgresDB(AbstractDB):
           AND   c.IsSalesPersonLogin = %s
           AND act.Name               = %s
         """, (client_name, username, is_staff, login_type))
+        result = cursor.fetchall()
+        cursor.close()
+        return result
 
     def __init__(self, configstring: str):
         super().__init__()
