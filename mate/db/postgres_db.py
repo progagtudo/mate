@@ -9,12 +9,13 @@ class PostgresDB(AbstractDB):
 
     def check_if_user_exists(self, username: str):
         cursor = self.db.cursor()
-        cursor.execute("""SELECT count(*)
-        FROM Credentials AS c
-        WHERE c.credentialKey = %s""", (username,))
+        cursor.execute("""SELECT EXISTS(
+        SELECT *
+          FROM Credentials AS c
+          WHERE c.credentialKey = %s)""", (username,))
         result = cursor.fetchone()
         cursor.close()
-        return result[0] == 0
+        return result[0]
 
     def get_login_types(self, client_name: str, username: str, is_staff: bool):
         cursor = self.db.cursor()
