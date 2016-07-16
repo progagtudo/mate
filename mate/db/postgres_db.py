@@ -23,12 +23,25 @@ class PostgresDB(AbstractDB):
         JOIN CredentialUse AS cu ON clt.ClientTypeID = cu.ClientTypeID
         JOIN Credentials   AS c  ON cu.CredentialID  = c.CredentialID
         JOIN AvailableCredentialTypes AS act ON c.CredentialType = act.CredentialType
-         WHERE clt.name         = %s
-        AND   c.CredentialKey      = %s
-        AND   c.IsSalesPersonLogin = %s""", (client_name, username, is_staff))
+        WHERE clt.name               = %s
+          AND   c.CredentialKey      = %s
+          AND   c.IsSalesPersonLogin = %s""", (client_name, username, is_staff))
         result = cursor.fetchmany()
         cursor.close()
         return result
+
+    def get_login_credential_secret(self, client_name:str, username:str, login_type:str, is_staff:bool):
+        cursor = self.db.cursor()
+        cursor.execute("""SELECT c.CredentialSecret
+        FROM ClientType    AS clt
+        JOIN CredentialUse AS cu ON clt.ClientTypeID = cu.ClientTypeID
+        JOIN Credentials   AS c  ON cu.CredentialID  = c.CredentialID
+        JOIN AvailableCredentialTypes AS act ON c.CredentialType = act.CredentialType
+        WHERE clt.name               = %s
+          AND   c.CredentialKey      = %s
+          AND   c.IsSalesPersonLogin = %s
+          AND act.Name               = %s
+        """, (client_name, username, is_staff, login_type))
 
     def __init__(self, configstring: str):
         super().__init__()

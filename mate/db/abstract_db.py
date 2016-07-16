@@ -13,5 +13,9 @@ class AbstractDB(ABC):
         pass
 
     @abstractmethod
+    def get_login_credential_secret(self, client_name:str, username:str, login_type:str, is_staff:bool):
+        pass
+
+    @abstractmethod
     def close(self):
         pass
