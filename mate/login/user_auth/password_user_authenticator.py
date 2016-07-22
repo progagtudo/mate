@@ -14,6 +14,12 @@ class PasswordUserAuthenticator(AbstractUserAuthenticator):
                                        username=username,
                                        login_type=login_type,
                                        is_staff=is_staff)
+        number_results = len(db_secret)
+        if(number_results != 1):
+            print("WARNING: Got {} credential secrets for username {}".format((number_results, username)))
+        # TODO: find a way to not double-copy the data. It is first copied in a new bytes-object and then copied into a string
+        db_secret = bytes(db_secret[0]).decode("utf-8")
+        print(db_secret)
         if payload is not None:
             print("WARNING: PasswordUserAuthenticator received unsupported payload data, Expected was None")
         result = db_secret == secret
