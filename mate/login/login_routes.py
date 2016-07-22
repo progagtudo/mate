@@ -12,6 +12,15 @@ from mate.mate import get_db
 from mate.login.user_auth.password_user_authenticator import PasswordUserAuthenticator
 
 
+@app.route("/login_types")
+@auth(AuthType.client)
+def all_login_types():
+    """ This method returns all available login types."""
+    db = get_db()
+    result = db.get_all_login_types()
+    return jsonify({"types": result})
+
+
 @app.route("/login_types/<string:username>/<string:user_type>")
 @auth(AuthType.client)
 def login_types(username: str, user_type: str):
