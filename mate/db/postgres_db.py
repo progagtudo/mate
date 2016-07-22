@@ -13,9 +13,9 @@ class PostgresDB(AbstractDB):
         SELECT *
           FROM Credentials AS c
           WHERE c.credentialKey = %s)""", (username,))
-        result = cursor.fetchone()
+        result = cursor.fetchone()[0]
         cursor.close()
-        return result[0]
+        return result
 
     def get_login_types(self, client_name: str, username: str, is_staff: bool):
         cursor = self.db.cursor()
@@ -27,7 +27,7 @@ class PostgresDB(AbstractDB):
         WHERE clt.name               = %s
           AND   c.CredentialKey      = %s
           AND   c.IsSalesPersonLogin = %s""", (client_name, username, is_staff))
-        result = cursor.fetchall()
+        result = [x[0] for x in cursor.fetchall()]
         cursor.close()
         return result
 
@@ -43,7 +43,7 @@ class PostgresDB(AbstractDB):
           AND   c.IsSalesPersonLogin = %s
           AND act.Name               = %s
         """, (client_name, username, is_staff, login_type))
-        result = cursor.fetchall()
+        result = [x[0] for x in cursor.fetchall()]
         cursor.close()
         return result
 
