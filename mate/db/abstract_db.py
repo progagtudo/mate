@@ -9,6 +9,10 @@ class AbstractDB(ABC):
         pass
 
     @abstractmethod
+    def get_all_login_types(self):
+        pass
+
+    @abstractmethod
     def get_login_types(self, client_name:str, username:str, is_staff:bool):
         pass
 

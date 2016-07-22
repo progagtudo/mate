@@ -17,6 +17,14 @@ class PostgresDB(AbstractDB):
         cursor.close()
         return result
 
+    def get_all_login_types(self):
+        cursor = self.db.cursor()
+        cursor.execute("""SELECT act.Name
+        FROM AvailableCredentialTypes AS act""")
+        result = [x[0] for x in cursor.fetchall()]
+        cursor.close()
+        return result
+
     def get_login_types(self, client_name: str, username: str, is_staff: bool):
         cursor = self.db.cursor()
         cursor.execute("""SELECT act.Name AS CredentialTypeName
