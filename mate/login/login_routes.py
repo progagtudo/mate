@@ -82,7 +82,9 @@ def login_customer(username: str):
 
         login_type_list = get_db().get_login_types(client_name=client_name, username=username, is_staff=False)
         if login_type not in login_type_list:
-            return "Login for user {} not possible".format(username), 403
+            return "Login for user »{}« failed. " \
+                   "Login type »{}« is not usable for this user and client combination".format(username, login_type),\
+                   403
 
         authenticator = None
         # TODO: Refactor by using a dict for the authenticator lookup
