@@ -17,8 +17,9 @@ from mate.login.user_auth.password_user_authenticator import PasswordUserAuthent
 def all_login_types():
     """ This method returns all available login types."""
     db = get_db()
-    result = db.get_all_login_types()
+    result = db.get_all_login_types
     return jsonify({"types": result})
+
 
 @app.route("/login_types/<string:username>")
 @auth(AuthType.client)
@@ -113,11 +114,11 @@ def login_customer(username: str):
         return "", 403
 
 
-@app.route("/login/client")
-def login_client():
+@app.route("/login/client/<string:clientname>")
+def login_client(client_name: str):
     # TODO: replace with client verifier!
     # This currently always returns a valid token
-    if validate_client_login():
+    if validate_client_login(client_name=client_name):
         # Do something with content
         print("WARNING: Not doing anything useful!")
         # TODO: this should contain the correct client type and permissions

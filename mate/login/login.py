@@ -6,6 +6,7 @@ from typing import List
 import jwt
 from flask import request
 
+# from mate.mate import get_db
 from mate.helper.config_holder import ConfigHolder
 from mate.login.helper.stub_login_type_holder import StubLoginTypeHolder
 
@@ -62,10 +63,14 @@ def validate_client(authkey: str):
     print("Client ", payload.get("mate.tpe"), " validiert.")
 
 
-def validate_client_login() -> bool:
-    # TODO: this should do something with the DB and stuff
+def validate_client_login(client_name: str) -> bool:
+    # This only checks for client existence in the database for now.
     # TODO: check for some kind of secret
-    print("WARNING: Not doing anything useful!")
+    print("WARNING: validate_client_login(): Not doing anything useful!")
+    # TODO: Uncomment when it is possible to import the db…
+    # db = get_db()
+    # result = db.get_does_client_exist_with_name(client_name=client_name)
+    # return result
     return True
 
 
