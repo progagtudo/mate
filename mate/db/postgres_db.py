@@ -10,9 +10,9 @@ class PostgresDB(AbstractDB):
     def check_if_user_exists(self, username: str):
         cursor = self.db.cursor()
         cursor.execute("""SELECT EXISTS(
-        SELECT *
+          SELECT *
           FROM Credentials AS c
-          WHERE c.credentialKey = %s)""", (username,))
+          WHERE c.credentialKey = %s )""", (username,))
         result = cursor.fetchone()[0]
         cursor.close()
         return result
@@ -30,11 +30,12 @@ class PostgresDB(AbstractDB):
         cursor.execute("""SELECT act.Name AS CredentialTypeName
         FROM ClientType    AS clt
         JOIN CredentialUse AS cu ON clt.ClientTypeID = cu.ClientTypeID
-        JOIN Credentials   AS c  ON cu.CredentialID  = c.CredentialID
+        JOIN Credentials   AS c  ON  cu.CredentialID =  c.CredentialID
         JOIN AvailableCredentialTypes AS act ON c.CredentialType = act.CredentialType
         WHERE clt.name               = %s
           AND   c.CredentialKey      = %s
-          AND   c.IsSalesPersonLogin = %s""", (client_name, username, is_staff))
+          AND   c.IsSalesPersonLogin = %s
+        """, (client_name, username, is_staff))
         result = [x[0] for x in cursor.fetchall()]
         cursor.close()
         return result
@@ -44,7 +45,7 @@ class PostgresDB(AbstractDB):
         cursor.execute("""SELECT c.CredentialSecret
         FROM ClientType    AS clt
         JOIN CredentialUse AS cu ON clt.ClientTypeID = cu.ClientTypeID
-        JOIN Credentials   AS c  ON cu.CredentialID  = c.CredentialID
+        JOIN Credentials   AS c  ON  cu.CredentialID =  c.CredentialID
         JOIN AvailableCredentialTypes AS act ON c.CredentialType = act.CredentialType
         WHERE clt.name               = %s
           AND   c.CredentialKey      = %s
@@ -53,6 +54,17 @@ class PostgresDB(AbstractDB):
         """, (client_name, username, is_staff, login_type))
         result = [x[0] for x in cursor.fetchall()]
         cursor.close()
+        return result
+
+    def get_does_client_exist_with_name(self, client_name:str) -> bool:
+        cursor = self.db.cursor
+        cursor.execute("""SELECT EXISTS(
+          SELECT *
+          FROM ClientType AS ct
+          WHERE ct.Name = %s )""", (client_name,))
+
+        result = cursor.fetchone()[0]
+        cursor.close
         return result
 
     def __init__(self, configstring: str):

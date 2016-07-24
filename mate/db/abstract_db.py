@@ -21,5 +21,9 @@ class AbstractDB(ABC):
         pass
 
     @abstractmethod
+    def get_does_client_exist_with_name(self, client_name:str) -> bool:
+        pass
+
+    @abstractmethod
     def close(self):
         pass
