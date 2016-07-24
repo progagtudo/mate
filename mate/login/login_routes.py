@@ -114,7 +114,7 @@ def login_customer(username: str):
         return "", 403
 
 
-@app.route("/login/client/<string:clientname>")
+@app.route("/login/client/<string:client_name>")
 def login_client(client_name: str):
     # TODO: replace with client verifier!
     # This currently always returns a valid token
