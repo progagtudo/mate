@@ -35,6 +35,8 @@ def list_storage():
     previous = None
     if (offset - limit) >= 0:
         previous = "/storages?limit={0}&offset={1}".format(limit, (offset - limit))
+    elif offset > 0:
+        previous = "/storages?limit={0}&offset={1}".format(offset, 0)
     # ToDo: Generate JSON and return
     response = {
         "next": next_link,
