@@ -1,4 +1,3 @@
-import json
 from datetime import datetime, timedelta
 
 import jwt
@@ -7,9 +6,9 @@ from flask import request
 
 from mate import app
 from mate.helper.config_holder import ConfigHolder
-from mate.login.login import stub_login_type_holder, auth, AuthType, validate_client_login
-from mate.mate import get_db
+from mate.login.login import auth, AuthType, validate_client_login
 from mate.login.user_auth.password_user_authenticator import PasswordUserAuthenticator
+from mate.mate import get_db
 
 
 @app.route("/login_types")
@@ -60,7 +59,7 @@ def login_types(username: str, user_type: str):
     client_name = jwt.decode(request.headers.get(ConfigHolder.jwt_header_client), key=ConfigHolder.jwt_secret_client)[
         'mate.tpe']
     login_type_list = get_db().get_login_types(client_name, username, user_type == 'staff')
-    return jsonify({"types": login_type_list })
+    return jsonify({"types": login_type_list})
 
 
 @app.route("/login/customer/<string:username>")
@@ -84,7 +83,7 @@ def login_customer(username: str):
         login_type_list = get_db().get_login_types(client_name=client_name, username=username, is_staff=False)
         if login_type not in login_type_list:
             return "Login for user »{}« failed. " \
-                   "Login type »{}« is not usable for this user and client combination".format(username, login_type),\
+                   "Login type »{}« is not usable for this user and client combination".format(username, login_type), \
                    403
 
         authenticator = None

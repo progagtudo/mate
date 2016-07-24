@@ -1,6 +1,4 @@
-import json
-
-from flask import request, jsonify
+from flask import jsonify
 
 from mate import app
 from mate.login.login import auth, AuthType
@@ -29,11 +27,11 @@ def get_barcode(code):
         return "No Barcode provided", 400
 
 
-@app.route("/customer/<int:id>/balance", methods=["GET"])
+@app.route("/customer/<int:customer_id>/balance", methods=["GET"])
 @auth(AuthType.client)
 @auth(AuthType.salesp)
 @auth(AuthType.customer)
-def get_balance(id):
+def get_balance(customer_id):
     valid_customer = False
     # TODO check customer JWT
     if not valid_customer:
@@ -45,6 +43,7 @@ def get_balance(id):
         "value": balance
     })
 
+
 @app.route("/sale/sellCart")
 @auth(AuthType.client)
 @auth(AuthType.salesp)
@@ -55,7 +54,3 @@ def get_sellcart():
     if not success:
         # TODO return fixed cart on error
         pass
-
-
-
-

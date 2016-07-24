@@ -49,7 +49,9 @@ def auth(authtype: AuthType, rights: List[str] = None):
                 print("Irgendwas ist kaputt")
                 return "Authentication error", 401
             return func(*args, **kwargs)
+
         return decorated_func
+
     return decorator
 
 
@@ -73,5 +75,3 @@ def validate_client_login(client_name: str) -> bool:
     result = db.get_does_client_exist_with_name(client_name=client_name)
     return result
     # return True
-
-

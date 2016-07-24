@@ -40,7 +40,7 @@ class PostgresDB(AbstractDB):
         cursor.close()
         return result
 
-    def get_login_credential_secret(self, client_name:str, username:str, login_type:str, is_staff:bool):
+    def get_login_credential_secret(self, client_name: str, username: str, login_type: str, is_staff: bool):
         cursor = self.db.cursor()
         cursor.execute("""SELECT c.CredentialSecret
         FROM ClientType    AS clt
@@ -56,7 +56,7 @@ class PostgresDB(AbstractDB):
         cursor.close()
         return result
 
-    def get_does_client_exist_with_name(self, client_name:str) -> bool:
+    def get_does_client_exist_with_name(self, client_name: str) -> bool:
         cursor = self.db.cursor
         cursor.execute("""SELECT EXISTS(
           SELECT *
@@ -64,7 +64,7 @@ class PostgresDB(AbstractDB):
           WHERE ct.Name = %s )""", (client_name,))
 
         result = cursor.fetchone()[0]
-        cursor.close
+        cursor.close()
         return result
 
     def __init__(self, configstring: str):

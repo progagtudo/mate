@@ -10,7 +10,8 @@ class Customer(Person):
 
     class Options:
         roles = {'customer': blacklist('base_balance', 'base_balance_date'),
-                 'balance': blacklist('base_balance', 'base_balance_date', 'first_name', 'last_name', 'email', 'active', 'id', 'needs_balance_auth')}
+                 'balance': blacklist('base_balance', 'base_balance_date', 'first_name', 'last_name', 'email', 'active',
+                                      'id', 'needs_balance_auth')}
 
     @classmethod
     def dummy(cls):

@@ -11,8 +11,8 @@ from mate.model.products.tax_category import TaxCategory
 class AdminProduct(AbstractProduct):
     tags = ListType(StringType, required=True)  # type: List
     total_amount_in_stock = IntType(required=True)  # type: int
-    amounts = ListType(StorageAmount, required=True)   # type: List
-    tax_category = TaxCategory(required=True)   # type: TaxCategory
+    amounts = ListType(StorageAmount, required=True)  # type: List
+    tax_category = TaxCategory(required=True)  # type: TaxCategory
     barcodes = ListType(StringType(), required=True)  # type: List
 
     def __init__(self, **kwargs):

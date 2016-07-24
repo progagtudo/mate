@@ -49,7 +49,7 @@ class ContactPerson(AbstractModel):
             pass
 
     @classmethod
-    def from_json_new_object(cls,json):
+    def from_json_new_object(cls, json):
         """
         inits a contact Person Object from incoming json dict
         :param json: a python object from json
