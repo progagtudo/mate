@@ -61,7 +61,20 @@ def add_storage():
     print("added stub id to storage") # remove print when ToDo is done
     return jsonify(a_storage)
 
-@app.route("/storage/<int:storage_id>/", methods=["PATCH"])
+
+@app.route("/storage/<int:storage_id>", methods=["GET"])
+# @auth
+def get_storage_info(storage_id: int):
+
+    #validate(data, storage_modul.json_scheme_new_object)
+    a_storage = Storage.request_from_db(storage_id)
+    if a_storage is None:
+        return "Requested storage with id {} does not exist".format(storage_id), 404
+    else:
+        return jsonify(a_storage), 200
+
+
+@app.route("/storage/<int:storage_id>", methods=["PATCH"])
 # @auth
 def update_storage(storage_id):
     #check_storage_id(storage_id)
@@ -74,27 +87,34 @@ def update_storage(storage_id):
     # TODO: update storage
     return jsonify(a_storage)
 
-@app.route("/storage/<int:storage_id>/", methods=["DELETE"])
-def delete_storage(storage_id):
-    assert storage_id is int
-    if storage_id < 0:
-        print("storage_id is to low")
-        return "storage_id is to low", 500
+@app.route("/storage/<int:storage_id>", methods=["DELETE"])
+def delete_storage(storage_id: int):
+    a_storage = Storage.request_from_db(storage_id)
+    if a_storage is None:
+        return "Requested storage with id {} does not exist".format(storage_id), 404
     else:
-        # ToDo: delete storage
-        return "", 200
+        result = Storage.delete_instance_in_db(storage_id=storage_id)
+        if result:
+            return "", 204
+        else:
+            return "Cannot delete storage: Storage not empty", 412
 
 @app.route("/storage/<int:storage_id>/products", methods=["GET"])
-def product_storage(storage_id):
-    if(storage_id < 0):
+def product_storage(storage_id: int):
+    if storage_id < 0:
         return ""
-    product_type = request.args.get("product_type", "", type=str) #TODO: find resonable standard value
+    product_type = request.args.get("product_type", "", type=str)  # TODO: find reasonable standard value
     limit = request.args.get("limit", 20, type=int)
     offset = request.args.get("offset", 0, type=int)
-    next_link = "/storage/{0}/products?product_type={1}&limit={2}&offset={3}".format(storage_id, product_type, limit, (offset + limit))
+    next_link = "/storage/{0}/products?product_type={1}&limit={2}&offset={3}".format(
+        storage_id, product_type, limit, (offset + limit))
     previous_link = None
     if (offset - limit) >= 0:
-        previous_link = "/storage/{0}/products?product_type={1}&limit={2}&offset={3}".format(storage_id, product_type, limit, (offset - limit))
+        previous_link = "/storage/{0}/products?product_type={1}&limit={2}&offset={3}".format(
+            storage_id, product_type, limit, (offset - limit))
+    elif offset > 0:
+        previous_link = "/storage/{0}/products?product_type={1}&limit={2}&offset={3}".format(
+            storage_id, product_type, offset, 0)
 
     products = [SaleProduct.dummy(), SaleProduct.dummy()] # TODO: Find Products in Storage via DB
 
