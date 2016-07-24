@@ -3,6 +3,7 @@ from typing import List
 from schematics.types import StringType, BooleanType, ListType, ModelType
 from mate.model.abstract_model import AbstractModel
 from mate.model.products.storage_amount import StorageAmountType
+from mate.mate import get_db
 
 
 class Storage(AbstractModel):
@@ -37,3 +38,23 @@ class Storage(AbstractModel):
         instance.name = json["name"]
         instance.is_sale_allowed = json["is_sale_allowed"]
         return instance
+
+    @classmethod
+    def request_from_db(cls, storage_id: int = None):
+        db_results = get_db().get_storage_by_id(storage_id=storage_id)
+        if db_results is None:
+            return None
+        else:
+            instance = cls()
+            instance.storage_id = storage_id
+            instance.name = db_results[0]
+            instance.description = db_results[1]
+            instance.is_sale_allowed = db_results[2]
+            # TODO: fix storage_amounts, this item has a useless type and cannot be filled with useful data.
+            instance.storage_amounts = []
+            return instance
+
+    @classmethod
+    def delete_instance_in_db(cls, storage_id: int) -> bool:
+        db_results = get_db().delete_storage(storage_id=storage_id)
+        return db_results

@@ -25,5 +25,25 @@ class AbstractDB(ABC):
         pass
 
     @abstractmethod
+    def get_storage_by_id(self, storage_id: int):
+        pass
+
+    @abstractmethod
+    def get_product_storage_by_product(self, product_id: int):
+        pass
+
+    @abstractmethod
+    def get_product_storage_by_storage(self, storage_id: int):
+        pass
+
+    @abstractmethod
+    def get_last_inserted_id(self) -> int:
+        pass
+
+    @abstractmethod
+    def delete_storage(self, storage_id: int) -> bool:
+        pass
+
+    @abstractmethod
     def close(self):
         pass

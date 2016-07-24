@@ -4,6 +4,9 @@ from mate.db.abstract_db import AbstractDB
 
 
 class PostgresDB(AbstractDB):
+
+    last_inserted_id = None  # type: int
+
     def close(self):
         self.db.close()
 
@@ -57,15 +60,74 @@ class PostgresDB(AbstractDB):
         return result
 
     def get_does_client_exist_with_name(self, client_name:str) -> bool:
-        cursor = self.db.cursor
+        cursor = self.db.cursor()
         cursor.execute("""SELECT EXISTS(
           SELECT *
           FROM ClientType AS ct
           WHERE ct.Name = %s )""", (client_name,))
-
         result = cursor.fetchone()[0]
         cursor.close
         return result
+
+    def get_storage_by_id(self, storage_id: int):
+        cursor = self.db.cursor()
+        cursor.execute("""
+        SELECT s.Name, s.Description, s.IsSaleAllowed
+        FROM Storage AS s
+        WHERE s.StorageID = %s
+        """, (storage_id, ))
+        result = cursor.fetchone()
+        cursor.close
+        return result
+
+    def get_product_storage_by_product(self, product_id: int):
+        cursor = self.db.cursor()
+        cursor.execute("""
+        SELECT sc.StorageID, sc.Amount
+        FROM StorageContent AS sc
+        WHERE sc.ProductID = %s
+        """, (product_id, ))
+        result = cursor.fetchall()
+        cursor.close
+        return result
+
+    def get_product_storage_by_storage(self, storage_id: int):
+        cursor = self.db.cursor()
+        cursor.execute("""
+        SELECT sc.ProductID, sc.Amount
+        FROM StorageContent AS sc
+        WHERE sc.StorageID = %s
+        """, (storage_id, ))
+        result = cursor.fetchall()
+        cursor.close
+        return result
+
+    def get_last_inserted_id(self) -> int:
+        return self.last_inserted_id
+
+    def delete_storage(self, storage_id: int):
+        cursor = self.db.cursor()
+        # Check if there is any content in the to be deleted storage. Fail if there is any.
+        # Use 42 as a dummy value to check for tuple existence, since we are not interested in any real data.
+        cursor.execute("""
+        SELECT EXISTS(
+          SELECT 42 AS data
+          FROM StorageContent AS sc
+          WHERE sc.StorageID = %s
+            AND sc.Amount > 0 )
+        """, (storage_id,))
+        success = not cursor.fetchone()[0]
+        if success:
+            print("Deleting Storage with ID {}".format(storage_id))
+            cursor.execute("""
+            DELETE FROM Storage AS s
+            WHERE s.StorageID = %s
+            """, (storage_id,))
+            success = cursor.rowcount == 1
+            print("Deleted {} entries".format(cursor.rowcount))
+            self.db.commit()
+        cursor.close()
+        return success
 
     def __init__(self, configstring: str):
         super().__init__()
