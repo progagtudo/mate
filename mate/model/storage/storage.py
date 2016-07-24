@@ -1,6 +1,7 @@
 from typing import List
 
-from schematics.types import StringType, BooleanType, ListType, ModelType
+from schematics.types import StringType, BooleanType, ListType
+
 from mate.model.abstract_model import AbstractModel
 from mate.model.products.storage_amount import StorageAmountType
 from mate.mate import get_db

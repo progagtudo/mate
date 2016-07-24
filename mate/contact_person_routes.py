@@ -3,14 +3,13 @@ import json
 from flask import request, jsonify
 
 from mate import app
-from mate.login.login import auth, AuthType
 from mate.model.retailer.contact_person import ContactPerson
 
 
-@app.route("/contact_person/<int:id>", methods=["GET"])
+@app.route("/contact_person/<int:cperson_id>", methods=["GET"])
 # ToDo: Check if Client is allowed to list contact persons
 # @auth(AuthType.client)
-def get_contact_person():
+def get_contact_person(cperson_id):
     """
     returns the contact persons
     """
@@ -28,9 +27,9 @@ def get_contact_persons():
     limit = request.args.get("limit", 20, type=int)
     offset = request.args.get("offset", 0, type=int)
 
-    next_link = "/contact_persons?limit{0}&offset={1}".format(limit,(offset + limit))
+    next_link = "/contact_persons?limit{0}&offset={1}".format(limit, (offset + limit))
     previous = None
-    if(offset - limit) >= 0:
+    if (offset - limit) >= 0:
         previous = "contact_persons?limit={0}&offset={1}".format(limit, (offset - limit))
     # ToDo: Generate JSON and return
     response = {
@@ -54,25 +53,25 @@ def add_contact_person():
     return jsonify(a_contact_person)
 
 
-@app.route("/contact_person/<int:id>", methods=["PATCH"])
+@app.route("/contact_person/<int:cperson_id>", methods=["PATCH"])
 # ToDo: Check if Client is allowed to update contact persons
 # @auth(AuthType.client)
-def update_contact_person():
+def update_contact_person(cperson_id):
     """
     updates the contact person
     """
-    #check contact_person id
+    # check contact_person id
     data = request.data
-    #validate(data, contact_person_modul, json_scheme_new_object)
+    # validate(data, contact_person_modul, json_scheme_new_object)
     a_contact_person = ContactPerson.from_json_new_object(json.loads(data))
     # ToDo: update contact Persons
     return jsonify(a_contact_person)
 
 
-@app.route("/contact_person/<int:id>", methods=["DELETE"])
+@app.route("/contact_person/<int:person_id>", methods=["DELETE"])
 # ToDo: Check if Client is allowed to delete contact persons
 # @auth(AuthType.client)
-def delete_contact_person(id):
+def delete_contact_person(person_id):
     """
     deletes the contact person
     """

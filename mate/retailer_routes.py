@@ -3,14 +3,13 @@ import json
 from flask import request, jsonify
 
 from mate import app
-from mate.login.login import auth, AuthType
 from mate.model.retailer.retailer import Retailer
 
 
-@app.route("/retailer/<int:id>/", methods=["GET"])
+@app.route("/retailer/<int:retailer_id>/", methods=["GET"])
 # ToDo: Check if Client is allowed to list retailers
 # @auth(AuthType.client)
-def get_retailer(id):
+def get_retailer(retailer_id):
     """
     returns the retailer
     """
@@ -30,7 +29,7 @@ def get_retailers():
 
     next_link = "/retailers?limit{0}&offset={1}".format(limit, (offset + limit))
     previous = None
-    if(offset - limit) >= 0:
+    if (offset - limit) >= 0:
         previous = "retailers?limit={0}&offset={1}".format(limit, (offset - limit))
     # ToDo: Generate JSON and return
     response = {
@@ -42,7 +41,7 @@ def get_retailers():
     return jsonify(response)
 
 
-@app.route("/retailer",methods=["POST"])
+@app.route("/retailer", methods=["POST"])
 # ToDo: Check if Client is allowed to add retailers
 # @auth(AuthType.client)
 def add_retailer():
@@ -58,10 +57,10 @@ def add_retailer():
     return jsonify(a_retailer)
 
 
-@app.route("/retailer/<int:id>/", methods=["PATCH"])
+@app.route("/retailer/<int:retailer_id>/", methods=["PATCH"])
 # ToDo: Check if Client is allowed to update retailers
 # @auth(AuthType.client)
-def update_retailer(id):
+def update_retailer(retailer_id):
     """
     update the retailer with the id
     """
@@ -75,12 +74,12 @@ def update_retailer(id):
     # ToDo: update Retailer
 
 
-@app.route("/retailer/<int:id>/", methods=["DELETE"])
+@app.route("/retailer/<int:retailer_id>/", methods=["DELETE"])
 # ToDo: Check if Client is allowed to delete retailers
 # @auth(AuthType.client)
-def delete_retailer(id):
+def delete_retailer(retailer_id):
     """
     deletes the retailer with the id
     """
     assert id is int
-    #ToDo: delete storage
+    # ToDo: delete storage

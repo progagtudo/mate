@@ -50,7 +50,5 @@ class Storage:
         self.name = ""  # type: str
         self.is_sale_allowed = False  # type: bool
 
-
-
     def verify(self):
         pass

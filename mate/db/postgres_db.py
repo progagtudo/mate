@@ -4,9 +4,6 @@ from mate.db.abstract_db import AbstractDB
 
 
 class PostgresDB(AbstractDB):
-
-    last_inserted_id = None  # type: int
-
     def close(self):
         self.db.close()
 
@@ -43,7 +40,7 @@ class PostgresDB(AbstractDB):
         cursor.close()
         return result
 
-    def get_login_credential_secret(self, client_name:str, username:str, login_type:str, is_staff:bool):
+    def get_login_credential_secret(self, client_name: str, username: str, login_type: str, is_staff: bool):
         cursor = self.db.cursor()
         cursor.execute("""SELECT c.CredentialSecret
         FROM ClientType    AS clt
@@ -66,7 +63,7 @@ class PostgresDB(AbstractDB):
           FROM ClientType AS ct
           WHERE ct.Name = %s )""", (client_name,))
         result = cursor.fetchone()[0]
-        cursor.close
+        cursor.close()
         return result
 
     def get_storage_by_id(self, storage_id: int):

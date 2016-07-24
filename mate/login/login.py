@@ -9,6 +9,7 @@ from flask import request
 # from mate.mate import get_db
 from mate.helper.config_holder import ConfigHolder
 from mate.login.helper.stub_login_type_holder import StubLoginTypeHolder
+from mate.mate import get_db
 
 stub_login_type_holder = StubLoginTypeHolder()
 
@@ -48,7 +49,9 @@ def auth(authtype: AuthType, rights: List[str] = None):
                 print("Irgendwas ist kaputt")
                 return "Authentication error", 401
             return func(*args, **kwargs)
+
         return decorated_func
+
     return decorator
 
 
@@ -68,9 +71,7 @@ def validate_client_login(client_name: str) -> bool:
     # TODO: check for some kind of secret
     print("WARNING: validate_client_login(): Not doing anything useful!")
     # TODO: Uncomment when it is possible to import the db…
-    # db = get_db()
-    # result = db.get_does_client_exist_with_name(client_name=client_name)
-    # return result
-    return True
-
-
+    db = get_db()
+    result = db.get_does_client_exist_with_name(client_name=client_name)
+    return result
+    # return True

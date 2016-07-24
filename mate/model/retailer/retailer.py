@@ -104,4 +104,3 @@ class Retailer(AbstractModel):
         # ToDo: set contact Persons
 
         return instance
-

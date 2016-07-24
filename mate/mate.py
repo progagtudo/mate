@@ -1,29 +1,6 @@
-import psycopg2
-
 from mate.db.postgres_db import PostgresDB
-from mate.login.login import auth, AuthType
-from mate.model.cart.cart import Cart
-from . import app, __version__
+from . import app
 from flask import g
-
-
-@app.route('/')
-def hello_world():
-    """Return 'Hello World!' on every Request."""
-    return 'Hello World!'
-
-
-@app.route('/version')
-@auth(AuthType.client)
-def version():
-    """Returns API-Version"""
-    return __version__
-
-
-@app.route('/teapot')
-def teapot():
-    """Return HTTP Error 418"""
-    return "I'm a teapot", 418
 
 
 def connect_db():
