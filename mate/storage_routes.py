@@ -87,6 +87,7 @@ def update_storage(storage_id):
     # TODO: update storage
     return jsonify(a_storage)
 
+
 @app.route("/storage/<int:storage_id>", methods=["DELETE"])
 def delete_storage(storage_id: int):
     a_storage = Storage.request_from_db(storage_id)
@@ -98,6 +99,7 @@ def delete_storage(storage_id: int):
             return "", 204
         else:
             return "Cannot delete storage: Storage not empty", 412
+
 
 @app.route("/storage/<int:storage_id>/products", methods=["GET"])
 def product_storage(storage_id: int):
