@@ -31,7 +31,7 @@ class PostgresDB(AbstractDB):
         FROM ClientType    AS clt
         JOIN CredentialUse AS cu ON clt.ClientTypeID = cu.ClientTypeID
         JOIN Credentials   AS c  ON  cu.CredentialID =  c.CredentialID
-        JOIN AvailableCredentialTypes AS act ON c.CredentialType = act.CredentialType
+        JOIN AvailableCredentialTypes AS act ON c.CredentialTypeID = act.CredentialTypeID
         WHERE clt.name               = %s
           AND   c.CredentialKey      = %s
           AND   c.IsSalesPersonLogin = %s
@@ -46,7 +46,7 @@ class PostgresDB(AbstractDB):
         FROM ClientType    AS clt
         JOIN CredentialUse AS cu ON clt.ClientTypeID = cu.ClientTypeID
         JOIN Credentials   AS c  ON  cu.CredentialID =  c.CredentialID
-        JOIN AvailableCredentialTypes AS act ON c.CredentialType = act.CredentialType
+        JOIN AvailableCredentialTypes AS act ON c.CredentialTypeID = act.CredentialTypeID
         WHERE clt.name               = %s
           AND   c.CredentialKey      = %s
           AND   c.IsSalesPersonLogin = %s
@@ -74,7 +74,7 @@ class PostgresDB(AbstractDB):
         WHERE s.StorageID = %s
         """, (storage_id, ))
         result = cursor.fetchone()
-        cursor.close
+        cursor.close()
         return result
 
     def get_product_storage_by_product(self, product_id: int):
@@ -85,7 +85,7 @@ class PostgresDB(AbstractDB):
         WHERE sc.ProductID = %s
         """, (product_id, ))
         result = cursor.fetchall()
-        cursor.close
+        cursor.close()
         return result
 
     def get_product_storage_by_storage(self, storage_id: int):
@@ -96,11 +96,9 @@ class PostgresDB(AbstractDB):
         WHERE sc.StorageID = %s
         """, (storage_id, ))
         result = cursor.fetchall()
-        cursor.close
+        cursor.close()
         return result
 
-    def get_last_inserted_id(self) -> int:
-        return self.last_inserted_id
 
     def delete_storage(self, storage_id: int):
         cursor = self.db.cursor()
