@@ -22,6 +22,7 @@ CREATE TABLE RoleRightAssignment (
 CREATE TABLE Storage (
   StorageID             SERIAL  PRIMARY KEY,
   Name                  TEXT    NOT NULL,
+  Description           TEXT    NULL,
   IsSaleAllowed         BOOLEAN NOT NULL,
   EntryAddedDate        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
   EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP)
