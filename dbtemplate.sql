@@ -22,6 +22,7 @@ CREATE TABLE RoleRightAssignment (
 CREATE TABLE Storage (
   StorageID             SERIAL  PRIMARY KEY,
   Name                  TEXT    NOT NULL,
+  Description           TEXT    NULL,
   IsSaleAllowed         BOOLEAN NOT NULL,
   EntryAddedDate        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
   EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP)
@@ -74,7 +75,7 @@ INSERT INTO TaxCategoryName (TaxCategoryID, Name, BaseValue, BaseValueUnit) VALU
 INSERT INTO TaxCategoryName (TaxCategoryID, Name, BaseValue, BaseValueUnit) VALUES (2, 'Lebensmittel', 0, '%');
 INSERT INTO TaxCategoryName (TaxCategoryID, Name, BaseValue, BaseValueUnit) VALUES (3, 'Steuerbefreit', 0, '%');
 CREATE TABLE TaxCategoryValue (
-  TaxCategoryID         SERIAL        NOT NULL REFERENCES TaxCategoryName(TaxCategoryID),
+  TaxCategoryID         INTEGER       NOT NULL REFERENCES TaxCategoryName(TaxCategoryID),
   ValidSince            DATE          NOT NULL,
   Value                 DECIMAL(10,4) NOT NULL,
   Unit                  TEXT          NOT NULL,
@@ -303,7 +304,7 @@ COMMENT ON COLUMN AvailableCredentialTypes.ModuleIdentifier IS 'Der Name des fü
 COMMENT ON COLUMN AvailableCredentialTypes.EntryAddedDate IS 'Das Datum, an dem der Datenbankeintrag angelegt wurde. Durch einen Trigger vor Veränderungen geschützt.';
 COMMENT ON COLUMN AvailableCredentialTypes.EntryLastModifiedDate IS 'Das Datum, an dem der Datenbankeintrag zuletzt bearbeitet wurde. Wird bei Änderungen am Datensatz von einem Datenbank-Trigger automatisch aktualisiert.';
 CREATE TABLE AllowedCredentialUse (
-  CredentialTypeID        INTEGER   NOT NULL REFERENCES AvailableCredentialTypes(CredentialTypeID),
+  CredentialTypeID      INTEGER   NOT NULL REFERENCES AvailableCredentialTypes(CredentialTypeID),
   ClientTypeID          INTEGER   NOT NULL REFERENCES ClientType(ClientTypeID),
   EntryAddedDate        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
   EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
@@ -311,11 +312,11 @@ CREATE TABLE AllowedCredentialUse (
   PRIMARY KEY (CredentialTypeID, ClientTypeID)
 );
 CREATE TABLE Credentials (
-  CredentialID          INTEGER   PRIMARY KEY,
+  CredentialID          SERIAL    PRIMARY KEY,
   CredentialKey         TEXT      NOT NULL UNIQUE,
   CredentialSecret      BYTEA     NULL,
   PersonID              INTEGER   NOT NULL REFERENCES Person(PersonID),
-  CredentialTypeID        INTEGER   NOT NULL REFERENCES AvailableCredentialTypes(CredentialTypeID),
+  CredentialTypeID      INTEGER   NOT NULL REFERENCES AvailableCredentialTypes(CredentialTypeID),
   IsSalesPersonLogin    BOOLEAN   NOT NULL,
   CredentialCreateDate  DATE      NOT NULL,
   LastSecretChange      TIMESTAMP WITH TIME ZONE     NULL,
@@ -342,7 +343,7 @@ CREATE TABLE CredentialUse (
   PRIMARY KEY (CredentialID, ClientTypeID)
 );
 CREATE TABLE Charge (
-  ChargeID              INTEGER       PRIMARY KEY,
+  ChargeID              SERIAL        PRIMARY KEY,
   CustomerID            INTEGER       NOT NULL REFERENCES Customer(CustomerID),
   SalesPersonID         INTEGER       NOT NULL REFERENCES SalesPerson(SalesPersonID),
   Donation              BOOLEAN       NOT NULL,
@@ -361,7 +362,7 @@ COMMENT ON COLUMN Charge.ChargeDate IS 'Das Datum der Guthabenaufladung';
 COMMENT ON COLUMN Charge.EntryAddedDate IS 'Das Datum, an dem der Datenbankeintrag angelegt wurde. Durch einen Trigger vor Veränderungen geschützt.';
 COMMENT ON COLUMN Charge.EntryLastModifiedDate IS 'Das Datum, an dem der Datenbankeintrag zuletzt bearbeitet wurde. Wird bei Änderungen am Datensatz von einem Datenbank-Trigger automatisch aktualisiert.';
 CREATE TABLE Repayment (
-  RepaymentID           INTEGER        PRIMARY KEY,
+  RepaymentID           SERIAL         PRIMARY KEY,
   SalesPersonID         INTEGER        NOT NULL REFERENCES SalesPerson(SalesPersonID),
   TransactionDate       DATE           NOT NULL,
   Amount                DECIMAL(10, 2) NOT NULL,

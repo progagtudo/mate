@@ -39,10 +39,6 @@ class AbstractDB(ABC):
         pass
 
     @abstractmethod
-    def get_last_inserted_id(self) -> int:
-        pass
-
-    @abstractmethod
     def delete_storage(self, storage_id: int) -> bool:
         pass
 
