@@ -17,6 +17,51 @@ class PostgresDB(AbstractDB):
         cursor.close()
         return result
 
+    def get_customer_from_barcode(self, barcode: str):
+        cursor = self.db.cursor()
+        cursor.execute("""
+        SELECT Person.FirstName, Person.LastName, Person.EMail, (Customer.Active AND Person.Active) AS Active, Customer.BaseBalance, Customer.BaseBalanceDate, Person.PersonID
+        FROM Credentials AS c
+        INNER JOIN Customer
+        ON Customer.CustomerID=c.PersonID
+        INNER  JOIN Person
+        ON Person.PersonID=c.PersonID
+        WHERE c.credentialKey = %s AND c.IsSalesPersonLogin = FALSE """, (barcode,))
+        result = cursor.fetchone()
+        cursor.close()
+        return result
+
+    def get_product_from_barcode(self, barcode: str):
+        # ToDo: Tags & InStockAmount fehlen
+        cursor = self.db.cursor()
+        cursor.execute("""
+        SELECT Product.ProductID, Product.Name, Product.Description, Product.Price, Product.IsSaleProhibited, Product.IsDefaultRedemption, Product.CategoryID, ProductInstance.InStockAmount
+        FROM Barcode AS b
+        INNER JOIN Product
+        ON b.ProductID=Product.ProductID
+        INNER JOIN ProductInstance
+        ON b.ProductID=(
+            SELECT TOP 1 ProductInstance.InStockAmount
+            FROM ProductInstance
+            WHERE ProductID=b.ProductID
+        )
+        WHERE b.Barcode = %s""", (barcode,))
+        result = cursor.fetchone()
+        cursor.close()
+        return result
+
+    def get_product_tags(self, product_id: int):
+        cursor = self.db.cursor()
+        cursor.execute("""
+        SELECT AvailableProductTags.Name, AvailableProductTags.Description
+        FROM ProductTagAssignment as p
+        INNER JOIN AvailableProductTags
+        ON p.ProductID = %i""", (product_id, ))
+        result = cursor.fetchall()
+        cursor.close()
+        return result
+
+
     def get_all_login_types(self):
         cursor = self.db.cursor()
         cursor.execute("""SELECT act.Name
