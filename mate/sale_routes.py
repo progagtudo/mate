@@ -2,6 +2,7 @@ from flask import jsonify
 
 from mate import app
 from mate.login.login import auth, AuthType
+from mate.mate import get_db
 from mate.model.person.customer import Customer
 from mate.model.products.sale_product import SaleProduct
 from mate.db.postgres_db import PostgresDB
@@ -14,7 +15,8 @@ def get_barcode(code):
     if code is not None:
         print("barcode: " + code)
         # ToDo: find customer
-        if PostgresDB.check_if_user_exists(code):
+        customer = "null"
+        if PostgresDB.check_if_user_exists(get_db(), code):
             customer = Customer.from_barcode(code).to_primitive('customer')
         #customer = Customer.dummy().to_primitive('customer')
         # ToDo: find product
