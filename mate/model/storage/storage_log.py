@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from schematics.types import IntType, DateTimeType
+from schematics.types import IntType, DateTimeType, ModelType
 
 from mate.model.abstract_model import AbstractModel
 from mate.model.storage.storage import Storage
@@ -8,8 +8,8 @@ from mate.model.storage.storage import Storage
 
 class StorageLog(AbstractModel):
     amount = IntType(required=True)  # type: int
-    from_storage = Storage(required=True)  # type: Storage
-    to_storage = Storage(required=True)  # type: Storage
+    from_storage = ModelType(Storage, required=True)  # type: Storage
+    to_storage = ModelType(Storage, required=True)  # type: Storage
     product_id = IntType(required=True)  # type: int
     timestamp = DateTimeType(required=True)  # type: datetime
 

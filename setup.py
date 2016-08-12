@@ -5,7 +5,7 @@ import sys
 import mate
 
 try:
-    from setuptools import setup
+    from setuptools import setup, find_packages
 except ImportError:
     from distutils.core import setup
 
@@ -24,11 +24,13 @@ test_requirements = [
     'tox'
 ]
 
+
 class Tox(TestCommand):
     def finalize_options(self):
         TestCommand.finalize_options(self)
         self.test_args = []
         self.test_suite = True
+
     def run_tests(self):
         # import here, cause outside the eggs aren't loaded
         import tox
@@ -43,9 +45,7 @@ setup(
     author="Programmier-AG TU Dortmund",
     author_email='progag@lists.cs.tu-dortmund.de',
     url='matetudo.atlassian.net',
-    packages=[
-        'mate',
-    ],
+    packages=find_packages(),
     include_package_data=True,
     install_requires=requirements,
     license="LGPL",
