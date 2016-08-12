@@ -20,23 +20,6 @@ requirements = [
     # TODO: put package requirements here
 ]
 
-test_requirements = [
-    'tox'
-]
-
-
-class Tox(TestCommand):
-    def finalize_options(self):
-        TestCommand.finalize_options(self)
-        self.test_args = []
-        self.test_suite = True
-
-    def run_tests(self):
-        # import here, cause outside the eggs aren't loaded
-        import tox
-        errcode = tox.cmdline(self.test_args)
-        sys.exit(errcode)
-
 setup(
     name='mate',
     version=mate.__version__,
@@ -54,7 +37,5 @@ setup(
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'Programming Language :: Python :: 3.5',
-    ],
-    tests_require=test_requirements,
-    cmdclass={'test': Tox}
+    ]
 )

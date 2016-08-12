@@ -13,6 +13,6 @@ def test_hello_world(tclient):
     assert b'Hello World!' in answer.data
 
 
-#def test_version(tclient):
-#     answer = tclient.get('/version')
-#     assert bytes(mate.__version__, 'utf-8') in answer.data
+# def test_version(tclient):
+#      answer = tclient.get('/version')
+#      assert bytes(mate.__version__, 'utf-8') in answer.data
