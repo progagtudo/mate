@@ -8,6 +8,7 @@ from mate.model.abstract_model import AbstractModel
 
 
 class AbstractProduct(AbstractModel):
+    id = IntType(required=True) # type: int
     name = StringType(required=True)  # type: str
     price = DecimalType(required=True)  # type: decimal
     # TODO: This needs a getter for categories!
