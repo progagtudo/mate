@@ -1,0 +1,1392 @@
+swagger: '2.0'
+info:
+  version: 0.0.0
+  title: Die mate API
+  description: mate API connects storage, sale, purchasing & customer via different clients for Chaos Kiosk at TU Dortmund
+produces:
+  - application/json
+securityDefinitions:
+  client_jwt:
+    type: apiKey
+    description: A JWT that identifies the client.
+    name: MATE-Auth-Client
+    in: header
+  staff_jwt:
+    type: apiKey
+    description: A JWT that identifies the staff user and its rights
+    name: MATE-Auth-Staff
+    in: header
+  customer_jwt:
+    type: apiKey
+    description: A JWT that identifies the customer user and its rights
+    name: MATE-Auth-Customer
+    in: header
+externalDocs:
+  url: https://matetudo.atlassian.net/wiki/
+paths:
+
+  /login_types/{username}/{type}:
+    get:
+      summary: user login types
+      description: |
+        possible authentication types for tupel of user and user name
+      parameters:
+        - name: username
+          in: path
+          description: user identifier
+          required: true
+          type: string
+        - name: type
+          in: path
+          description: user role
+          required: true
+          type: string
+      tags:
+        - login
+        - user
+        - salesperson
+        - admin
+      security:
+        - client_jwt: []
+      responses:
+        200:
+          description: user found
+          schema:
+            description: array of possible login types
+            type: array
+            items:
+              type: string
+        404:
+          description: user not found
+          schema:
+            description: simple error message
+            type: string
+
+
+  /login/{type}/{username}:
+    post:
+      summary: user login
+      description: |
+        authenticates users and returns JWT
+      parameters:
+        - name: username
+          in: path
+          description: user identifier
+          required: true
+          type: string
+        - name: type
+          in: path
+          description: user role
+          required: true
+          type: string
+        - name: login_type
+          in: header
+          description: login method
+          required: true
+          type: string
+        - name: data
+          in: header
+          description: login data aka passwort etc.
+          type: string
+      tags:
+        - login
+        - user
+        - salesperson
+        - admin
+      security:
+        - client_jwt: []
+      responses:
+        200:
+          description: user loged in
+          schema:
+            type: string
+            description: user JWT
+        401:
+          description: authentication not provided
+          schema:
+            type: string
+            description: simple error message
+        403:
+          description: user can not be loged in
+          schema:
+            type: string
+            description: simple error message
+
+
+  /login/client:
+    post:
+      summary: client authentication
+      description: |
+        authenticates clients and returns JWT
+      tags:
+        - client
+        - login
+      security:
+        - client_jwt: []
+      responses:
+        200:
+          description: client authenticated
+          schema:
+            type: string
+            description: client JWT
+        403:
+          description: client could not authenticated
+          schema:
+            type: string
+            description: simple error message
+
+
+  /barcode/{barcode}:
+    get:
+      summary: Request barcode information
+      description: |
+        finds an associated user, product or both identified by the given barcode
+      parameters:
+        - name: barcode
+          in: path
+          description: The requested barcode
+          required: true
+          type: string
+      tags:
+        - barcode
+        - sale
+      security:
+       - client_jwt: []
+       - staff_jwt: []
+      responses:
+        200:
+          description: returns a barcode details object
+          schema:
+            $ref: '#/definitions/Barcode'
+        401:
+          description: authentication not provided
+          schema:
+            type: string
+            description: simple error message
+        404:
+          description: Neither a user nor a product is associated with the given barcode
+          schema:
+            type: string
+            description: simple error message
+    patch:
+      summary: Updates an existing Barcode
+      description: |
+        Createes a new product barcode which is linked to an existing product.
+      parameters:
+       - name: barcode
+         in: path
+         description: The to be changed barcode
+         required: true
+         type: string
+       - name: data
+         in: body
+         description: The new barcode data
+         required: true
+         schema:
+          description: Contains the new scanned barcode string and product id
+          type: object
+          properties:
+            barcode:
+              description: The new barcode string
+              type: string
+            product_id:
+              description: The new product id the barcode links to.
+              type: integer
+              format: int64
+      tags:
+        - barcode
+      security:
+       - client_jwt: []
+       - staff_jwt: []
+      responses:
+        200:
+          description: returns a barcode details object containing the changed object
+          schema:
+            $ref: '#/definitions/Barcode'
+        401:
+          description: authentication not provided
+          schema:
+            type: string
+            description: simple error message
+        404:
+          description: The requested barcode does not exist
+          schema:
+            type: string
+            description: simple error message
+        412:
+          description: |
+            The changed barcode is already present and therefore cannot be changed,
+            or the new linked product does not exist.
+          schema:
+            type: string
+            description: simple error message
+    delete:
+      summary: Deletes a barcode
+      description: |
+        Deletes a barcode. This only deletes a product barcode. This unlinks a product from its barcode.
+        This does not delete a registered username which might conflict with product barcodes. In this case,
+        the username can still be requested using GET /barcode/{barcode}, even after successful deletion of the
+        product barcode
+      parameters:
+       - name: barcode
+         in: path
+         description: The to be changed barcode
+         required: true
+         type: string
+      tags:
+        - barcode
+      security:
+       - client_jwt: []
+       - staff_jwt: []
+      responses:
+        204:
+          description: Product barcode successfully deleted
+        401:
+          description: authentication not provided
+          schema:
+            type: string
+            description: simple error message
+        404:
+          description: The requested barcode does not exist
+          schema:
+            type: string
+            description: simple error message
+
+
+  /barcode:
+    post:
+      summary: Create a new Barcode
+      description: |
+        Createes a new product barcode which is linked to an existing product.
+      parameters:
+       - name: data
+         in: body
+         description: The requested barcode
+         required: true
+         schema:
+          description: Contains the scanned barcode string
+          type: object
+          required:
+           - barcode
+           - product_id
+          properties:
+            barcode:
+              type: string
+            product_id:
+              type: integer
+              format: int64
+      tags:
+        - barcode
+      security:
+       - client_jwt: []
+       - staff_jwt: []
+      responses:
+        200:
+          description: returns a barcode details object
+          schema:
+            $ref: '#/definitions/Barcode'
+        401:
+          description: authentication not provided
+          schema:
+            type: string
+            description: simple error message
+        412:
+          description: The barcode is already present and cannot be created.
+          schema:
+            type: string
+            description: simple error message
+
+
+  /customer/{customer_id}/balance:
+    get:
+      summary: customer balance
+      description: get customers balance
+      parameters:
+        - name: customer_id
+          in: path
+          description: customer identifer
+          required: true
+          type: integer
+          format: int64
+      tags:
+        - sale
+        - customer
+      security:
+       - client_jwt: []
+       - staff_jwt: []
+       - customer_jwt: []
+      responses:
+        200:
+          description: customer balance
+          schema:
+            type: number
+            description: customer balance
+        401:
+          description: authentication not provided
+          schema:
+            type: string
+            description: simple error message
+
+
+  /sale/sellCart:
+    post:
+      summary: cart for sale
+      description: send a list of objects sold aka a cart
+      security:
+        - client_jwt: []
+        - staff_jwt: []
+        - customer_jwt: []
+      tags:
+        - sale
+        - customer
+        - products
+      responses:
+        200:
+          description: sold cart or a error solution
+          schema:
+            type: object
+            properties:
+              succesful:
+                type: boolean
+              cart:
+                type: array
+                items:
+                  $ref: '#/definitions/Product'
+        401:
+          description: authentication not provided
+          schema:
+            type: string
+            description: simple error message
+
+
+  /storages:
+    get:
+      summary: list storages
+      description: list limit storages begining with offset
+      parameters:
+        - name: limit
+          in: query
+          description: number of storages to return
+          required: true
+          type: integer
+          format: int64
+        - name: offset
+          in: query
+          description: starting point for storage list
+          required: true
+          type: integer
+          format: int64
+      tags:
+        - storage
+      security:
+        - client_jwt: []
+        - staff_jwt: []
+      responses:
+        200:
+          description: list of storages
+          schema:
+            type: object
+            required:
+             - storages
+            properties:
+              next:
+                description: A link to the next page of items
+                type: string
+              previous:
+                description: A link to the previous page of items
+                type: string
+              storages:
+                type: array
+                items:
+                  $ref: '#/definitions/Storage'
+        401:
+          description: authentication not provided
+          schema:
+            type: string
+            description: simple error message
+
+
+  /storages/products:
+    get:
+      summary: Returns the content of all storages
+      parameters:
+       - name: limit
+         in: query
+         description: number of products to return
+         required: true
+         type: integer
+         format: int64
+       - name: offset
+         in: query
+         description: starting point for product list
+         required: true
+         type: integer
+         format: int64
+      tags:
+       - storage
+      security:
+       - client_jwt: []
+       - staff_jwt: []
+      responses:
+        200:
+          description: The product list that is stored in all storages
+          schema:
+            type: object
+            required:
+             - products
+            properties:
+              next:
+                description: A link to the next page of items
+                type: string
+              previous:
+                description: A link to the previous page of items
+                type: string
+              products:
+                type: array
+                items:
+                  $ref: '#/definitions/StorageContent'
+        401:
+          description: authentication not provided
+          schema:
+            type: string
+            description: simple error message
+
+
+  /storages/log:
+    get:
+      summary: Returns the storage log for all storages
+      description: |
+        Returns the combined storage log for all storages. The storage log is a log of all done product transfers
+        to and from any storage. Each entry includes the source and destination storages, the product,
+        the product amount and the responsible staff member.
+      parameters:
+       - name: limit
+         in: query
+         description: number of log entries to return
+         required: true
+         type: integer
+         format: int64
+       - name: offset
+         in: query
+         description: starting point for log list
+         required: true
+         type: integer
+         format: int64
+      tags:
+       - storage
+      security:
+       - client_jwt: []
+       - staff_jwt: []
+      responses:
+        200:
+          description: The storage log list for all storages
+          schema:
+            type: object
+            required:
+             - products
+            properties:
+              next:
+                description: A link to the next page of items
+                type: string
+              previous:
+                description: A link to the previous page of items
+                type: string
+              products:
+                type: array
+                items:
+                  $ref: '#/definitions/StorageLogEntry'
+        401:
+          description: authentication not provided
+          schema:
+            type: string
+            description: simple error message
+
+
+  /storage/{id}:
+    get:
+      summary: Get the storage with the specified ID
+      description: Returns the storage instance with the specified ID
+      parameters:
+       - name: id
+         in: path
+         description: storage ID
+         required: true
+         type: integer
+         format: int64
+      tags:
+       - storage
+      security:
+        - client_jwt: []
+        - staff_jwt: []
+      responses:
+        200:
+          description: The requested storage
+          schema:
+            $ref: '#/definitions/Storage'
+        401:
+          description: authentication not provided
+          schema:
+            type: string
+            description: simple error message
+        404:
+          description: Storage instance does not exist
+          schema:
+            type: string
+            description: simple error message
+    delete:
+      summary: Delete the storage with the specified ID
+      description: Delete the storage with the specified ID
+      parameters:
+       - name: id
+         in: path
+         description: storage ID
+         required: true
+         type: integer
+         format: int64
+      tags:
+       - storage
+      security:
+       - client_jwt: []
+       - staff_jwt: []
+      responses:
+        204:
+          description: OK
+        401:
+          description: authentication not provided
+          schema:
+            type: string
+            description: simple error message
+        404:
+          description: ID not found
+          schema:
+            type: string
+            description: simple error message
+        412:
+          description: Deletion failed, because storage is not empty
+          schema:
+            type: string
+            description: simple error message
+    patch:
+      summary: Updates a storage
+      description: Updates the parameters of the given storage to the values provided in the request.
+      parameters:
+       - name: id
+         in: path
+         description: storage ID
+         required: true
+         type: integer
+         format: int64
+       - name: data
+         in: body
+         description: The new data
+         required: true
+         schema:
+           $ref: '#/definitions/StorageUpdate'
+      tags:
+       - storage
+      security:
+       - client_jwt: []
+       - staff_jwt: []
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/Storage'
+        401:
+          description: authentication not provided
+          schema:
+            type: string
+            description: simple error message
+        404:
+          description: ID not found
+          schema:
+            type: string
+            description: simple error message
+
+
+  /storage:
+    post:
+      summary: Creates a new Storage with the given parameters
+      parameters:
+       - name: data
+         in: body
+         description: The new data
+         required: true
+         schema:
+           $ref: '#/definitions/StorageDefinition'
+      tags:
+       - storage
+      security:
+       - client_jwt: []
+       - staff_jwt: []
+      responses:
+        200:
+          description: Storage creation successful
+          schema:
+            $ref: '#/definitions/Storage'
+        401:
+          description: authentication not provided
+          schema:
+            type: string
+            description: simple error message
+
+
+  /storage/{storage_id}/products:
+    get:
+      summary: Returns the content of the storage
+      parameters:
+       - name: storage_id
+         in: path
+         description: storage ID
+         required: true
+         type: integer
+         format: int64
+       - name: limit
+         in: query
+         description: number of products to return
+         required: true
+         type: integer
+       - name: offset
+         in: query
+         description: starting point for product list
+         required: true
+         type: integer
+      tags:
+       - storage
+      security:
+       - client_jwt: []
+       - staff_jwt: []
+      responses:
+        200:
+          description: The product list that is stored in this storage
+          schema:
+            type: object
+            required:
+             - products
+            properties:
+              next:
+                description: A link to the next page of items
+                type: string
+              previous:
+                description: A link to the previous page of items
+                type: string
+              products:
+                type: array
+                items:
+                  $ref: '#/definitions/StorageContent'
+        401:
+          description: authentication not provided
+          schema:
+            type: string
+            description: simple error message
+        404:
+          description: Requested storage does not exist
+          schema:
+            type: string
+            description: simple error message
+
+
+  /storage/{storage_id}/log:
+    get:
+      summary: Returns the storage log for the given storage
+      description: |
+        Returns the storage log for the given storage. The storage log is a log of all done product transfers
+        to and from this storage. It includes the product, the product amount and the responsible staff member.
+      parameters:
+       - name: storage_id
+         in: path
+         description: storage ID
+         required: true
+         type: integer
+         format: int64
+       - name: limit
+         in: query
+         description: number of log entries to return
+         required: true
+         type: integer
+       - name: offset
+         in: query
+         description: starting point for log list
+         required: true
+         type: integer
+      tags:
+       - storage
+      security:
+       - client_jwt: []
+       - staff_jwt: []
+      responses:
+        200:
+          description: The storage log list for the given storage
+          schema:
+            type: object
+            required:
+             - products
+            properties:
+              next:
+                description: A link to the next page of items
+                type: string
+              previous:
+                description: A link to the previous page of items
+                type: string
+              products:
+                type: array
+                items:
+                  $ref: '#/definitions/StorageLogEntry'
+        401:
+          description: authentication not provided
+          schema:
+            type: string
+            description: simple error message
+        404:
+          description: Requested storage does not exist
+          schema:
+            type: string
+            description: simple error message
+
+
+  /storage/{storage_id}/product/{product_id}:
+    post:
+      summary: Puts a product with an amount into a storage
+      parameters:
+       - name: storage_id
+         in: path
+         description: storage ID
+         required: true
+         type: integer
+         format: int64
+       - name: product_id
+         in: path
+         description: product ID
+         required: true
+         type: integer
+         format: int64
+       - name: amount
+         in: body
+         schema:
+           type: object
+           required:
+            - amount
+           properties:
+             amount:
+               type: integer
+         required: true
+      tags:
+       - storage
+      security:
+       - client_jwt: []
+       - staff_jwt: []
+      responses:
+        200:
+          description: Product successfully put into storage
+          schema:
+            $ref: '#/definitions/StorageContent'
+        401:
+          description: authentication not provided
+          schema:
+            type: string
+            description: simple error message
+        412:
+          description: Requested product already in the requested storage
+    patch:
+      summary: Updates an amount of a product for a single storage
+      parameters:
+       - name: storage_id
+         in: path
+         description: storage ID
+         required: true
+         type: integer
+         format: int64
+       - name: product_id
+         in: path
+         description: product ID
+         required: true
+         type: integer
+         format: int64
+       - name: amount
+         in: body
+         schema:
+           type: object
+           required:
+            - amount
+           properties:
+             amount:
+               type: integer
+         required: true
+      tags:
+       - storage
+      security:
+       - client_jwt: []
+       - staff_jwt: []
+      responses:
+        200:
+          description: Product amount successfully updated
+          schema:
+            $ref: '#/definitions/StorageContent'
+        401:
+          description: authentication not provided
+          schema:
+            type: string
+            description: simple error message
+        404:
+          description: Requested product is not in the requested storage
+    delete:
+      summary: Deletes a product in a single storage
+      parameters:
+       - name: storage_id
+         in: path
+         description: storage ID
+         required: true
+         type: integer
+         format: int64
+       - name: product_id
+         in: path
+         description: product ID
+         required: true
+         type: integer
+         format: int64
+      tags:
+       - storage
+      security:
+       - client_jwt: []
+       - staff_jwt: []
+      responses:
+        204:
+          description: Product successfully deleted from the requested storage
+        401:
+          description: authentication not provided
+          schema:
+            type: string
+            description: simple error message
+        404:
+          description: Requested product is not in the requested storage
+          schema:
+            type: string
+            description: simple error message
+
+
+  /storage/{from_storage_id}/product/{product_id}/shift_to_storage/{to_storage_id}:
+    post:
+      summary: Move a product from one storage to another
+      parameters:
+       - name: from_storage_id
+         in: path
+         description: The source storage from where the product is shifted
+         required: true
+         type: integer
+         format: int64
+       - name: product_id
+         in: path
+         description: The product ID, this product will be shifted
+         required: true
+         type: integer
+         format: int64
+       - name: to_storage_id
+         in: path
+         description: The destination storage where the product will be shifted into
+         required: true
+         type: integer
+         format: int64
+       - name: amount
+         in: body
+         schema:
+           type: object
+           required:
+            - amount
+           properties:
+             amount:
+               type: integer
+         required: true
+      tags:
+       - storage
+      security:
+       - client_jwt: []
+       - staff_jwt: []
+      responses:
+        200:
+          description: Successfully shifted the product
+          schema:
+            $ref: '#/definitions/StorageShift'
+        401:
+          description: authentication not provided
+          schema:
+            type: string
+            description: simple error message
+        404:
+          description: One of the storages or the product do not exist
+          schema:
+            type: string
+
+
+  /contact_person/{id}:
+    get:
+      summary: Get the contact person with the specified ID
+      parameters:
+        - name: id
+          in: path
+          description: contact person ID
+          required: true
+          type: integer
+      tags:
+       - purchase
+      security:
+       - client_jwt: []
+       - staff_jwt: []
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/ContactPerson'
+        401:
+          description: authentication not provided
+          schema:
+            type: string
+            description: simple error message
+        404:
+          description: ID not found
+    patch:
+      summary: Update a contact person
+      parameters:
+        - name: id
+          in: path
+          description: contact person ID
+          type: integer
+          required: true
+      tags:
+       - purchase
+      security:
+       - client_jwt: []
+       - staff_jwt: []
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/ContactPerson'
+        401:
+          description: authentication not provided
+          schema:
+            type: string
+            description: simple error message
+        404:
+          description: Not found
+    delete:
+      summary: Delete a contact person
+      parameters:
+        - name: id
+          in: path
+          description: contact person ID
+          type: integer
+          required: true
+      tags:
+       - purchase
+      security:
+       - client_jwt: []
+       - staff_jwt: []
+      responses:
+        204:
+          description: OK
+        401:
+          description: authentication not provided
+          schema:
+            type: string
+            description: simple error message
+        404:
+          description: Not found
+
+
+  /contact_person:
+    post:
+      summary: create a new contact person
+      tags:
+       - purchase
+      security:
+       - client_jwt: []
+       - staff_jwt: []
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/ContactPerson'
+        401:
+          description: authentication not provided
+          schema:
+            type: string
+            description: simple error message
+
+
+  /contact_persons:
+    get:
+      summary: get a list of all contact persons
+      parameters:
+        - name: limit
+          in: query
+          type: integer
+        - name: offset
+          in: query
+          type: integer
+      tags:
+       - purchase
+      security:
+       - client_jwt: []
+       - staff_jwt: []
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ContactPerson'
+        401:
+          description: authentication not provided
+          schema:
+            type: string
+            description: simple error message
+
+
+  /retailer/{id}:
+    get:
+      summary: get the retailer with the specified ID
+      parameters:
+        - name: id
+          in: path
+          description: retailer ID
+          required: true
+          type: integer
+          format: int64
+      tags:
+       - retailer
+      security:
+       - client_jwt: []
+       - staff_jwt: []
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/Retailer'
+        401:
+          description: authentication not provided
+          schema:
+            type: string
+            description: simple error message
+        404:
+          description: ID not found
+
+
+    patch:
+      summary: Update a retailer
+      parameters:
+        - name: id
+          in: path
+          description: retailer ID
+          type: integer
+          format: int64
+          required: true
+      tags:
+       - retailer
+      security:
+       - client_jwt: []
+       - staff_jwt: []
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/Retailer'
+        401:
+          description: authentication not provided
+          schema:
+            type: string
+            description: simple error message
+        404:
+          description: Not found
+    delete:
+      summary: Delete a retailer
+      parameters:
+        - name: id
+          in: path
+          description: retailer ID
+          type: integer
+          format: int64
+          required: true
+      tags:
+       - retailer
+      security:
+       - client_jwt: []
+       - staff_jwt: []
+      responses:
+        204:
+          description: OK
+        401:
+          description: authentication not provided
+          schema:
+            type: string
+            description: simple error message
+        404:
+          description: Not found
+
+  /retailers:
+    get:
+      summary: get a list of all retailers
+      parameters:
+        - name: limit
+          in: query
+          type: integer
+          format: int64
+        - name: offset
+          in: query
+          type: integer
+          format: int64
+      tags:
+       - retailer
+      security:
+       - client_jwt: []
+       - staff_jwt: []
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Retailer'
+        401:
+          description: authentication not provided
+          schema:
+            type: string
+            description: simple error message
+
+  /retailer:
+    post:
+      summary: create a new retailer
+      tags:
+       - retailer
+      security:
+       - client_jwt: []
+       - staff_jwt: []
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/ContactPerson'
+        401:
+          description: authentication not provided
+          schema:
+            type: string
+            description: simple error message
+
+definitions:
+  Retailer:
+    description: Models a retailer where products can be bought. All elements except the name are optional.
+    type: object
+    required:
+      - name
+    properties:
+      name:
+        type: string
+      id:
+        type: integer
+        format: int64
+      address_country:
+        type: string
+      address_zip:
+        type: string
+      address_city:
+        type: string
+      address_street:
+        type: string
+      address_street_no:
+        type: string
+      customer_number:
+        type: string
+      contact_persons:
+        description: |
+          The assigned contact persons. A contact person is meant to facilitate business processes.
+          Modelled as an array, because the retailer may have assigned multiple contact persons.
+        type: array
+        items:
+          description: The contact person ID
+          type: integer
+          format: int64
+
+
+  ContactPerson:
+    description: The contact person works for a retailer and facilitates business processes.
+    type: object
+    properties:
+      last_name:
+        type: string
+      first_name:
+        type: string
+      email:
+        type: string
+      telephone:
+        type: string
+      fax:
+        type: string
+      retailer:
+        description: |
+          The retailer for which the contact person works.
+          Modelled as an array, because the contact person MAY EVENTUALLY work for multiple
+          retailers at once ( e.g. having multiple part time jobs at different retailers).
+        type: array
+        items:
+          description: The retailer ID
+          type: integer
+          format: int64
+
+
+  Storage:
+    type: object
+    required:
+     - name
+     - is_sale_allowed
+    properties:
+      id:
+        type: integer
+        format: int64
+      name:
+        type: string
+      description:
+        type: string
+      is_sale_allowed:
+        type: boolean
+
+
+  StorageContent:
+    description: Models a specific storage content element. That is an amount of a product that is contained in a single storage.
+    type: object
+    required:
+     - product_id
+     - storage_id
+     - amount
+    properties:
+      product_id:
+        type: integer
+        format: int64
+      storage_id:
+        type: integer
+        format: int64
+      amount:
+        type: integer
+        format: int64
+
+
+  StorageLogEntry:
+    description: |
+      Models a specific storage log entry. That is a movement of an amount of a product from a source storage to
+       destination storage.
+    type: object
+    required:
+     - from_storage_id
+     - to_storage_id
+     - product_id
+     - amount
+     - transfer_date_time
+    properties:
+      from_storage_id:
+        type: integer
+        format: int64
+      to_storage_id:
+        type: integer
+        format: int64
+      product_id:
+        type: integer
+        format: int64
+      amount:
+        type: integer
+        format: int64
+      transfer_date_time:
+        type: string
+        format: date-time
+      staff_id:
+        description: The staff member that was responsible for the logged storage transfer.
+        type: integer
+        format: int64
+
+
+  StorageShift:
+    description: Models a product shift from one storage to another.
+    type: object
+    required:
+     - from_storage
+     - to_storage
+     - product_id
+     - amount
+    properties:
+      from_storage:
+        type: integer
+        format: int64
+      to_storage:
+        type: integer
+        format: int64
+      product_id:
+        type: integer
+        format: int64
+      amount:
+        type: integer
+
+
+  StorageDefinition:
+    description: Used to fully define a new storage
+    type: object
+    required:
+     - name
+     - is_sale_allowed
+    properties:
+      name:
+        type: string
+      description:
+        type: string
+      is_sale_allowed:
+        type: boolean
+
+
+  StorageUpdate:
+    description: Used to update an existing storage. All elements are optional and only present elements will be updated.
+    type: object
+    properties:
+      name:
+        type: string
+      description:
+        type: string
+      is_sale_allowed:
+        type: boolean
+
+
+  Category:
+    type: object
+    properties:
+      id:
+        type: integer
+        format: int64
+      name:
+        type: string
+      description:
+        type: string
+      resource_id:
+        type: string
+
+
+  Product:
+    type: object
+    properties:
+      id:
+        type: integer
+        format: int64
+      price:
+        type: number
+        format: float
+
+
+  Barcode:
+    type: object
+    properties:
+      customer:
+        $ref: '#/definitions/Customer'
+      product:
+        $ref: '#/definitions/Product'
+
+
+  Customer:
+    type: object
+    properties:
+      id:
+        type: integer
+        format: int64
