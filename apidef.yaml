@@ -3,28 +3,37 @@ info:
   version: 0.0.0
   title: Die mate API
   description: mate API connects storage, sale, purchasing & customer via different clients for Chaos Kiosk at TU Dortmund
+
+
 produces:
   - application/json
+
+
 securityDefinitions:
   client_jwt:
     type: apiKey
     description: A JWT that identifies the client.
     name: MATE-Auth-Client
     in: header
+
   staff_jwt:
     type: apiKey
     description: A JWT that identifies the staff user and its rights
     name: MATE-Auth-Staff
     in: header
+
   customer_jwt:
     type: apiKey
     description: A JWT that identifies the customer user and its rights
     name: MATE-Auth-Customer
     in: header
+
+
 externalDocs:
   url: https://matetudo.atlassian.net/wiki/
-paths:
 
+
+paths:
   /login_types/{username}/{type}:
     get:
       summary: user login types
@@ -61,7 +70,6 @@ paths:
           schema:
             description: simple error message
             type: string
-
 
   /login/{type}/{username}:
     post:
@@ -112,7 +120,6 @@ paths:
             type: string
             description: simple error message
 
-
   /login/client:
     post:
       summary: client authentication
@@ -134,7 +141,6 @@ paths:
           schema:
             type: string
             description: simple error message
-
 
   /barcode/{barcode}:
     get:
@@ -252,7 +258,6 @@ paths:
             type: string
             description: simple error message
 
-
   /barcode:
     post:
       summary: Create a new Barcode
@@ -296,7 +301,6 @@ paths:
             type: string
             description: simple error message
 
-
   /customer/{customer_id}/balance:
     get:
       summary: customer balance
@@ -327,7 +331,6 @@ paths:
             type: string
             description: simple error message
 
-
   /sale/sellCart:
     post:
       summary: cart for sale
@@ -357,7 +360,6 @@ paths:
           schema:
             type: string
             description: simple error message
-
 
   /storages:
     get:
@@ -405,7 +407,6 @@ paths:
             type: string
             description: simple error message
 
-
   /storages/products:
     get:
       summary: Returns the content of all storages
@@ -450,7 +451,6 @@ paths:
           schema:
             type: string
             description: simple error message
-
 
   /storages/log:
     get:
@@ -500,7 +500,6 @@ paths:
           schema:
             type: string
             description: simple error message
-
 
   /storage/{id}:
     get:
@@ -603,7 +602,6 @@ paths:
             type: string
             description: simple error message
 
-
   /storage:
     post:
       summary: Creates a new Storage with the given parameters
@@ -629,7 +627,6 @@ paths:
           schema:
             type: string
             description: simple error message
-
 
   /storage/{storage_id}/products:
     get:
@@ -684,7 +681,6 @@ paths:
           schema:
             type: string
             description: simple error message
-
 
   /storage/{storage_id}/log:
     get:
@@ -742,7 +738,6 @@ paths:
           schema:
             type: string
             description: simple error message
-
 
   /storage/{storage_id}/product/{product_id}:
     post:
@@ -863,7 +858,6 @@ paths:
             type: string
             description: simple error message
 
-
   /storage/{from_storage_id}/product/{product_id}/shift_to_storage/{to_storage_id}:
     post:
       summary: Move a product from one storage to another
@@ -915,7 +909,6 @@ paths:
           description: One of the storages or the product do not exist
           schema:
             type: string
-
 
   /contact_person/{id}:
     get:
@@ -992,7 +985,6 @@ paths:
         404:
           description: Not found
 
-
   /contact_person:
     post:
       summary: create a new contact person
@@ -1011,7 +1003,6 @@ paths:
           schema:
             type: string
             description: simple error message
-
 
   /contact_persons:
     get:
@@ -1041,7 +1032,6 @@ paths:
             type: string
             description: simple error message
 
-
   /retailer/{id}:
     get:
       summary: get the retailer with the specified ID
@@ -1069,8 +1059,6 @@ paths:
             description: simple error message
         404:
           description: ID not found
-
-
     patch:
       summary: Update a retailer
       parameters:
@@ -1171,6 +1159,7 @@ paths:
             type: string
             description: simple error message
 
+
 definitions:
   Retailer:
     description: Models a retailer where products can be bought. All elements except the name are optional.
@@ -1205,7 +1194,6 @@ definitions:
           type: integer
           format: int64
 
-
   ContactPerson:
     description: The contact person works for a retailer and facilitates business processes.
     type: object
@@ -1231,7 +1219,6 @@ definitions:
           type: integer
           format: int64
 
-
   Storage:
     type: object
     required:
@@ -1247,7 +1234,6 @@ definitions:
         type: string
       is_sale_allowed:
         type: boolean
-
 
   StorageContent:
     description: Models a specific storage content element. That is an amount of a product that is contained in a single storage.
@@ -1266,7 +1252,6 @@ definitions:
       amount:
         type: integer
         format: int64
-
 
   StorageLogEntry:
     description: |
@@ -1300,7 +1285,6 @@ definitions:
         type: integer
         format: int64
 
-
   StorageShift:
     description: Models a product shift from one storage to another.
     type: object
@@ -1322,7 +1306,6 @@ definitions:
       amount:
         type: integer
 
-
   StorageDefinition:
     description: Used to fully define a new storage
     type: object
@@ -1337,7 +1320,6 @@ definitions:
       is_sale_allowed:
         type: boolean
 
-
   StorageUpdate:
     description: Used to update an existing storage. All elements are optional and only present elements will be updated.
     type: object
@@ -1348,7 +1330,6 @@ definitions:
         type: string
       is_sale_allowed:
         type: boolean
-
 
   Category:
     type: object
@@ -1363,7 +1344,6 @@ definitions:
       resource_id:
         type: string
 
-
   Product:
     type: object
     properties:
@@ -1374,7 +1354,6 @@ definitions:
         type: number
         format: float
 
-
   Barcode:
     type: object
     properties:
@@ -1382,7 +1361,6 @@ definitions:
         $ref: '#/definitions/Customer'
       product:
         $ref: '#/definitions/Product'
-
 
   Customer:
     type: object
