@@ -10,8 +10,8 @@ from mate.db.postgres_db import PostgresDB
 
 
 @app.route("/barcode/<string:code>", methods=["GET"])
-#@auth(AuthType.client)
-#@auth(AuthType.salesp)
+@auth(AuthType.client)
+@auth(AuthType.salesp)
 def get_barcode(code):
     if code is not None:
         print("barcode: " + code)
@@ -25,7 +25,7 @@ def get_barcode(code):
         product = "null"
         if product_obj.is_saleable():
             product = product_obj.to_primitive('sale_product')
-        return json.dumps({
+        return jsonify({
             "customer": customer,
             "product": product
         })
@@ -38,15 +38,15 @@ def get_barcode(code):
 @auth(AuthType.salesp)
 @auth(AuthType.customer)
 def get_balance(customer_id):
-    valid_customer = False
+    valid_customer = True
     # TODO check customer JWT
     if not valid_customer:
         return "Customer is not valid", 403
 
     # TODO find customer balance
     balance = Customer.dummy().to_primitive('balance')
-    return json.dumps({
-        "value": balance
+    return jsonify({
+        "value": balance['base_balance']
     })
 
 

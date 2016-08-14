@@ -59,7 +59,7 @@ def add_storage():
     # TODO: create storage in DB
     a_storage.storage_id = 12 # TODO: add id from DB to Object.
     print("added stub id to storage") # remove print when ToDo is done
-    return json.dumps(a_storage)
+    return jsonify(a_storage)
 
 
 @app.route("/storage/<int:storage_id>", methods=["GET"])
@@ -71,7 +71,7 @@ def get_storage_info(storage_id: int):
     if a_storage is None:
         return "Requested storage with id {} does not exist".format(storage_id), 404
     else:
-        return json.dumps(a_storage), 200
+        return jsonify(a_storage), 200
 
 
 @app.route("/storage/<int:storage_id>", methods=["PATCH"])
@@ -85,7 +85,7 @@ def update_storage(storage_id):
     a_storage.storage_id = storage_id
     # TODO: check if storage exists in DB
     # TODO: update storage
-    return json.dumps(a_storage)
+    return jsonify(a_storage)
 
 
 @app.route("/storage/<int:storage_id>", methods=["DELETE"])
@@ -126,5 +126,5 @@ def product_storage(storage_id: int):
         "products": products
     }
 
-    return response
+    return jsonify(response)
 

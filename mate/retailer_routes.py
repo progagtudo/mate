@@ -54,7 +54,7 @@ def add_retailer():
     # ToDo: create storage in DB
     a_retailer.id = 12  # ToDo add id from DB to Object.
     print("added stub id to retailer")  # remove print when ToDo is done
-    return json.dumps(a_retailer)
+    return jsonify(a_retailer)
 
 
 @app.route("/retailer/<int:retailer_id>/", methods=["PATCH"])

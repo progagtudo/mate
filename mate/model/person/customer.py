@@ -13,7 +13,7 @@ class Customer(Person):
 
     class Options:
         roles = {'customer': blacklist('base_balance', 'base_balance_date'),
-                 'balance': blacklist('base_balance', 'base_balance_date', 'first_name', 'last_name', 'email', 'active',
+                 'balance': blacklist('base_balance_date', 'first_name', 'last_name', 'email', 'active',
                                       'id', 'needs_balance_auth')}
 
     def __init__(self, first_name, last_name, email, active, base_balance, base_balance_date, customer_id,
