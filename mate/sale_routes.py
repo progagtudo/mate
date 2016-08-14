@@ -1,3 +1,4 @@
+from flask import json
 from flask import jsonify
 
 from mate import app
@@ -9,22 +10,22 @@ from mate.db.postgres_db import PostgresDB
 
 
 @app.route("/barcode/<string:code>", methods=["GET"])
-@auth(AuthType.client)
-@auth(AuthType.salesp)
+#@auth(AuthType.client)
+#@auth(AuthType.salesp)
 def get_barcode(code):
     if code is not None:
         print("barcode: " + code)
         # ToDo: find customer
         customer = "null"
         if PostgresDB.check_if_user_exists(get_db(), code):
-            customer = Customer.from_barcode(code).to_primitive('customer')
+             customer = Customer.from_barcode(code).to_primitive('customer')
         #customer = Customer.dummy().to_primitive('customer')
         # ToDo: find product
         product_obj = SaleProduct.dummy()
         product = "null"
         if product_obj.is_saleable():
             product = product_obj.to_primitive('sale_product')
-        return jsonify({
+        return json.dumps({
             "customer": customer,
             "product": product
         })
@@ -44,7 +45,7 @@ def get_balance(customer_id):
 
     # TODO find customer balance
     balance = Customer.dummy().to_primitive('balance')
-    return jsonify({
+    return json.dumps({
         "value": balance
     })
 

@@ -4,6 +4,7 @@ from schematics.types import BooleanType, IntType
 from mate.mate import get_db
 from mate.model.person.person import Person
 from mate.db.postgres_db import PostgresDB
+import datetime
 
 
 class Customer(Person):
@@ -15,8 +16,10 @@ class Customer(Person):
                  'balance': blacklist('base_balance', 'base_balance_date', 'first_name', 'last_name', 'email', 'active',
                                       'id', 'needs_balance_auth')}
 
-    def __init__(self, first_name, last_name, email, active, base_balance, base_balance_date, customer_id, needs_balance_auth,
+    def __init__(self, first_name, last_name, email, active, base_balance, base_balance_date, customer_id,
+                 needs_balance_auth,
                  **kwargs):
+        super().__init__(**kwargs)
         self.first_name = first_name
         self.last_name = last_name
         self.email = email
@@ -25,7 +28,6 @@ class Customer(Person):
         self.base_balance_date = base_balance_date
         self.id = customer_id
         self.needs_balance_auth = needs_balance_auth
-        super().__init__(**kwargs)
 
     @classmethod
     def from_barcode(cls, barcode):
@@ -36,11 +38,5 @@ class Customer(Person):
 
     @classmethod
     def dummy(cls):
-        instance = cls()
-        instance.first_name = "Sternhart"
-        instance.last_name = "Beffen"
-        instance.active = True
-        instance.email = "test@example.com"
-        instance.needs_balance_auth = True
-        instance.id = 123
-        return instance
+        return cls("Sternhart", "Beffen", "test@example.com", True, 20,
+                   datetime.datetime.now().isoformat(), 123, True)
