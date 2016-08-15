@@ -110,7 +110,7 @@ CREATE TABLE Product (
   TaxCategoryID         INTEGER       NOT NULL REFERENCES TaxCategoryName(TaxCategoryID),
   CategoryID            INTEGER       NULL REFERENCES AvailableProductCategories(CategoryID),
   IsSaleProhibited      BOOLEAN       NOT NULL,
-  IsDefaultRedemtion    BOOLEAN       NOT NULL,
+  IsDefaultRedemption   BOOLEAN       NOT NULL,
   EntryAddedDate        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
   EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP)
 );
