@@ -87,15 +87,15 @@ paths:
           description: user role
           required: true
           type: string
-        - name: login_type
-          in: header
-          description: login method
+          enum:
+            - staff
+            - customer
+        - name: login
+          in: body
+          description: login object
           required: true
-          type: string
-        - name: data
-          in: header
-          description: login data aka passwort etc.
-          type: string
+          schema:
+            $ref: '#/definitions/LoginData'
       tags:
         - login
         - user
@@ -120,16 +120,19 @@ paths:
             type: string
             description: simple error message
 
-  /login/client:
+  /login/client/{client_name}:
     post:
       summary: client authentication
       description: |
         authenticates clients and returns JWT
+      parameters:
+        - name: client_name
+          in: path
+          description: API-Key to identify client
+          type: string
       tags:
         - client
         - login
-      security:
-        - client_jwt: []
       responses:
         200:
           description: client authenticated
@@ -324,6 +327,7 @@ paths:
           description: customer balance
           schema:
             type: number
+            format: double
             description: customer balance
         401:
           description: authentication not provided
@@ -331,7 +335,7 @@ paths:
             type: string
             description: simple error message
 
-  /sale/sellCart:
+  /sale/sell_cart:
     post:
       summary: cart for sale
       description: send a list of objects sold aka a cart
@@ -341,20 +345,8 @@ paths:
           description: cart with products
           schema:
             type: array
-            required:
-              - product_id
-              - price
-              - amount
-            properties:
-              product_id:
-                type: integer
-                format: int64
-              price:
-                type: number
-                format: float
-              amount:
-                type: integer
-                format: int64
+            items:
+                $ref: '#/definitions/CartProduct'
       security:
         - client_jwt: []
         - staff_jwt: []
@@ -374,7 +366,7 @@ paths:
               cart:
                 type: array
                 items:
-                  $ref: '#/definitions/Product'
+                  $ref: '#/definitions/CartProduct'
         401:
           description: authentication not provided
           schema:
@@ -948,7 +940,7 @@ paths:
         200:
           description: OK
           schema:
-            $ref: '#/definitions/ContactPerson'
+            $ref: '#/definitions/ContactPersonUpdate'
         401:
           description: authentication not provided
           schema:
@@ -964,6 +956,11 @@ paths:
           description: contact person ID
           type: integer
           required: true
+        - name: contact_person
+          in: body
+          description: contact object to update
+          schema:
+            $ref: '#/definitions/ContactPersonUpdate'
       tags:
        - purchase
       security:
@@ -973,7 +970,7 @@ paths:
         200:
           description: OK
           schema:
-            $ref: '#/definitions/ContactPerson'
+            $ref: '#/definitions/ContactPersonUpdate'
         401:
           description: authentication not provided
           schema:
@@ -1010,6 +1007,12 @@ paths:
       summary: create a new contact person
       tags:
        - purchase
+      parameters:
+        - name: contact_person
+          in: body
+          description: contact object to update
+          schema:
+            $ref: '#/definitions/ContactPersonDefinition'
       security:
        - client_jwt: []
        - staff_jwt: []
@@ -1017,7 +1020,7 @@ paths:
         200:
           description: OK
           schema:
-            $ref: '#/definitions/ContactPerson'
+            $ref: '#/definitions/ContactPersonDefinition'
         401:
           description: authentication not provided
           schema:
@@ -1045,7 +1048,7 @@ paths:
           schema:
             type: array
             items:
-              $ref: '#/definitions/ContactPerson'
+              $ref: '#/definitions/ContactPersonUpdate'
         401:
           description: authentication not provided
           schema:
@@ -1071,7 +1074,7 @@ paths:
         200:
           description: OK
           schema:
-            $ref: '#/definitions/Retailer'
+            $ref: '#/definitions/RetailerUpdate'
         401:
           description: authentication not provided
           schema:
@@ -1088,6 +1091,12 @@ paths:
           type: integer
           format: int64
           required: true
+        - name: retailer
+          in: body
+          description: retailer object
+          required: true
+          schema:
+            $ref: '#/definitions/RetailerDefinition'
       tags:
        - retailer
       security:
@@ -1097,7 +1106,7 @@ paths:
         200:
           description: OK
           schema:
-            $ref: '#/definitions/Retailer'
+            $ref: '#/definitions/RetailerDefinition'
         401:
           description: authentication not provided
           schema:
@@ -1153,7 +1162,7 @@ paths:
           schema:
             type: array
             items:
-              $ref: '#/definitions/Retailer'
+              $ref: '#/definitions/RetailerUpdate'
         401:
           description: authentication not provided
           schema:
@@ -1163,6 +1172,13 @@ paths:
   /retailer:
     post:
       summary: create a new retailer
+      parameters:
+        - name: retailer
+          in: body
+          description: retailer object
+          required: true
+          schema:
+            $ref: '#/definitions/RetailerDefinition'
       tags:
        - retailer
       security:
@@ -1172,7 +1188,7 @@ paths:
         200:
           description: OK
           schema:
-            $ref: '#/definitions/ContactPerson'
+            $ref: '#/definitions/RetailerUpdate'
         401:
           description: authentication not provided
           schema:
@@ -1181,7 +1197,7 @@ paths:
 
 
 definitions:
-  Retailer:
+  RetailerDefinition:
     description: Models a retailer where products can be bought. All elements except the name are optional.
     type: object
     required:
@@ -1214,7 +1230,38 @@ definitions:
           type: integer
           format: int64
 
-  ContactPerson:
+  RetailerUpdate:
+      description: Models a retailer where products can be bought. All elements except the name are optional.
+      type: object
+      properties:
+        name:
+          type: string
+        id:
+          type: integer
+          format: int64
+        address_country:
+          type: string
+        address_zip:
+          type: string
+        address_city:
+          type: string
+        address_street:
+          type: string
+        address_street_no:
+          type: string
+        customer_number:
+          type: string
+        contact_persons:
+          description: |
+            The assigned contact persons. A contact person is meant to facilitate business processes.
+            Modelled as an array, because the retailer may have assigned multiple contact persons.
+          type: array
+          items:
+            description: The contact person ID
+            type: integer
+            format: int64
+
+  ContactPersonUpdate:
     description: The contact person works for a retailer and facilitates business processes.
     type: object
     properties:
@@ -1238,6 +1285,33 @@ definitions:
           description: The retailer ID
           type: integer
           format: int64
+
+  ContactPersonDefinition:
+      description: The contact person works for a retailer and facilitates business processes.
+      type: object
+      required:
+        - last_name
+      properties:
+        last_name:
+          type: string
+        first_name:
+          type: string
+        email:
+          type: string
+        telephone:
+          type: string
+        fax:
+          type: string
+        retailer:
+          description: |
+            The retailer for which the contact person works.
+            Modelled as an array, because the contact person MAY EVENTUALLY work for multiple
+            retailers at once ( e.g. having multiple part time jobs at different retailers).
+          type: array
+          items:
+            description: The retailer ID
+            type: integer
+            format: int64
 
   Storage:
     type: object
@@ -1284,6 +1358,7 @@ definitions:
      - product_id
      - amount
      - transfer_date_time
+     - staff_id
     properties:
       from_storage_id:
         type: integer
@@ -1372,7 +1447,20 @@ definitions:
         format: int64
       price:
         type: number
-        format: float
+        format: double
+
+  CartProduct:
+    type: object
+    properties:
+      id:
+        type: integer
+        format: int64
+      price:
+        type: number
+        format: double
+      amount:
+        type: integer
+        format: int64
 
   Barcode:
     type: object
@@ -1388,3 +1476,24 @@ definitions:
       id:
         type: integer
         format: int64
+      first_name:
+        type: string
+      last_name:
+        type: string
+      email:
+        type: string
+
+
+  LoginData:
+    type: object
+    required:
+      - login_type
+    properties:
+      login_type:
+        type: string
+        description: login_type
+      data:
+        type: string
+        description: secret data
+
+

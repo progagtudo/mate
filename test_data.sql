@@ -32,7 +32,7 @@ VALUES
 (2, 2);
 
 -- ProductInstances
-INSERT INTO
+INSERT INTO ProductInstance
 (ProductID, InStockAmount, TaxCategoryID)
 VALUES
 (1, 20, 2),
@@ -61,15 +61,15 @@ VALUES
 INSERT INTO Barcode
 (BarcodeID, Barcode, ProductID)
 VALUES
-(1, 'p000000000001', 1),
-(2, 'p000000000002', 2);
+(1, 'p1', 1),
+(2, 'p2', 2);
 
 -- Storage
 INSERT INTO Storage
 (StorageID, Name, Description, IsSaleAllowed)
 VALUES
 (1, 'Putzmittelraum', 'Das erste Kiosk-Lager im Keller der OH14', FALSE),
-(2, 'Kiosk', 'Verkaufslager gegen über des CZI in der OH14', TRUE)
+(2, 'Kiosk', 'Verkaufslager gegen über des CZI in der OH14', TRUE);
 
 -- SaftyStockAmountLevels
 INSERT INTO SafetyStockAmountLevels
@@ -99,6 +99,12 @@ VALUES
 (2, 2, 5);
 
 -- StorageLog
+INSERT INTO StorageLog
+(StorageLogID, FromStorage, ToStorage, ProductID, Amount, TransferTimeStamp)
+VALUES
+(1, NULL, 1, 1, 20, CURRENT_TIMESTAMP),
+(2, NULL, 2, 2, 5, CURRENT_TIMESTAMP),
+(3, 1, 2, 1, 10, CURRENT_TIMESTAMP);
 
 -- Retailer
 INSERT INTO Retailer
@@ -130,5 +136,9 @@ INSERT INTO PurchaseDetail
 VALUES
 (1, 1, 1, 0.75, 20),
 (1, 1, 2, 1.20, 5);
+
+
+-- Credentials
+-- TBD
 
 

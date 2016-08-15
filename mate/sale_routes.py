@@ -50,7 +50,7 @@ def get_balance(customer_id):
     })
 
 
-@app.route("/sale/sellCart", methods=["POST"])
+@app.route("/sale/sell_cart", methods=["POST"])
 @auth(AuthType.client)
 @auth(AuthType.salesp)
 @auth(AuthType.customer)
