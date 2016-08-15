@@ -109,8 +109,8 @@ CREATE TABLE Product (
   Price                 DECIMAL(10,2) NOT NULL,
   TaxCategoryID         INTEGER       NOT NULL REFERENCES TaxCategoryName(TaxCategoryID),
   CategoryID            INTEGER       NULL REFERENCES AvailableProductCategories(CategoryID),
-  IsSaleProhibited      BOOLEAN       NOT NULL,
-  IsDefaultRedemtion    BOOLEAN       NOT NULL,
+  IsSaleAllowed         BOOLEAN       NOT NULL,
+  IsDefaultRedemption   BOOLEAN       NOT NULL,
   EntryAddedDate        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
   EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP)
 );
@@ -151,13 +151,14 @@ CREATE TABLE StorageContent (
 );
 CREATE TABLE StorageLog (
   StorageLogID          SERIAL  PRIMARY KEY,
-  FromStorage           INTEGER NOT NULL REFERENCES Storage(StorageID),
-  ToStorage             INTEGER NOT NULL REFERENCES Storage(StorageID),
+  FromStorage           INTEGER NULL REFERENCES Storage(StorageID),
+  ToStorage             INTEGER NULL REFERENCES Storage(StorageID),
   ProductID             INTEGER NOT NULL REFERENCES Product(ProductID),
   Amount                INTEGER NOT NULL,
   TransferTimeStamp     TIMESTAMP WITH TIME ZONE NOT NULL,
   EntryAddedDate        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
-  EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP)
+  EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
+  CHECK( FromStorage IS NOT NULL OR ToStorage IS NOT NULL )
 );
 CREATE TABLE Retailer (
   RetailerID            SERIAL    PRIMARY KEY,

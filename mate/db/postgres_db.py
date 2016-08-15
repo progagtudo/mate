@@ -35,9 +35,9 @@ class PostgresDB(AbstractDB):
         # ToDo: Tags & InStockAmount fehlen
         cursor = self.db.cursor()
         cursor.execute("""
-        SELECT Product.ProductID, Product.Name, Product.Description, Product.Price, Product.IsSaleProhibited, Product.IsDefaultRedemption, Product.CategoryID, ProductInstance.InStockAmount
+        SELECT p.ProductID, p.Name, p.Description, p.Price, p.IsSaleAllowed, p.IsDefaultRedemption, p.CategoryID, ProductInstance.InStockAmount
         FROM Barcode AS b
-        INNER JOIN Product
+        INNER JOIN Product AS p
         ON b.ProductID=Product.ProductID
         INNER JOIN ProductInstance
         ON b.ProductID=(
