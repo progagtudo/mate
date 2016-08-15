@@ -341,20 +341,22 @@ paths:
           description: cart with products
           schema:
             type: array
-            required:
+            items:
+              type: object
+              required:
               - product_id
               - price
               - amount
-            properties:
-              product_id:
-                type: integer
-                format: int64
-              price:
-                type: number
-                format: float
-              amount:
-                type: integer
-                format: int64
+              properties:
+                product_id:
+                  type: integer
+                  format: int64
+                price:
+                  type: number
+                  format: float
+                amount:
+                  type: integer
+                  format: int64
       security:
         - client_jwt: []
         - staff_jwt: []
