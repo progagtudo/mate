@@ -17,7 +17,7 @@ VALUES
 -- Products
 INSERT INTO Product
 (Name, Description, Price, TaxCategoryID,
-	CategoryID, IsSaleProhibited, IsDefaultRedemption)
+	CategoryID, IsSaleAllowed, IsDefaultRedemption)
 VALUES
 ('Club Mate 0,5l', 'Der originale Mate Eistee von Löscher', 0.90, 2,
 	1, FALSE, FALSE),
