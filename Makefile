@@ -52,9 +52,7 @@ test:
 	tox
 
 coverage:
-	coverage run --source mate setup.py test
-	coverage report -m
-	coverage html
+	tox -e py35verbose
 	$(BROWSER) htmlcov/index.html
 
 docs:
