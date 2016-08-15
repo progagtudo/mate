@@ -20,7 +20,7 @@ def check_storage_id(storage_id):
 
 @app.route("/storages", methods=["GET"])
 # ToDo: Check if Client is allowed to list storages
-# @auth(AuthType.client)
+# @auth(AuthType.client) #TODO
 def list_storage():
     """
     list all storages
@@ -47,7 +47,7 @@ def list_storage():
 
 
 @app.route("/storage/", methods=["POST"])
-# @auth
+# @auth #TODO
 def add_storage():
     """
     add a new storage
@@ -63,7 +63,7 @@ def add_storage():
 
 
 @app.route("/storage/<int:storage_id>", methods=["GET"])
-# @auth
+# @auth #TODO
 def get_storage_info(storage_id: int):
 
     a_storage = Storage.request_from_db(storage_id)
@@ -74,7 +74,7 @@ def get_storage_info(storage_id: int):
 
 
 @app.route("/storage/<int:storage_id>", methods=["PATCH"])
-# @auth
+# @auth #TODO
 def update_storage(storage_id):
     #check_storage_id(storage_id)
     print("test")
@@ -88,6 +88,7 @@ def update_storage(storage_id):
 
 
 @app.route("/storage/<int:storage_id>", methods=["DELETE"])
+# @auth #TODO
 def delete_storage(storage_id: int):
     a_storage = Storage.request_from_db(storage_id)
     if a_storage is None:
@@ -101,10 +102,13 @@ def delete_storage(storage_id: int):
 
 
 @app.route("/storage/<int:storage_id>/products", methods=["GET"])
+# @auth #TODO
 def product_storage(storage_id: int):
     product_type = request.args.get("product_type", "", type=str)  # TODO: find reasonable standard value
     limit = request.args.get("limit", 20, type=int)
     offset = request.args.get("offset", 0, type=int)
+
+
     next_link = "/storage/{0}/products?product_type={1}&limit={2}&offset={3}".format(
         storage_id, product_type, limit, (offset + limit))
     previous_link = None
