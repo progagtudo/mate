@@ -148,3 +148,11 @@ INSERT INTO PurchaseHeader
 VALUES
 (1, CURRENT_TIMESTAMP, '0001', '', FALSE, 1, 1);
 
+-- PurchaseDetail
+INSERT INTO PurchaseDetail
+(PurchaseDetailID, PurchaseID, ProductID, PrimeCostPerUnit, PurchaseAmount)
+VALUES
+(1, 1, 1, 0.75, 20),
+(1, 1, 2, 1.20, 5);
+
+

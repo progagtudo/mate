@@ -18,8 +18,8 @@ def get_barcode(code):
         # ToDo: find customer
         customer = "null"
         if PostgresDB.check_if_user_exists(get_db(), code):
-             customer = Customer.from_barcode(code).to_primitive('customer')
-        #customer = Customer.dummy().to_primitive('customer')
+            customer = Customer.from_barcode(code).to_primitive('customer')
+        # customer = Customer.dummy().to_primitive('customer')
         # ToDo: find product
         product_obj = SaleProduct.dummy()
         product = "null"
