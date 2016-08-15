@@ -37,7 +37,7 @@ class SaleProduct(AbstractProduct):
 
     @classmethod
     def dummy(cls):
-        instance = cls(1337, u"Club Mate 0,5l", 0.90, 1, u'Der originale Mate Eistee von Löscher', False, False, 100)
+        instance = cls(1337, "Club Mate 0,5l", 0.90, 1, "Der originale Mate Eistee von Löscher", False, False, 100)
         p = ProductTag()
         p.name = "koffeinhaltig"
         p.description = "enthält Koffein"
