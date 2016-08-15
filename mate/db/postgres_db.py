@@ -122,6 +122,19 @@ class PostgresDB(AbstractDB):
         cursor.close()
         return result
 
+    def get_storages(self, offset: int, limit: int):
+        cursor = self.db.cursor()
+        cursor.execute("""
+        SELECT s.StorageID, s.Name, s.Description, s.IsSaleAllowed
+        FROM Storage AS s
+        ORDER BY s.StorageID ASC
+        OFFSET %s
+        LIMIT  %s
+        """, (offset, limit))
+        result = cursor.fetchall()
+        cursor.close()
+        return result
+
     def get_product_storage_by_product(self, product_id: int):
         cursor = self.db.cursor()
         cursor.execute("""
@@ -143,7 +156,6 @@ class PostgresDB(AbstractDB):
         result = cursor.fetchall()
         cursor.close()
         return result
-
 
     def delete_storage(self, storage_id: int):
         cursor = self.db.cursor()

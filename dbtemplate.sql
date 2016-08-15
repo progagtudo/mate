@@ -172,17 +172,6 @@ COMMENT ON COLUMN ContactPersonFor.RetailerID IS 'Der Händler, für den die Kon
 COMMENT ON COLUMN ContactPersonFor.ContactPersonID IS 'Die Kontaktperson, die für den Händler arbeitet.';
 COMMENT ON COLUMN ContactPersonFor.EntryAddedDate IS 'Das Datum, an dem der Datenbankeintrag angelegt wurde. Durch einen Trigger vor Veränderungen geschützt.';
 COMMENT ON COLUMN ContactPersonFor.EntryLastModifiedDate IS 'Das Datum, an dem der Datenbankeintrag zuletzt bearbeitet wurde. Wird bei Änderungen am Datensatz von einem Datenbank-Trigger automatisch aktualisiert.';
-CREATE TABLE ProductInstance (
-  ProductInstanceID     SERIAL        PRIMARY KEY,
-  ProductID             INTEGER       NOT NULL REFERENCES Product(ProductID),
-  AddedDate             DATE          NOT NULL,
-  InStockAmount         INTEGER       NOT NULL,
-  BestBeforeDate        DATE          NULL,
-  PriceOverride         DECIMAL(10,2) NULL,
-  TaxCategoryID         INTEGER       NOT NULL REFERENCES TaxCategoryName(TaxCategoryID),
-  EntryAddedDate        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
-  EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP)
-);
 CREATE TABLE Person (
   PersonID              SERIAL    PRIMARY KEY,
   FirstName             TEXT      NOT NULL,
@@ -232,9 +221,19 @@ CREATE TABLE PurchaseHeader (
 CREATE TABLE PurchaseDetail (
   PurchaseDetailID      SERIAL         PRIMARY KEY,
   PurchaseID            INTEGER        NOT NULL REFERENCES PurchaseHeader(PurchaseID),
-  ProductInstanceID     INTEGER        NOT NULL REFERENCES ProductInstance(ProductInstanceID),
   PrimeCostPerUnit      DECIMAL(10, 2) NOT NULL,
   PurchaseAmount        INTEGER        NOT NULL,
+  EntryAddedDate        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
+  EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP)
+);
+CREATE TABLE ProductInstance (
+  ProductInstanceID     INTEGER       PRIMARY KEY REFERENCES PurchaseDetail(PurchaseDetailID),
+  ProductID             INTEGER       NOT NULL REFERENCES Product(ProductID),
+  AddedDate             DATE          NOT NULL,
+  InStockAmount         INTEGER       NOT NULL,
+  BestBeforeDate        DATE          NULL,
+  PriceOverride         DECIMAL(10,2) NULL,
+  TaxCategoryID         INTEGER       NOT NULL REFERENCES TaxCategoryName(TaxCategoryID),
   EntryAddedDate        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
   EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP)
 );
