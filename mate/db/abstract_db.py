@@ -31,6 +31,10 @@ class AbstractDB(ABC):
         pass
 
     @abstractmethod
+    def get_storages(self, offset: int, limit: int):
+        pass
+
+    @abstractmethod
     def get_product_storage_by_product(self, product_id: int):
         pass
 

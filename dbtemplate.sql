@@ -70,10 +70,6 @@ CREATE TABLE TaxCategoryName (
   EntryAddedDate        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
   EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP)
 );
--- Standardsteuersätze anlegen: Standard, Reduziert und Steuerbefreit
-INSERT INTO TaxCategoryName (TaxCategoryID, Name, BaseValue, BaseValueUnit) VALUES (1, 'Standard', 0, '%');
-INSERT INTO TaxCategoryName (TaxCategoryID, Name, BaseValue, BaseValueUnit) VALUES (2, 'Lebensmittel', 0, '%');
-INSERT INTO TaxCategoryName (TaxCategoryID, Name, BaseValue, BaseValueUnit) VALUES (3, 'Steuerbefreit', 0, '%');
 CREATE TABLE TaxCategoryValue (
   TaxCategoryID         INTEGER       NOT NULL REFERENCES TaxCategoryName(TaxCategoryID),
   ValidSince            DATE          NOT NULL,
@@ -84,24 +80,6 @@ CREATE TABLE TaxCategoryValue (
 
   PRIMARY KEY(TaxCategoryID, ValidSince)
 );
--- Umsatzsteuerwerte seit 1968 laut Wikipedia. Für die verwendeten TaxCategoryIDs siehe Standardeinträge in Relation TaxCategoryName
-INSERT INTO TaxCategoryValue (TaxCategoryID, ValidSince, Value, Unit) VALUES (1, '1968-01-01', 10, '%');
-INSERT INTO TaxCategoryValue (TaxCategoryID, ValidSince, Value, Unit) VALUES (1, '1968-07-01', 11, '%');
-INSERT INTO TaxCategoryValue (TaxCategoryID, ValidSince, Value, Unit) VALUES (1, '1978-01-01', 12, '%');
-INSERT INTO TaxCategoryValue (TaxCategoryID, ValidSince, Value, Unit) VALUES (1, '1979-07-01', 13, '%');
-INSERT INTO TaxCategoryValue (TaxCategoryID, ValidSince, Value, Unit) VALUES (1, '1983-07-01', 14, '%');
-INSERT INTO TaxCategoryValue (TaxCategoryID, ValidSince, Value, Unit) VALUES (1, '1993-01-01', 15, '%');
-INSERT INTO TaxCategoryValue (TaxCategoryID, ValidSince, Value, Unit) VALUES (1, '1998-04-01', 16, '%');
-INSERT INTO TaxCategoryValue (TaxCategoryID, ValidSince, Value, Unit) VALUES (1, '2007-01-01', 19, '%');
-INSERT INTO TaxCategoryValue (TaxCategoryID, ValidSince, Value, Unit) VALUES (2, '1968-01-01', 5,  '%');
-INSERT INTO TaxCategoryValue (TaxCategoryID, ValidSince, Value, Unit) VALUES (2, '1968-07-01', 5.5,'%');
-INSERT INTO TaxCategoryValue (TaxCategoryID, ValidSince, Value, Unit) VALUES (2, '1978-01-01', 6,  '%');
-INSERT INTO TaxCategoryValue (TaxCategoryID, ValidSince, Value, Unit) VALUES (2, '1979-07-01', 6.5,'%');
-INSERT INTO TaxCategoryValue (TaxCategoryID, ValidSince, Value, Unit) VALUES (2, '1983-07-01', 7,  '%');
-INSERT INTO TaxCategoryValue (TaxCategoryID, ValidSince, Value, Unit) VALUES (2, '1993-01-01', 7,  '%');
-INSERT INTO TaxCategoryValue (TaxCategoryID, ValidSince, Value, Unit) VALUES (2, '1998-04-01', 7,  '%');
-INSERT INTO TaxCategoryValue (TaxCategoryID, ValidSince, Value, Unit) VALUES (2, '2007-01-01', 7,  '%');
-INSERT INTO TaxCategoryValue (TaxCategoryID, ValidSince, Value, Unit) VALUES (3, '1968-01-01', 0,  '%');
 CREATE TABLE Product (
   ProductID             SERIAL        PRIMARY KEY,
   Name                  TEXT          NOT NULL UNIQUE,
@@ -194,17 +172,6 @@ COMMENT ON COLUMN ContactPersonFor.RetailerID IS 'Der Händler, für den die Kon
 COMMENT ON COLUMN ContactPersonFor.ContactPersonID IS 'Die Kontaktperson, die für den Händler arbeitet.';
 COMMENT ON COLUMN ContactPersonFor.EntryAddedDate IS 'Das Datum, an dem der Datenbankeintrag angelegt wurde. Durch einen Trigger vor Veränderungen geschützt.';
 COMMENT ON COLUMN ContactPersonFor.EntryLastModifiedDate IS 'Das Datum, an dem der Datenbankeintrag zuletzt bearbeitet wurde. Wird bei Änderungen am Datensatz von einem Datenbank-Trigger automatisch aktualisiert.';
-CREATE TABLE ProductInstance (
-  ProductInstanceID     SERIAL        PRIMARY KEY,
-  ProductID             INTEGER       NOT NULL REFERENCES Product(ProductID),
-  AddedDate             DATE          NOT NULL,
-  InStockAmount         INTEGER       NOT NULL,
-  BestBeforeDate        DATE          NULL,
-  PriceOverride         DECIMAL(10,2) NULL,
-  TaxCategoryID         INTEGER       NOT NULL REFERENCES TaxCategoryName(TaxCategoryID),
-  EntryAddedDate        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
-  EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP)
-);
 CREATE TABLE Person (
   PersonID              SERIAL    PRIMARY KEY,
   FirstName             TEXT      NOT NULL,
@@ -254,9 +221,19 @@ CREATE TABLE PurchaseHeader (
 CREATE TABLE PurchaseDetail (
   PurchaseDetailID      SERIAL         PRIMARY KEY,
   PurchaseID            INTEGER        NOT NULL REFERENCES PurchaseHeader(PurchaseID),
-  ProductInstanceID     INTEGER        NOT NULL REFERENCES ProductInstance(ProductInstanceID),
   PrimeCostPerUnit      DECIMAL(10, 2) NOT NULL,
   PurchaseAmount        INTEGER        NOT NULL,
+  EntryAddedDate        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
+  EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP)
+);
+CREATE TABLE ProductInstance (
+  ProductInstanceID     INTEGER       PRIMARY KEY REFERENCES PurchaseDetail(PurchaseDetailID),
+  ProductID             INTEGER       NOT NULL REFERENCES Product(ProductID),
+  AddedDate             DATE          NOT NULL,
+  InStockAmount         INTEGER       NOT NULL,
+  BestBeforeDate        DATE          NULL,
+  PriceOverride         DECIMAL(10,2) NULL,
+  TaxCategoryID         INTEGER       NOT NULL REFERENCES TaxCategoryName(TaxCategoryID),
   EntryAddedDate        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
   EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP)
 );
@@ -280,13 +257,20 @@ CREATE TABLE SalesDetail (
 );
 CREATE TABLE ClientType (
   ClientTypeID          SERIAL    PRIMARY KEY,
+  APIKey                TEXT      NOT NULL UNIQUE,
   Name                  TEXT      NOT NULL UNIQUE,
+  MaintainerName        TEXT      NOT NULL,
+  MaintainerEmail       TEXT      NOT NULL,
+  Active                BOOLEAN   NOT NULL,
   EntryAddedDate        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
   EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP)
 );
 COMMENT ON TABLE  ClientType IS 'Modelliert Zugriffe über verschiedene Systeme und Logins: HTTP-Admin-Schnittstelle, HTTP-Kunden-Schnittstelle, Kunden-App,Lager-App, User-Terminal, User-Login gesicherter Client, etc.';
 COMMENT ON COLUMN ClientType.ClientTypeID IS 'Eine eindeutige Identifikationsnummer';
+COMMENT ON COLUMN ClientType.APIKey IS 'Ein String mit dem der Client sich authentifiziert';
 COMMENT ON COLUMN ClientType.Name IS 'Eine Stringbezeichnung, die benutzt werden kann, um nicht mit der ID arbeiten zu müssen';
+COMMENT ON COLUMN ClientType.MaintainerName IS 'Der Name des Cliententwickelers';
+COMMENT ON COLUMN ClientType.MaintainerEmail IS 'Die EMail-Adresse des Cliententwicklers';
 COMMENT ON COLUMN ClientType.EntryAddedDate IS 'Das Datum, an dem der Datenbankeintrag angelegt wurde. Durch einen Trigger vor Veränderungen geschützt.';
 COMMENT ON COLUMN ClientType.EntryLastModifiedDate IS 'Das Datum, an dem der Datenbankeintrag zuletzt bearbeitet wurde. Wird bei Änderungen am Datensatz von einem Datenbank-Trigger automatisch aktualisiert.';
 CREATE TABLE AvailableCredentialTypes (

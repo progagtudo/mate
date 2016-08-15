@@ -50,12 +50,13 @@ def get_balance(customer_id):
     })
 
 
-@app.route("/sale/sellCart")
+@app.route("/sale/sellCart", methods=["POST"])
 @auth(AuthType.client)
 @auth(AuthType.salesp)
 @auth(AuthType.customer)
 def get_sellcart():
     success = False
+    cart = request.json
     # TODO get auth and cart from JWT
     if not success:
         # TODO return fixed cart on error

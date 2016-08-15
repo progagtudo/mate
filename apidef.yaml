@@ -335,6 +335,26 @@ paths:
     post:
       summary: cart for sale
       description: send a list of objects sold aka a cart
+      parameters:
+        - name: cart
+          in: body
+          description: cart with products
+          schema:
+            type: array
+            required:
+              - product_id
+              - price
+              - amount
+            properties:
+              product_id:
+                type: integer
+                format: int64
+              price:
+                type: number
+                format: float
+              amount:
+                type: integer
+                format: int64
       security:
         - client_jwt: []
         - staff_jwt: []
