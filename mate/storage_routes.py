@@ -37,13 +37,13 @@ def list_storage():
     elif offset > 0:
         previous = "/storages?limit={0}&offset={1}".format(offset, 0)
     # ToDo: Generate JSON and return
+    storages = Storage.request_multi_from_db(offset=offset, limit=limit)
     response = {
         "next": next_link,
         "previous": previous,
-        "storages": []
+        "storages": storages
     }
-
-    return jsonify(response)
+    return jsonify(response), 200
 
 
 @app.route("/storage/", methods=["POST"])
@@ -66,7 +66,6 @@ def add_storage():
 # @auth
 def get_storage_info(storage_id: int):
 
-    #validate(data, storage_modul.json_scheme_new_object)
     a_storage = Storage.request_from_db(storage_id)
     if a_storage is None:
         return "Requested storage with id {} does not exist".format(storage_id), 404
@@ -103,8 +102,6 @@ def delete_storage(storage_id: int):
 
 @app.route("/storage/<int:storage_id>/products", methods=["GET"])
 def product_storage(storage_id: int):
-    if storage_id < 0:
-        return ""
     product_type = request.args.get("product_type", "", type=str)  # TODO: find reasonable standard value
     limit = request.args.get("limit", 20, type=int)
     offset = request.args.get("offset", 0, type=int)
@@ -118,7 +115,7 @@ def product_storage(storage_id: int):
         previous_link = "/storage/{0}/products?product_type={1}&limit={2}&offset={3}".format(
             storage_id, product_type, offset, 0)
 
-    products = [SaleProduct.dummy(), SaleProduct.dummy()] # TODO: Find Products in Storage via DB
+    products = [SaleProduct.dummy(), SaleProduct.dummy()]  # TODO: Find Products in Storage via DB
 
     response = {
         "next": next_link,
@@ -126,5 +123,5 @@ def product_storage(storage_id: int):
         "products": products
     }
 
-    return response
+    return jsonify({"test": products}), 200
 
