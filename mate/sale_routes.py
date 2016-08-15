@@ -1,9 +1,12 @@
+from flask import json
 from flask import jsonify
 
 from mate import app
 from mate.login.login import auth, AuthType
+from mate.mate import get_db
 from mate.model.person.customer import Customer
 from mate.model.products.sale_product import SaleProduct
+from mate.db.postgres_db import PostgresDB
 
 
 @app.route("/barcode/<string:code>", methods=["GET"])
@@ -13,7 +16,10 @@ def get_barcode(code):
     if code is not None:
         print("barcode: " + code)
         # ToDo: find customer
-        customer = Customer.dummy().to_primitive('customer')
+        customer = "null"
+        if PostgresDB.check_if_user_exists(get_db(), code):
+             customer = Customer.from_barcode(code).to_primitive('customer')
+        #customer = Customer.dummy().to_primitive('customer')
         # ToDo: find product
         product_obj = SaleProduct.dummy()
         product = "null"
@@ -32,7 +38,7 @@ def get_barcode(code):
 @auth(AuthType.salesp)
 @auth(AuthType.customer)
 def get_balance(customer_id):
-    valid_customer = False
+    valid_customer = True
     # TODO check customer JWT
     if not valid_customer:
         return "Customer is not valid", 403
@@ -40,16 +46,17 @@ def get_balance(customer_id):
     # TODO find customer balance
     balance = Customer.dummy().to_primitive('balance')
     return jsonify({
-        "value": balance
+        "value": balance['base_balance']
     })
 
 
-@app.route("/sale/sellCart")
+@app.route("/sale/sellCart", methods=["POST"])
 @auth(AuthType.client)
 @auth(AuthType.salesp)
 @auth(AuthType.customer)
 def get_sellcart():
     success = False
+    cart = request.json
     # TODO get auth and cart from JWT
     if not success:
         # TODO return fixed cart on error

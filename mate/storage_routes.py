@@ -123,5 +123,5 @@ def product_storage(storage_id: int):
         "products": products
     }
 
-    return jsonify({"test": products}), 200
+    return jsonify(response), 200
 

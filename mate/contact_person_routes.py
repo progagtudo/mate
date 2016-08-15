@@ -37,6 +37,7 @@ def get_contact_persons():
         "previous": previous,
         "contact_persons": []
     }
+    return jsonify(response)
 
 
 @app.route("/contact_person/", methods=["POST"])
