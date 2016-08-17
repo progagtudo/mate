@@ -1232,7 +1232,7 @@ definitions:
           format: int64
 
   RetailerUpdate:
-      description: Models a retailer where products can be bought. All elements except the name are optional.
+      description: Models a retailer where products can be bought. All elements are optional and only present elements will be updated.
       type: object
       properties:
         name:
@@ -1263,7 +1263,7 @@ definitions:
             format: int64
 
   ContactPersonUpdate:
-    description: The contact person works for a retailer and facilitates business processes.
+    description: The contact person works for a retailer and facilitates business processes. All elements are optional and only present elements will be updated.
     type: object
     properties:
       last_name:
@@ -1449,7 +1449,126 @@ definitions:
       price:
         type: number
         format: double
-
+  
+  
+  ProductDetails:
+    type: object
+    required:
+     - id
+     - name
+     - default_price
+     - tax_category
+     - is_sale_allowed
+     - is_default_redemption
+     - product_category
+    properties:
+      id:
+        type: integer
+        format: int64
+      name:
+        type: string
+      description:
+        type: string
+      default_price:
+        type: number
+        format: double
+      tax_category:
+        $ref: '#/definitions/TaxCategory'
+      is_sale_allowed:
+        type: boolean
+      is_default_redemption:
+        type: boolean
+      product_category:
+        $ref: '#/definitions/Category'
+  
+  
+  ProductInstance:
+    type: object
+    required:
+     - id
+     - product_id
+     - in_stock_amount
+     - added_date
+     - tax_category_id
+     - tax_value
+    properties:
+      id:
+        type: integer
+        format: int64
+      product_id:
+        type: integer
+        format: int64
+      in_stock_amount:
+        type: integer
+        format: int64
+      added_date:
+        type: string
+        format: date
+      best_before_date:
+        type: string
+        format: date
+      tax_category_id:
+        type: integer
+        format: int64
+      tax_value:
+        type: string
+  
+      
+  TaxCategory:
+    type: object
+    properties:
+      id:
+        type: integer
+        format: int64
+      name:
+        type: string
+  
+  
+  Purchase:
+    type: object
+    properties:
+      id:
+        type: integer
+        format: int64
+      order_date:
+        type: string
+        format: date
+      invoice_number:
+        type: string
+      invoice_is_pre_tax:
+        type: boolean
+        description: |
+          Describes if the items purchased have their taxes included in the prime cost or not.
+      retailer_id:
+        type: integer
+        format: int64
+      staff_id:
+        type: integer
+        format: int64
+        description: The staff member responsible for this purchase.
+  
+  
+  PurchaseDetail:
+    type: object
+    description: This is a single item of a complete purchase.
+    properties:
+      id:
+        type: integer
+        format: int64
+      purchase_id:
+        type: integer
+        format: int64
+      product_id:
+        type: integer
+        format: int64
+      purchase_amount:
+        type: integer
+        format: int64
+      prime_cost_per_unit:
+        type: number
+        format: double
+  
+  
   CartProduct:
     type: object
     properties:
