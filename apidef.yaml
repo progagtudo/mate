@@ -129,6 +129,7 @@ paths:
         - name: client_name
           in: path
           description: API-Key to identify client
+          required: true
           type: string
       tags:
         - client
