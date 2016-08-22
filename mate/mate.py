@@ -1,3 +1,4 @@
+import os
 from mate.db.postgres_db import PostgresDB
 from . import app
 from flask import g
@@ -5,7 +6,8 @@ from flask import g
 
 def connect_db():
     """Connects to the specific database."""
-    db = PostgresDB("dbname=mate user=postgres password=N8drVVgfidBjLuwd74 host=localhost port=9000")
+    default_configstring= "dbname=mate user=postgres password=N8drVVgfidBjLuwd74 host=localhost port=9000"
+    db = PostgresDB(os.environ.get('MATE_DB_CONFIG', default_configstring))
     return db
 
 
