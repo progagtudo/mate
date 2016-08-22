@@ -17,7 +17,7 @@ stub_login_type_holder = StubLoginTypeHolder()
 class AuthType(Enum):
     client = 1
     customer = 2
-    salesp = 3
+    staff = 3
 
 
 class ValidationError(Exception):
@@ -37,7 +37,7 @@ def auth(authtype: AuthType, rights: List[str] = None):
                     validate_client(request.headers.get(ConfigHolder.jwt_header_client))
                 elif authtype == AuthType.customer:
                     pass
-                elif authtype == AuthType.salesp:
+                elif authtype == AuthType.staff:
                     pass
             except jwt.ExpiredSignatureError:
                 print("Der Token ist abgelaufen")

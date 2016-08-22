@@ -14,7 +14,7 @@ from mate.db.postgres_db import PostgresDB
 
 @app.route("/barcode/<string:code>", methods=["GET"])
 @auth(AuthType.client)
-@auth(AuthType.salesp)
+@auth(AuthType.staff)
 def get_barcode(code):
     if code is not None:
         print("/barcode/" + code + " found.")
@@ -39,7 +39,7 @@ def get_barcode(code):
 
 @app.route("/customer/<int:customer_id>/balance", methods=["GET"])
 @auth(AuthType.client)
-@auth(AuthType.salesp)
+@auth(AuthType.staff)
 @auth(AuthType.customer)
 def get_balance(customer_id):
     client_jwt = jwt.decode(request.headers.get(ConfigHolder.jwt_header_customer), ConfigHolder.jwt_secret_customer)
@@ -55,7 +55,7 @@ def get_balance(customer_id):
 
 @app.route("/sale/sell_cart", methods=["POST"])
 @auth(AuthType.client)
-@auth(AuthType.salesp)
+@auth(AuthType.staff)
 @auth(AuthType.customer)
 def get_sellcart():
     success = False

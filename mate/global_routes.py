@@ -14,6 +14,24 @@ def version():
     return __version__
 
 
+@app.route("/test/client_auth")
+@auth(AuthType.client)
+def test_client_auth():
+    return "",200
+
+
+@app.route("/test/customer_auth")
+@auth(AuthType.customer)
+def test_customer_auth():
+    return "",200
+
+
+@app.route("/test/staff_auth")
+@auth(AuthType.staff)
+def test_staff_auth():
+    return "",200
+
+
 @app.route('/teapot')
 def teapot():
     """Return HTTP Error 418"""

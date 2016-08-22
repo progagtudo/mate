@@ -59,6 +59,49 @@ def staff_login(tclient, test_db):
     return js['JWT']
 
 
+def test_client_login(client_login, tclient):
+    answer = tclient.get("/test/client_auth", headers={ConfigHolder.jwt_header_client: client_login})
+    assert answer.status_code == 200
+
+
+def test_failed_client_login(tclient):
+    answer = tclient.get("/test/client_auth", headers={ConfigHolder.jwt_header_client: ""})
+    assert answer.status_code == 401
+    answer = tclient.get("/test/client_auth")
+    assert answer.status_code == 401
+
+
+def test_customer_login(customer_login, tclient):
+    answer = tclient.get("/test/customer_auth", headers={ConfigHolder.jwt_header_customer: customer_login})
+    assert answer.status_code == 200
+
+
+def test_failed_customer_login(tclient):
+    answer = tclient.get("/test/customer_auth", headers={ConfigHolder.jwt_header_customer: ""})
+    assert answer.status_code == 401
+    answer = tclient.get("/test/customer_auth")
+    assert answer.status_code == 401
+
+
+def test_staff_login(staff_login, tclient):
+    answer = tclient.get("/test/staff_auth", headers={ConfigHolder.jwt_header_staff: staff_login})
+    assert answer.status_code == 200
+
+
+def test_failed_staff_login(tclient):
+    answer = tclient.get("/test/staff_auth", headers={ConfigHolder.jwt_header_staff: ""})
+    assert answer.status_code == 401
+    answer = tclient.get("/test/staff_auth")
+    assert answer.status_code == 401
+
+
+@pytest.fixture(scope="module")
+def staff_login(tclient, test_db):
+    answer = tclient.get('/login/staff/k2')
+    js = json.loads(answer.data.decode("UTF-8"))
+    return js['JWT']
+
+
 def test_hello_world(tclient):
     answer = tclient.get('/')
     assert b'Hello World!' == answer.data
