@@ -98,13 +98,15 @@ INSERT INTO Person
 (PersonID, FirstName, LastName, EMail, CreationDate, Active)
 VALUES
     (1, 'Sternhard', 'Beffen', 'test@example.com', CURRENT_TIMESTAMP, TRUE),
-    (2, 'Testy', 'McTestface', 'testy@example.com', CURRENT_TIMESTAMP, TRUE);
+    (2, 'Testy', 'McTestface', 'testy@example.com', CURRENT_TIMESTAMP, TRUE),
+    (3, 'Christoph', 'Stahl', 'christoph.stahl@udo.edu', CURRENT_TIMESTAMP, TRUE);
 
 -- Customer
 INSERT INTO Customer
 (CustomerID, BaseBalance, BaseBalanceDate, AddedDate, Active)
 VALUES
-    (1, 20, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, TRUE);
+    (1, 20, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, TRUE),
+    (3, 42, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, TRUE);
 
 -- SalesPerson
 INSERT INTO SalesPerson
@@ -143,7 +145,7 @@ VALUES
 INSERT INTO AvailableCredentialTypes
 (credentialtypeid, name, needspassword, moduleidentifier)
 VALUES
-(1, "password", TRUE, "password");
+(1, 'password', TRUE, 'password');
 
 INSERT INTO AllowedCredentialUse
 (credentialtypeid, clienttypeid)
@@ -153,9 +155,13 @@ VALUES
 INSERT INTO Credentials
 (credentialid, credentialkey, credentialsecret, personid, credentialtypeid, issalespersonlogin, credentialcreatedate, lastsecretchange)
 VALUES
-(1, "k1", "secret", 1, 1, FALSE, current_date, current_timestamp);
+(1, 'k1', 'secret', 1, 1, FALSE, current_date, current_timestamp),
+(2, 'k2', 'secret2', 2, 1, TRUE, current_date, current_timestamp),
+(3, 'p2', 'secret3', 3, 1, FALSE, current_date, current_timestamp);
 
 INSERT INTO CredentialUse
 (clienttypeid, credentialid)
 VALUES
-(1, 1);
+(1, 1),
+(1, 2),
+(1, 3);
