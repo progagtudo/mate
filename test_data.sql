@@ -16,12 +16,12 @@ VALUES
 
 -- Products
 INSERT INTO Product
-(Name, Description, Price, TaxCategoryID,
+(Productid, Name, Description, Price, TaxCategoryID,
 	CategoryID, IsSaleAllowed, IsDefaultRedemption)
 VALUES
-('Club Mate 0,5l', 'Der originale Mate Eistee von Löscher', 0.90, 2,
+(1, 'Club Mate 0,5l', 'Der originale Mate Eistee von Löscher', 0.90, 2,
 	1, FALSE, FALSE),
-('Chilli con Carne', '750ml Dose von Aldi', 1.45, 2,
+(2, 'Chilli con Carne', '750ml Dose von Aldi', 1.45, 2,
 	2, FALSE, FALSE);
 
 -- ProductTags
@@ -139,6 +139,8 @@ VALUES
 
 
 -- Credentials
+INSERT INTO Credentials
+(credentialid, credentialkey, credentialsecret, personid, credentialtypeid, issalespersonlogin, credentialcreatedate, lastsecretchange)
 -- TBD
 
 
