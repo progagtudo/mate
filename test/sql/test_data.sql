@@ -31,12 +31,59 @@ VALUES
     (1, 1),
     (2, 2);
 
+-- StorageContent
+INSERT INTO StorageContent
+(StorageID, ProductID, Amount)
+VALUES
+    (2, 1, 10),
+    (1, 1, 10),
+    (2, 2, 5);
+
+-- StorageLog
+INSERT INTO StorageLog
+(StorageLogID, FromStorage, ToStorage, ProductID, Amount, TransferTimeStamp)
+VALUES
+    (1, NULL, 1, 1, 20, CURRENT_TIMESTAMP),
+    (2, NULL, 2, 2, 5, CURRENT_TIMESTAMP),
+    (3, 1, 2, 1, 10, CURRENT_TIMESTAMP);
+
+-- Retailer
+INSERT INTO Retailer
+(RetailerID, Name, AdressCountry, AdressZipCode, AdressCity, AdressStreet, AdressStreetNumber, CustomerNumber)
+VALUES
+    (1, 'UltraHandler', 'Deutschland', '44227', 'Dortmund', 'Otto-Hahn Straße', '14', '1337');
+
+-- RetailerContactPerson
+INSERT INTO RetailerContactPerson
+(ContactPersonID, FirstName, LastName, EMail, Telephone, Fax)
+VALUES
+    (1, 'Thomas', 'Hess', 'thomas.hess@udo.edu', '0000', '0001');
+
+-- ContactPersonFor
+INSERT INTO ContactPersonFor
+(RetailerID, ContactPersonID)
+VALUES
+    (1, 1);
+
+-- PurchaseHeader
+INSERT INTO PurchaseHeader
+(PurchaseID, OrderDate, InvoiceNumber, InvoiceCopy, InvoiceIsPreTax, RetailerID, SalesPersonID)
+VALUES
+    (1, CURRENT_TIMESTAMP, '0001', '', FALSE, 1, 1);
+
+-- PurchaseDetail
+INSERT INTO PurchaseDetail
+(PurchaseDetailID, PurchaseID, ProductID, PrimeCostPerUnit, PurchaseAmount)
+VALUES
+    (1, 1, 1, 0.75, 20),
+    (2, 1, 2, 1.20, 5);
+
 -- ProductInstances
 INSERT INTO ProductInstance
-(ProductID, InStockAmount, TaxCategoryID)
+(ProductInstanceID, ProductID, InStockAmount, TaxCategoryID)
 VALUES
-    (1, 20, 2),
-    (2, 5, 2);
+    (1, 1, 20, 2),
+    (2, 2, 5, 2);
 
 -- Persons
 INSERT INTO Person
@@ -89,54 +136,6 @@ VALUES
     (2, 1, 3, FALSE),
     (2, 2, 1, FALSE),
     (2, 3, 0, FALSE);
-
--- StorageContent
-INSERT INTO StorageContent
-(StorageID, ProductID, Amount)
-VALUES
-    (2, 1, 10),
-    (1, 1, 10),
-    (2, 2, 5);
-
--- StorageLog
-INSERT INTO StorageLog
-(StorageLogID, FromStorage, ToStorage, ProductID, Amount, TransferTimeStamp)
-VALUES
-    (1, NULL, 1, 1, 20, CURRENT_TIMESTAMP),
-    (2, NULL, 2, 2, 5, CURRENT_TIMESTAMP),
-    (3, 1, 2, 1, 10, CURRENT_TIMESTAMP);
-
--- Retailer
-INSERT INTO Retailer
-(RetailerID, Name, AdressCountry, AdressZipCode, AdressCity, AdressStreet, AdressStreetNumber, CustomerNumber)
-VALUES
-    (1, 'UltraHandler', 'Deutschland', '44227', 'Dortmund', 'Otto-Hahn Straße', '14', '1337');
-
--- RetailerContactPerson
-INSERT INTO RetailerContactPerson
-(ContactPersonID, FirstName, LastName, EMail, Telephone, Fax)
-VALUES
-    (1, 'Thomas', 'Hess', 'thomas.hess@udo.edu', '0000', '0001');
-
--- ContactPersonFor
-INSERT INTO ContactPersonFor
-(RetailerID, ContactPersonID)
-VALUES
-    (1, 1);
-
--- PurchaseHeader
-INSERT INTO PurchaseHeader
-(PurchaseID, OrderDate, InvoiceNumber, InvoiceCopy, InvoiceIsPreTax, RetailerID, SalesPersonID)
-VALUES
-    (1, CURRENT_TIMESTAMP, '0001', '', FALSE, 1, 1);
-
--- PurchaseDetail
-INSERT INTO PurchaseDetail
-(PurchaseDetailID, PurchaseID, ProductID, PrimeCostPerUnit, PurchaseAmount)
-VALUES
-    (1, 1, 1, 0.75, 20),
-    (1, 1, 2, 1.20, 5);
-
 
 -- Credentials
 INSERT INTO Credentials
