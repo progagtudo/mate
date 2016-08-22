@@ -1443,14 +1443,27 @@ definitions:
   Product:
     type: object
     properties:
+      name:
+        type: string
       id:
         type: integer
         format: int64
       price:
         type: number
         format: double
-  
-  
+      tags:
+        type: array
+        items:
+          $ref: '#/definitions/Tag'
+
+  Tag:
+    type: object
+    properties:
+      name:
+        type: string
+      description:
+        type: string
+
   ProductDetails:
     type: object
     required:
@@ -1480,8 +1493,8 @@ definitions:
         type: boolean
       product_category:
         $ref: '#/definitions/Category'
-  
-  
+
+
   ProductInstance:
     type: object
     required:
@@ -1512,8 +1525,8 @@ definitions:
         format: int64
       tax_value:
         type: string
-  
-      
+
+
   TaxCategory:
     type: object
     properties:
@@ -1522,8 +1535,8 @@ definitions:
         format: int64
       name:
         type: string
-  
-  
+
+
   Purchase:
     type: object
     properties:
@@ -1546,8 +1559,8 @@ definitions:
         type: integer
         format: int64
         description: The staff member responsible for this purchase.
-  
-  
+
+
   PurchaseDetail:
     type: object
     description: This is a single item of a complete purchase.
@@ -1567,8 +1580,8 @@ definitions:
       prime_cost_per_unit:
         type: number
         format: double
-  
-  
+
+
   CartProduct:
     type: object
     properties:
@@ -1602,6 +1615,10 @@ definitions:
         type: string
       email:
         type: string
+      active:
+        type: boolean
+      needs_balance_auth:
+        type: boolean
 
 
   LoginData:
