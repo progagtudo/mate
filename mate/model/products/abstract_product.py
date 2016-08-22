@@ -16,7 +16,7 @@ class AbstractProduct(AbstractModel):
     category_id = IntType(required=True)  # type: int
     tags = ListType(TagType, required=True)  # type: List[tag]
     description = StringType(required=True)  # type: str
-    is_sale_prohibited = BooleanType(required=True)  # type: bool
+    is_sale_allowed = BooleanType(required=True)  # type: bool
     is_default_redemption = BooleanType(required=True)  # type: bool
 
     class Options:

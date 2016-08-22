@@ -31,20 +31,30 @@ class PostgresDB(AbstractDB):
         cursor.close()
         return result
 
+    def get_customer_from_id(self, customer_id: int):
+        cursor = self.db.cursor()
+        cursor.execute("""
+        SELECT Person.FirstName, Person.LastName, Person.EMail, (Customer.Active AND Person.Active) AS Active, Customer.BaseBalance, Customer.BaseBalanceDate, Person.PersonID
+        FROM Credentials AS c
+        INNER JOIN Customer
+        ON Customer.CustomerID=c.PersonID
+        INNER  JOIN Person
+        ON Person.PersonID=c.PersonID
+        WHERE Person.id = %s AND c.IsSalesPersonLogin = FALSE """, (customer_id,))
+        result = cursor.fetchone()
+        cursor.close()
+        return result
+
     def get_product_from_barcode(self, barcode: str):
         # ToDo: Tags & InStockAmount fehlen
         cursor = self.db.cursor()
         cursor.execute("""
-        SELECT p.ProductID, p.Name, p.Description, p.Price, p.IsSaleAllowed, p.IsDefaultRedemption, p.CategoryID, ProductInstance.InStockAmount
+        SELECT p.ProductID, p.Name, p.Description, p.Price, p.IsSaleAllowed, p.IsDefaultRedemption, p.CategoryID, pi.InStockAmount
         FROM Barcode AS b
         INNER JOIN Product AS p
-        ON b.ProductID=Product.ProductID
-        INNER JOIN ProductInstance
-        ON b.ProductID=(
-            SELECT TOP 1 ProductInstance.InStockAmount
-            FROM ProductInstance
-            WHERE ProductID=b.ProductID
-        )
+        ON b.ProductID=p.ProductID
+        INNER JOIN ProductInstance as pi
+        ON b.ProductID=pi.ProductID
         WHERE b.Barcode = %s""", (barcode,))
         result = cursor.fetchone()
         cursor.close()
@@ -56,7 +66,8 @@ class PostgresDB(AbstractDB):
         SELECT AvailableProductTags.Name, AvailableProductTags.Description
         FROM ProductTagAssignment as p
         INNER JOIN AvailableProductTags
-        ON p.ProductID = %i""", (product_id, ))
+        ON p.tagid = availableproducttags.tagid
+        WHERE p.productid = %s""", (product_id, ))
         result = cursor.fetchall()
         cursor.close()
         return result

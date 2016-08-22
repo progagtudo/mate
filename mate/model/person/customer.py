@@ -16,8 +16,8 @@ class Customer(Person):
                  'balance': blacklist('base_balance_date', 'first_name', 'last_name', 'email', 'active',
                                       'id', 'needs_balance_auth')}
 
-    def __init__(self, first_name, last_name, email, active, base_balance, base_balance_date, customer_id,
-                 needs_balance_auth,
+    def __init__(self, active, first_name=None, last_name=None, email=None, base_balance=None, base_balance_date=None, customer_id=None,
+                 needs_balance_auth=None,
                  **kwargs):
         super().__init__(**kwargs)
         self.first_name = first_name
@@ -30,11 +30,22 @@ class Customer(Person):
         self.needs_balance_auth = needs_balance_auth
 
     @classmethod
-    def from_barcode(cls, barcode):
-        r = PostgresDB.get_customer_from_barcode(get_db(), barcode)
+    def from_id(cls, customer_id):
+        r = PostgresDB.get_customer_from_id(get_db(), customer_id)
         # ToDo: needs_balance_auth is Always False, change that
-        instance = cls(r[0], r[1], r[2], r[3], r[4], r[5], r[6], False)
+        instance = cls(first_name=r[0], last_name=r[1], email=r[2], active=r[3], base_balance=r[4], base_balance_date=r[5], customer_id=r[6], needs_balance_auth=False)
         return instance
+
+    @classmethod
+    def from_barcode(cls, barcode):
+        print("barcode: "+barcode)
+        if PostgresDB.check_if_user_exists(get_db(), barcode):
+            r = PostgresDB.get_customer_from_barcode(get_db(), barcode)
+            # ToDo: needs_balance_auth is Always False, change that
+            instance = cls(first_name=r[0], last_name=r[1], email=r[2], active=r[3], base_balance=r[4], base_balance_date=r[5], customer_id=r[6], needs_balance_auth=False)
+            return instance
+        else:
+            return cls(active=False)
 
     @classmethod
     def dummy(cls):
