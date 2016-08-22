@@ -1,5 +1,5 @@
 -- ClientType
-INSERT INTO ClientType (APIKey, Name, MaintainerName, MaintainerEmail) VALUES ('testapikey', 'mollys_test_client', 'Philip Molares', 'philip.molares@udo.edu');
+INSERT INTO ClientType (Name) VALUES ('mollys_test_client');
 
 -- ProductTags
 INSERT INTO AvailableProductTags (TagID, Name, Description)
@@ -40,7 +40,7 @@ VALUES
 
 -- Persons
 INSERT INTO Person
-(PersonID, FirstName, LastName, EMail, CreationDateTime, Active)
+(PersonID, FirstName, LastName, EMail, CreationDate, Active)
 VALUES
 (1, 'Sternhard', 'Beffen', 'test@example.com', CURRENT_TIMESTAMP, TRUE),
 (2, 'Testy', 'McTestface', 'testy@example.com', CURRENT_TIMESTAMP, TRUE);
