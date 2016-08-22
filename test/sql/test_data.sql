@@ -1,5 +1,5 @@
 -- ClientType
-INSERT INTO ClientType (Name) VALUES ('mollys_test_client');
+INSERT INTO ClientType (clienttypeid, Name) VALUES (1, 'mollys_test_client');
 
 -- ProductTags
 INSERT INTO AvailableProductTags (TagID, Name, Description)
@@ -132,8 +132,6 @@ VALUES
     (1, 1, 20, 2, current_date),
     (2, 2, 5, 2, current_date);
 
-
-
 -- Barcode
 INSERT INTO Barcode
 (BarcodeID, Barcode, ProductID)
@@ -142,3 +140,22 @@ VALUES
     (2, 'p2', 2);
 
 -- Credentials
+INSERT INTO AvailableCredentialTypes
+(credentialtypeid, name, needspassword, moduleidentifier)
+VALUES
+(1, "password", TRUE, "password");
+
+INSERT INTO AllowedCredentialUse
+(credentialtypeid, clienttypeid)
+VALUES
+(1, 1);
+
+INSERT INTO Credentials
+(credentialid, credentialkey, credentialsecret, personid, credentialtypeid, issalespersonlogin, credentialcreatedate, lastsecretchange)
+VALUES
+(1, "k1", "secret", 1, 1, FALSE, current_date, current_timestamp);
+
+INSERT INTO CredentialUse
+(clienttypeid, credentialid)
+VALUES
+(1, 1);
