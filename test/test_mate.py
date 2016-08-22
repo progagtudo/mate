@@ -52,6 +52,13 @@ def client_login(tclient, test_db):
     return js['JWT']
 
 
+@pytest.fixture(scope="module")
+def staff_login(tclient, test_db):
+    answer = tclient.get('/login/staff/k2')
+    js = json.loads(answer.data.decode("UTF-8"))
+    return js['JWT']
+
+
 def test_hello_world(tclient):
     answer = tclient.get('/')
     assert b'Hello World!' == answer.data
@@ -72,7 +79,7 @@ def test_db_create(plain_db):
     print("DB created")
 
 
-def test_get_product_from_barcode(tclient, test_db, client_login):
+def test_get_product_from_barcode(tclient, client_login):
     answer = tclient.get('/barcode/p1', headers={ConfigHolder.jwt_header_client: client_login})
     js = json.loads(answer.data.decode("UTF-8"))
     assert js['customer'] == "null"
@@ -90,7 +97,7 @@ def test_get_product_from_barcode(tclient, test_db, client_login):
     assert js['product'] == product
 
 
-def test_customer_from_barcode(tclient, test_db, client_login):
+def test_customer_from_barcode(tclient, client_login):
     answer = tclient.get('/barcode/k1', headers={ConfigHolder.jwt_header_client: client_login})
     js = json.loads(answer.data.decode('utf-8'))
     assert js['product'] == "null"
@@ -103,7 +110,3 @@ def test_customer_from_barcode(tclient, test_db, client_login):
         "needs_balance_auth": False
     }
     assert js['customer'] == customer
-
-# def test_version(tclient):
-#      answer = tclient.get('/version')
-#      assert bytes(mate.__version__, 'utf-8') in answer.data
