@@ -1,5 +1,7 @@
 from mate.model.cart.cart import Cart
 from . import app, __version__
+from mate import storage
+
 
 
 @app.route('/')
@@ -12,6 +14,7 @@ def hello_world():
 def version():
     """Returns API-Version"""
     return __version__
+
 
 if __name__ == '__main__':
     print(Cart.json_scheme)
