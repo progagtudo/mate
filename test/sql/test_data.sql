@@ -22,9 +22,9 @@ INSERT INTO Product
  CategoryID, IsSaleAllowed, IsDefaultRedemption)
 VALUES
     (1, 'Club Mate 0,5l', 'Der originale Mate Eistee von Löscher', 0.90, 2,
-     1, FALSE, FALSE),
+     1, TRUE, FALSE),
     (2, 'Chilli con Carne', '750ml Dose von Aldi', 1.45, 2,
-     2, FALSE, FALSE);
+     2, TRUE, FALSE);
 
 -- ProductTags
 INSERT INTO ProductTagAssignment
