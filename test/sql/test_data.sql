@@ -11,8 +11,10 @@ VALUES
 INSERT INTO AvailableProductCategories
 (CategoryID, Name, Description, CategoryIconURI)
 VALUES
-    (1, 'Getränk', 'Hier findet man alles was man trinken kann.', 'https://philipmolares.de/images/mate/bottle-of-water.png'),
-    (2, 'Essen', 'Hier findet man alles was ein Mittagessen werden könnte.', 'https://philipmolares.de/images/mate/restaurant.png');
+    (1, 'Getränk', 'Hier findet man alles was man trinken kann.',
+     'https://philipmolares.de/images/mate/bottle-of-water.png'),
+    (2, 'Essen', 'Hier findet man alles was ein Mittagessen werden könnte.',
+     'https://philipmolares.de/images/mate/restaurant.png');
 
 -- Products
 INSERT INTO Product
@@ -30,6 +32,32 @@ INSERT INTO ProductTagAssignment
 VALUES
     (1, 1),
     (2, 2);
+
+-- Storage
+INSERT INTO Storage
+(StorageID, Name, Description, IsSaleAllowed)
+VALUES
+    (1, 'Putzmittelraum', 'Das erste Kiosk-Lager im Keller der OH14', FALSE),
+    (2, 'Kiosk', 'Verkaufslager gegen über des CZI in der OH14', TRUE);
+
+-- SaftyStockAmountLevels
+INSERT INTO SafetyStockAmountLevels
+(SafetyStockAmountID, Name, ModuleIdentifier)
+VALUES
+    (1, 'Lager halb leer', 'email'),
+    (2, 'Lager dreiviertel leer', 'email'),
+    (3, 'Lager leer', 'email');
+
+-- ProductSafetyStockAmounts
+INSERT INTO ProductSafetyStockAmounts
+(ProductID, SafetyStockAmountID, Amount, IsNotified)
+VALUES
+    (1, 1, 10, FALSE),
+    (1, 2, 5, FALSE),
+    (1, 3, 0, FALSE),
+    (2, 1, 3, FALSE),
+    (2, 2, 1, FALSE),
+    (2, 3, 0, FALSE);
 
 -- StorageContent
 INSERT INTO StorageContent
@@ -65,26 +93,6 @@ INSERT INTO ContactPersonFor
 VALUES
     (1, 1);
 
--- PurchaseHeader
-INSERT INTO PurchaseHeader
-(PurchaseID, OrderDate, InvoiceNumber, InvoiceCopy, InvoiceIsPreTax, RetailerID, SalesPersonID)
-VALUES
-    (1, CURRENT_TIMESTAMP, '0001', '', FALSE, 1, 1);
-
--- PurchaseDetail
-INSERT INTO PurchaseDetail
-(PurchaseDetailID, PurchaseID, ProductID, PrimeCostPerUnit, PurchaseAmount)
-VALUES
-    (1, 1, 1, 0.75, 20),
-    (2, 1, 2, 1.20, 5);
-
--- ProductInstances
-INSERT INTO ProductInstance
-(ProductInstanceID, ProductID, InStockAmount, TaxCategoryID, AddedDate)
-VALUES
-    (1, 1, 20, 2, current_date),
-    (2, 2, 5, 2, current_date);
-
 -- Persons
 INSERT INTO Person
 (PersonID, FirstName, LastName, EMail, CreationDate, Active)
@@ -104,37 +112,33 @@ INSERT INTO SalesPerson
 VALUES
     (2, 100, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, TRUE);
 
+-- PurchaseHeader
+INSERT INTO PurchaseHeader
+(PurchaseID, OrderDate, InvoiceNumber, InvoiceCopy, InvoiceIsPreTax, RetailerID, SalesPersonID)
+VALUES
+    (1, CURRENT_TIMESTAMP, '0001', '', FALSE, 1, 2);
+
+-- PurchaseDetail
+INSERT INTO PurchaseDetail
+(PurchaseDetailID, PurchaseID, ProductID, PrimeCostPerUnit, PurchaseAmount)
+VALUES
+    (1, 1, 1, 0.75, 20),
+    (2, 1, 2, 1.20, 5);
+
+-- ProductInstances
+INSERT INTO ProductInstance
+(ProductInstanceID, ProductID, InStockAmount, TaxCategoryID, AddedDate)
+VALUES
+    (1, 1, 20, 2, current_date),
+    (2, 2, 5, 2, current_date);
+
+
+
 -- Barcode
 INSERT INTO Barcode
 (BarcodeID, Barcode, ProductID)
 VALUES
     (1, 'p1', 1),
     (2, 'p2', 2);
-
--- Storage
-INSERT INTO Storage
-(StorageID, Name, Description, IsSaleAllowed)
-VALUES
-    (1, 'Putzmittelraum', 'Das erste Kiosk-Lager im Keller der OH14', FALSE),
-    (2, 'Kiosk', 'Verkaufslager gegen über des CZI in der OH14', TRUE);
-
--- SaftyStockAmountLevels
-INSERT INTO SafetyStockAmountLevels
-(SafetyStockAmountID, Name, ModuleIdentifier)
-VALUES
-    (1, 'Lager halb leer', 'email'),
-    (2, 'Lager dreiviertel leer', 'email'),
-    (3, 'Lager leer', 'email');
-
--- ProductSafetyStockAmounts
-INSERT INTO ProductSafetyStockAmounts
-(ProductID, SafetyStockAmountID, Amount, IsNotified)
-VALUES
-    (1, 1, 10, FALSE),
-    (1, 2, 5, FALSE),
-    (1, 3, 0, FALSE),
-    (2, 1, 3, FALSE),
-    (2, 2, 1, FALSE),
-    (2, 3, 0, FALSE);
 
 -- Credentials

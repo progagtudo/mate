@@ -1,3 +1,4 @@
+import json
 import mate
 import os
 import psycopg2
@@ -40,17 +41,20 @@ def test_db(plain_db):
     with plain_db.cursor() as curs:
         curs.execute(open("test/sql/test_data.sql", "r").read())
     plain_db.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_READ_COMMITTED)
+    os.environ["MATE_DB_CONFIG"]= os.environ.get('MATE_TEST_DB_CONFIG')
     yield plain_db
 
 
 @pytest.fixture(scope="module")
 def client_login(tclient, test_db):
     answer = tclient.get('/login/client/mollys_test_client')
-    return answer.data['JWT']
+    js = json.loads(answer.data.decode("UTF-8"))
+    return js['JWT']
 
 def test_hello_world(tclient):
     answer = tclient.get('/')
     assert b'Hello World!' in answer.data
+
 
 
 def test_db_create(plain_db):
@@ -58,7 +62,21 @@ def test_db_create(plain_db):
 
 
 def test_get_product_from_barcode(tclient, test_db, client_login):
-    answer= tclient.get('/barcode/p1', headers={ConfigHolder.jwt_header_client + ":"+client_login})
+    answer = tclient.get('/barcode/p1', headers={ConfigHolder.jwt_header_client:client_login})
+    js = json.loads(answer.data.decode("UTF-8"))
+    assert js['customer'] == "null"
+    product = {
+        "name": "Club Mate 0,5l",
+        "price": "0.90",
+        "product_id": 1,
+        "tags": [
+            [
+                "koffeinhaltig",
+                "enthält Koffein"
+            ]
+        ]
+    }
+    assert js['product'] == product
 
 # def test_version(tclient):
 #      answer = tclient.get('/version')
