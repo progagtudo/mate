@@ -80,10 +80,10 @@ VALUES
 
 -- ProductInstances
 INSERT INTO ProductInstance
-(ProductInstanceID, ProductID, InStockAmount, TaxCategoryID)
+(ProductInstanceID, ProductID, InStockAmount, TaxCategoryID, AddedDate)
 VALUES
-    (1, 1, 20, 2),
-    (2, 2, 5, 2);
+    (1, 1, 20, 2, current_date),
+    (2, 2, 5, 2, current_date);
 
 -- Persons
 INSERT INTO Person
@@ -138,8 +138,3 @@ VALUES
     (2, 3, 0, FALSE);
 
 -- Credentials
-INSERT INTO Credentials
-(credentialid, credentialkey, credentialsecret, personid, credentialtypeid, issalespersonlogin, credentialcreatedate, lastsecretchange)
--- TBD
-
-
