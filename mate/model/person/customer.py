@@ -38,7 +38,6 @@ class Customer(Person):
 
     @classmethod
     def from_barcode(cls, barcode):
-        print("barcode: "+barcode)
         if PostgresDB.check_if_user_exists(get_db(), barcode):
             r = PostgresDB.get_customer_from_barcode(get_db(), barcode)
             # ToDo: needs_balance_auth is Always False, change that

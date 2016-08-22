@@ -9,7 +9,6 @@ def hello_world():
 
 
 @app.route('/version')
-@auth(AuthType.client)
 def version():
     """Returns API-Version"""
     return __version__

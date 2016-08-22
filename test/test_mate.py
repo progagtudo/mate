@@ -29,7 +29,7 @@ def plain_db(request):
     print("Reading template...")
     conn.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
     with conn.cursor() as curs:
-        curs.execute(open("dbtemplate.sql", "r").read())
+        curs.execute(open("dbtemplate.sql", "r", encoding='utf-8').read())
     conn.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_READ_COMMITTED)
     yield conn
     conn.close()
@@ -39,7 +39,7 @@ def plain_db(request):
 def test_db(plain_db):
     plain_db.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
     with plain_db.cursor() as curs:
-        curs.execute(open("test/sql/test_data.sql", "r").read())
+        curs.execute(open("test/sql/test_data.sql", "r", encoding='utf-8').read())
     plain_db.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_READ_COMMITTED)
     os.environ["MATE_DB_CONFIG"] = os.environ.get('MATE_TEST_DB_CONFIG')
     yield plain_db
@@ -63,6 +63,11 @@ def test_teapot(tclient):
     assert b"I'm a teapot" == answer.data
 
 
+def test_version(tclient):
+    answer = tclient.get('/version')
+    assert mate.__version__ == answer.data.decode('utf-8')
+
+
 def test_db_create(plain_db):
     print("DB created")
 
@@ -83,6 +88,21 @@ def test_get_product_from_barcode(tclient, test_db, client_login):
         ]
     }
     assert js['product'] == product
+
+
+def test_customer_from_barcode(tclient, test_db, client_login):
+    answer = tclient.get('/barcode/k1', headers={ConfigHolder.jwt_header_client: client_login})
+    js = json.loads(answer.data.decode('utf-8'))
+    assert js['product'] == "null"
+    customer = {
+        "active": True,
+        "email": "test@example.com",
+        "first_name": "Sternhard",
+        "id": 1,
+        "last_name": "Beffen",
+        "needs_balance_auth": False
+    }
+    assert js['customer'] == customer
 
 # def test_version(tclient):
 #      answer = tclient.get('/version')
