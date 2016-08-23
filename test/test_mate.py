@@ -53,8 +53,17 @@ def client_login(tclient, test_db):
 
 
 @pytest.fixture(scope="module")
-def staff_login(tclient, test_db):
-    answer = tclient.get('/login/staff/k2')
+def staff_login(tclient, client_login):
+    answer = tclient.get("/login/staff/k2?login_type=password&secret=secret2",
+                         headers={ConfigHolder.jwt_header_client: client_login})
+    js = json.loads(answer.data.decode("UTF-8"))
+    return js['JWT']
+
+
+@pytest.fixture(scope="module")
+def customer_login(tclient, client_login):
+    answer = tclient.get("/login/customer/k1?login_type=password&secret=secret",
+                         headers={ConfigHolder.jwt_header_client: client_login})
     js = json.loads(answer.data.decode("UTF-8"))
     return js['JWT']
 
@@ -77,6 +86,8 @@ def test_customer_login(customer_login, tclient):
 
 
 def test_failed_customer_login(tclient):
+    answer = tclient.get("/test/customer_auth", headers={ConfigHolder.jwt_header_customer: "absoluterFoo"})
+    assert answer.status_code == 401
     answer = tclient.get("/test/customer_auth", headers={ConfigHolder.jwt_header_customer: ""})
     assert answer.status_code == 401
     answer = tclient.get("/test/customer_auth")
@@ -89,28 +100,31 @@ def test_staff_login(staff_login, tclient):
 
 
 def test_failed_staff_login(tclient):
+    answer = tclient.get("/test/staff_auth", headers={ConfigHolder.jwt_header_staff: "AuchAbsoluterFoo"})
+    assert answer.status_code == 401
     answer = tclient.get("/test/staff_auth", headers={ConfigHolder.jwt_header_staff: ""})
     assert answer.status_code == 401
     answer = tclient.get("/test/staff_auth")
     assert answer.status_code == 401
 
 
-@pytest.fixture(scope="module")
-def staff_login(tclient, test_db):
-    answer = tclient.get('/login/staff/k2')
+def test_all_login_types(tclient, client_login):
+    answer = tclient.get("/login_types", headers={ConfigHolder.jwt_header_client: client_login})
     js = json.loads(answer.data.decode("UTF-8"))
-    return js['JWT']
+    assert answer.status_code == 200
+    login_type = ["password"]
+    assert js["types"] == login_type
 
 
 def test_hello_world(tclient):
     answer = tclient.get('/')
-    assert b'Hello World!' == answer.data
+    assert 'Hello World!' == answer.data.decode("UTF-8")
 
 
 def test_teapot(tclient):
     answer = tclient.get('/teapot')
     assert 418 == answer.status_code
-    assert b"I'm a teapot" == answer.data
+    assert "I'm a teapot" == answer.data.decode("UTF-8")
 
 
 def test_version(tclient):
@@ -122,8 +136,10 @@ def test_db_create(plain_db):
     print("DB created")
 
 
-def test_get_product_from_barcode(tclient, client_login):
-    answer = tclient.get('/barcode/p1', headers={ConfigHolder.jwt_header_client: client_login})
+def test_get_product_from_barcode(tclient, client_login, staff_login):
+    answer = tclient.get('/barcode/p1',
+                         headers={ConfigHolder.jwt_header_client: client_login,
+                                  ConfigHolder.jwt_header_staff: staff_login})
     js = json.loads(answer.data.decode("UTF-8"))
     assert js['customer'] == "null"
     product = {
@@ -140,8 +156,9 @@ def test_get_product_from_barcode(tclient, client_login):
     assert js['product'] == product
 
 
-def test_customer_from_barcode(tclient, client_login):
-    answer = tclient.get('/barcode/k1', headers={ConfigHolder.jwt_header_client: client_login})
+def test_customer_from_barcode(tclient, client_login, staff_login):
+    answer = tclient.get('/barcode/k1', headers={ConfigHolder.jwt_header_client: client_login,
+                                                 ConfigHolder.jwt_header_staff: staff_login})
     js = json.loads(answer.data.decode('utf-8'))
     assert js['product'] == "null"
     customer = {
@@ -153,3 +170,12 @@ def test_customer_from_barcode(tclient, client_login):
         "needs_balance_auth": False
     }
     assert js['customer'] == customer
+
+
+def test_customer_balance(tclient, client_login, staff_login, customer_login):
+    answer = tclient.get('/customer/1/balance', headers={ConfigHolder.jwt_header_client: client_login,
+                                                         ConfigHolder.jwt_header_staff: staff_login,
+                                                         ConfigHolder.jwt_header_customer: customer_login})
+    js = json.loads(answer.data.decode('utf-8'))
+    assert js["value"] == '20.00'
+    assert answer.status_code == 200

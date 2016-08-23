@@ -42,8 +42,8 @@ def get_barcode(code):
 @auth(AuthType.staff)
 @auth(AuthType.customer)
 def get_balance(customer_id):
-    client_jwt = jwt.decode(request.headers.get(ConfigHolder.jwt_header_customer), ConfigHolder.jwt_secret_customer)
-    if customer_id != client_jwt['mate.pid']:
+    customer_jwt = jwt.decode(request.headers.get(ConfigHolder.jwt_header_customer), ConfigHolder.jwt_secret_customer)
+    if customer_id != customer_jwt['mate.pid']:
         return "Customer is not valid", 403
 
     # TODO find customer balance

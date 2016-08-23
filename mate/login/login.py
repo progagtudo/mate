@@ -28,6 +28,7 @@ class ValidationError(Exception):
         return repr(self.value)
 
 
+
 def auth(authtype: AuthType, rights: List[str] = None):
     def decorator(func):
         @wraps(func)
@@ -36,9 +37,9 @@ def auth(authtype: AuthType, rights: List[str] = None):
                 if authtype == AuthType.client:
                     validate_client(request.headers.get(ConfigHolder.jwt_header_client))
                 elif authtype == AuthType.customer:
-                    pass
+                    validate_customer(request.headers.get(ConfigHolder.jwt_header_customer))
                 elif authtype == AuthType.staff:
-                    pass
+                    validate_staff(request.headers.get(ConfigHolder.jwt_header_staff))
             except jwt.ExpiredSignatureError:
                 print("Der Token ist abgelaufen")
                 return "Authentication error", 401
@@ -75,3 +76,19 @@ def validate_client_login(client_name: str) -> bool:
     result = db.get_does_client_exist_with_name(client_name=client_name)
     return result
     # return True
+
+
+def validate_staff(authkey: str):
+    payload = jwt.decode(authkey, key=ConfigHolder.jwt_secret_staff)  # type: Dict
+    if payload.get("sub") != "staff":
+        raise ValidationError
+    # TODO: check permissions?
+    print("Staff ", payload.get("mate.tpe"), " validiert.")
+
+
+def validate_customer(authkey: str):
+    payload = jwt.decode(authkey, key=ConfigHolder.jwt_secret_customer)  # type: Dict
+    if payload.get("sub") != "cust":
+        raise ValidationError
+    # TODO: check permissions?
+    print("Customer ", payload.get("mate.tpe"), " validiert.")

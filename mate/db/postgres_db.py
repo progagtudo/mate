@@ -9,13 +9,13 @@ class PostgresDB(AbstractDB):
 
     def check_if_user_exists(self, username: str):
         cursor = self.db.cursor()
-        cursor.execute("""SELECT EXISTS(
+        cursor.execute("""
           SELECT *
           FROM Credentials AS c
-          WHERE c.credentialKey = %s )""", (username,))
-        result = cursor.fetchone()[0]
+          WHERE c.credentialKey = %s """, (username,))
+        result = cursor.fetchone()
         cursor.close()
-        return result
+        return result is not None
 
     def get_customer_from_barcode(self, barcode: str):
         cursor = self.db.cursor()
@@ -40,7 +40,7 @@ class PostgresDB(AbstractDB):
         ON Customer.CustomerID=c.PersonID
         INNER  JOIN Person
         ON Person.PersonID=c.PersonID
-        WHERE Person.id = %s AND c.IsSalesPersonLogin = FALSE """, (customer_id,))
+        WHERE Person.personid = %s AND c.IsSalesPersonLogin = FALSE """, (customer_id,))
         result = cursor.fetchone()
         cursor.close()
         return result
@@ -53,7 +53,7 @@ class PostgresDB(AbstractDB):
         FROM Barcode AS b
         INNER JOIN Product AS p
         ON b.ProductID=p.ProductID
-        INNER JOIN ProductInstance as pi
+        INNER JOIN ProductInstance AS pi
         ON b.ProductID=pi.ProductID
         WHERE b.Barcode = %s""", (barcode,))
         result = cursor.fetchone()
@@ -64,14 +64,13 @@ class PostgresDB(AbstractDB):
         cursor = self.db.cursor()
         cursor.execute("""
         SELECT AvailableProductTags.Name, AvailableProductTags.Description
-        FROM ProductTagAssignment as p
+        FROM ProductTagAssignment AS p
         INNER JOIN AvailableProductTags
         ON p.tagid = availableproducttags.tagid
-        WHERE p.productid = %s""", (product_id, ))
+        WHERE p.productid = %s""", (product_id,))
         result = cursor.fetchall()
         cursor.close()
         return result
-
 
     def get_all_login_types(self):
         cursor = self.db.cursor()
@@ -82,37 +81,41 @@ class PostgresDB(AbstractDB):
         return result
 
     def get_login_types(self, client_name: str, username: str, is_staff: bool):
+        print("client: " + client_name + " user: " + username + " is_staff: " + str(is_staff))
         cursor = self.db.cursor()
         cursor.execute("""SELECT act.Name AS CredentialTypeName
         FROM ClientType    AS clt
-        JOIN CredentialUse AS cu ON clt.ClientTypeID = cu.ClientTypeID
-        JOIN Credentials   AS c  ON  cu.CredentialID =  c.CredentialID
-        JOIN AvailableCredentialTypes AS act ON c.CredentialTypeID = act.CredentialTypeID
-        WHERE clt.name               = %s
-          AND   c.CredentialKey      = %s
-          AND   c.IsSalesPersonLogin = %s
-        """, (client_name, username, is_staff))
+        JOIN CredentialUse AS cu
+        ON clt.ClientTypeID = cu.ClientTypeID
+        JOIN Credentials   AS c
+        ON  cu.CredentialID =  c.CredentialID
+        JOIN AvailableCredentialTypes AS act
+        ON c.CredentialTypeID = act.CredentialTypeID
+        WHERE     clt.name =             %s
+            AND   c.CredentialKey =      %s
+            AND   c.IsSalesPersonLogin = %s""", (client_name, username, is_staff))
         result = [x[0] for x in cursor.fetchall()]
         cursor.close()
         return result
 
     def get_login_credential_secret(self, client_name: str, username: str, login_type: str, is_staff: bool):
+        print("client: " + client_name + " user: " + username + " is_staff: " + str(is_staff) + " login_type: " + login_type)
         cursor = self.db.cursor()
         cursor.execute("""SELECT c.CredentialSecret
         FROM ClientType    AS clt
         JOIN CredentialUse AS cu ON clt.ClientTypeID = cu.ClientTypeID
         JOIN Credentials   AS c  ON  cu.CredentialID =  c.CredentialID
         JOIN AvailableCredentialTypes AS act ON c.CredentialTypeID = act.CredentialTypeID
-        WHERE clt.name               = %s
-          AND   c.CredentialKey      = %s
-          AND   c.IsSalesPersonLogin = %s
-          AND act.Name               = %s
+        WHERE clt.name               = (%s)
+          AND   c.CredentialKey      = (%s)
+          AND   c.IsSalesPersonLogin = (%s)
+          AND act.Name               = (%s)
         """, (client_name, username, is_staff, login_type))
         result = [x[0] for x in cursor.fetchall()]
         cursor.close()
         return result
 
-    def get_does_client_exist_with_name(self, client_name:str) -> bool:
+    def get_does_client_exist_with_name(self, client_name: str) -> bool:
         cursor = self.db.cursor()
         cursor.execute("""SELECT EXISTS(
           SELECT *
@@ -128,7 +131,7 @@ class PostgresDB(AbstractDB):
         SELECT s.Name, s.Description, s.IsSaleAllowed
         FROM Storage AS s
         WHERE s.StorageID = %s
-        """, (storage_id, ))
+        """, (storage_id,))
         result = cursor.fetchone()
         cursor.close()
         return result
@@ -152,7 +155,7 @@ class PostgresDB(AbstractDB):
         SELECT sc.StorageID, sc.Amount
         FROM StorageContent AS sc
         WHERE sc.ProductID = %s
-        """, (product_id, ))
+        """, (product_id,))
         result = cursor.fetchall()
         cursor.close()
         return result
@@ -163,7 +166,7 @@ class PostgresDB(AbstractDB):
         SELECT sc.ProductID, sc.Amount
         FROM StorageContent AS sc
         WHERE sc.StorageID = %s
-        """, (storage_id, ))
+        """, (storage_id,))
         result = cursor.fetchall()
         cursor.close()
         return result

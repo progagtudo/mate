@@ -9,6 +9,7 @@ from mate.helper.config_holder import ConfigHolder
 from mate.login.login import auth, AuthType, validate_client_login
 from mate.login.user_auth.password_user_authenticator import PasswordUserAuthenticator
 from mate.mate import get_db
+from mate.model.person.customer import Customer
 
 
 @app.route("/login_types")
@@ -16,7 +17,8 @@ from mate.mate import get_db
 def all_login_types():
     """ This method returns all available login types."""
     db = get_db()
-    result = db.get_all_login_types
+    result = db.get_all_login_types()
+    print(result)
     return jsonify({"types": result})
 
 
@@ -73,6 +75,7 @@ def login_customer(username: str):
                              key=ConfigHolder.jwt_secret_client)['mate.tpe']
     secret = request.args.get("secret")
     login_type = request.args.get("login_type")
+    customer_id = Customer.from_barcode(username).id
     if login_type is None:
         login_type = "none"
 
@@ -102,7 +105,13 @@ def login_customer(username: str):
     if success:
         # TODO: Fix this
         print("INFO: Logged in user {} as a customer".format(username))
-        token = jwt.encode({"exp": datetime.utcnow() + timedelta(hours=1), "sub": "clnt"}, "SECRET")
+        token = jwt.encode({
+            "exp": datetime.utcnow() + timedelta(hours=1),
+            "sub": "cust",
+            "nbf": datetime.utcnow(),
+            "mate.tpe": username,
+            "mate.prm": "",
+            "mate.pid": customer_id}, ConfigHolder.jwt_secret_client)
         return jsonify({"JWT": token.decode("utf-8")})
 
     else:
@@ -144,12 +153,17 @@ def login_staff(staffname: str):
                                       login_type=login_type,
                                       secret=secret,
                                       client_type=client_name,
-                                      is_staff=False)
+                                      is_staff=True)
 
     if success:
         # TODO: Fix this
         print("INFO: Logged in user {} as staff".format(staffname))
-        token = jwt.encode({"exp": datetime.utcnow() + timedelta(hours=1), "sub": "clnt"}, "SECRET")
+        token = jwt.encode({
+            "exp": datetime.utcnow() + timedelta(hours=1),
+            "sub": "staff",
+            "nbf": datetime.utcnow(),
+            "mate.tpe": staffname,
+            "mate.prm": ""}, ConfigHolder.jwt_secret_client)
         return jsonify({"JWT": token.decode("utf-8")})
 
     else:
@@ -169,7 +183,7 @@ def login_client(client_name: str):
             "exp": datetime.utcnow() + timedelta(hours=24),
             "sub": "clnt",
             "nbf": datetime.utcnow(),
-            "mate.tpe": "dummyclient",
+            "mate.tpe": client_name,
             "mate.prm": ""}, ConfigHolder.jwt_secret_client)
         return jsonify({"JWT": token.decode("utf-8")})
     else:
