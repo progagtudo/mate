@@ -17,6 +17,17 @@ class PostgresDB(AbstractDB):
         cursor.close()
         return result is not None
 
+    def check_if_salesperson_exists(self, barcode):
+        cursor = self.db.cursor()
+        cursor.execute("""
+          SELECT *
+          FROM Credentials AS c
+          WHERE c.credentialKey = %s AND c.IsSalesPersonLogin = TRUE""", (barcode,))
+        result = cursor.fetchone()
+        cursor.close()
+        return result is not None
+        pass
+
     def get_customer_from_barcode(self, barcode: str):
         cursor = self.db.cursor()
         cursor.execute("""
@@ -27,6 +38,20 @@ class PostgresDB(AbstractDB):
         INNER  JOIN Person
         ON Person.PersonID=c.PersonID
         WHERE c.credentialKey = %s AND c.IsSalesPersonLogin = FALSE """, (barcode,))
+        result = cursor.fetchone()
+        cursor.close()
+        return result
+
+    def get_salesperson_from_barcode(self, barcode: str):
+        cursor = self.db.cursor()
+        cursor.execute("""
+        SELECT Person.FirstName, Person.LastName, Person.EMail, (SalesPerson.Active AND Person.Active) AS Active, SalesPerson.BaseBalance, SalesPerson.BaseBalanceDate, Person.PersonID
+        FROM Credentials AS c
+        INNER JOIN SalesPerson
+        ON SalesPerson.salespersonid=c.PersonID
+        INNER  JOIN Person
+        ON Person.PersonID=c.PersonID
+        WHERE c.credentialKey = %s AND c.IsSalesPersonLogin = TRUE """, (barcode,))
         result = cursor.fetchone()
         cursor.close()
         return result
@@ -42,6 +67,21 @@ class PostgresDB(AbstractDB):
         ON Person.PersonID=c.PersonID
         WHERE Person.personid = %s AND c.IsSalesPersonLogin = FALSE """, (customer_id,))
         result = cursor.fetchone()
+        cursor.close()
+        return result
+
+    def get_rights_from_id(self, person_id: int):
+        cursor = self.db.cursor()
+        cursor.execute("""SELECT AvailableRights.rightid, AvailableRights.description, AvailableRights.name
+        FROM Person
+        INNER JOIN PersonRoleAssignment
+        ON PersonRoleAssignment.salespersonid = Person.personid
+        INNER JOIN RoleRightAssignment
+        ON RoleRightAssignment.roleid = PersonRoleAssignment.roleid
+        INNER JOIN AvailableRights
+        ON RoleRightAssignment.rightid = AvailableRights.rightid
+        WHERE Person.personid = %s""", (person_id,))
+        result = cursor.fetchall()
         cursor.close()
         return result
 

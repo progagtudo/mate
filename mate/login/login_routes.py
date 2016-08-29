@@ -10,6 +10,7 @@ from mate.login.login import auth, AuthType, validate_client_login
 from mate.login.user_auth.password_user_authenticator import PasswordUserAuthenticator
 from mate.mate import get_db
 from mate.model.person.customer import Customer
+from mate.model.person.salesperson import SalesPerson
 
 
 @app.route("/login_types")
@@ -156,6 +157,20 @@ def login_staff(staffname: str):
                                       is_staff=True)
 
     if success:
+        salesperson = SalesPerson.from_barcode(staffname)
+        rights = []
+        for right in salesperson.rights:
+            rights.append(right.to_dict())
+        #     rights.append({
+        #         "id": right.id,
+        #         "name": right.name,
+        #         "description"
+        #     }) = "{" \
+        #          "id: " + str(right.id) + "," \
+        #          "name: " + right.name + "," \
+        #          "description: " + right.description +\
+        #          "},"
+        # rights += "}"
         # TODO: Fix this
         print("INFO: Logged in user {} as staff".format(staffname))
         token = jwt.encode({
@@ -163,7 +178,8 @@ def login_staff(staffname: str):
             "sub": "staff",
             "nbf": datetime.utcnow(),
             "mate.tpe": staffname,
-            "mate.prm": ""}, ConfigHolder.jwt_secret_client)
+            "mate.prm": "",
+            "mate.rights": rights}, ConfigHolder.jwt_secret_client)
         return jsonify({"JWT": token.decode("utf-8")})
 
     else:

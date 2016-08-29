@@ -28,7 +28,6 @@ class ValidationError(Exception):
         return repr(self.value)
 
 
-
 def auth(authtype: AuthType, rights: List[str] = None):
     def decorator(func):
         @wraps(func)

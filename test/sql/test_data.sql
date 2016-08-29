@@ -1,5 +1,8 @@
 -- ClientType
-INSERT INTO ClientType (clienttypeid, Name) VALUES (1, 'mollys_test_client');
+INSERT INTO ClientType
+(clienttypeid, Name)
+VALUES
+    (1, 'mollys_test_client');
 
 -- ProductTags
 INSERT INTO AvailableProductTags (TagID, Name, Description)
@@ -97,9 +100,12 @@ VALUES
 INSERT INTO Person
 (PersonID, FirstName, LastName, EMail, CreationDate, Active)
 VALUES
-    (1, 'Sternhard', 'Beffen', 'test@example.com', CURRENT_TIMESTAMP, TRUE),
-    (2, 'Testy', 'McTestface', 'testy@example.com', CURRENT_TIMESTAMP, TRUE),
-    (3, 'Christoph', 'Stahl', 'christoph.stahl@udo.edu', CURRENT_TIMESTAMP, TRUE);
+    (1, 'Sternhard', 'Beffen', 'test@example.com', CURRENT_TIMESTAMP, TRUE), -- customer
+    (2, 'Testy', 'McTestface', 'testy@example.com', CURRENT_TIMESTAMP, TRUE), -- salesperson
+    (3, 'Christoph', 'Stahl', 'christoph.stahl@udo.edu', CURRENT_TIMESTAMP, TRUE), -- admin
+    (4, 'Florian', 'Friedl', 'test3@example.com', CURRENT_TIMESTAMP, TRUE), -- storeman
+    (5, 'Sebatian Lukas', 'Hauer', 'sebastian.hauer@udo.edu', CURRENT_TIMESTAMP, TRUE ), -- buyer
+    (6, 'Jakob', 'Vogt', 'jakob.vogt@udo.edu', CURRENT_TIMESTAMP, TRUE); -- finance
 
 -- Customer
 INSERT INTO Customer
@@ -112,7 +118,11 @@ VALUES
 INSERT INTO SalesPerson
 (SalesPersonID, BaseBalance, BaseBalanceDate, AddedDate, Active)
 VALUES
-    (2, 100, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, TRUE);
+    (2, 100, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, TRUE),
+    (3, 0, CURRENT_TIMESTAMP, current_timestamp, TRUE),
+    (4, 0, CURRENT_TIMESTAMP, current_timestamp, TRUE),
+    (5, 0, CURRENT_TIMESTAMP, current_timestamp, TRUE),
+    (6, 0, CURRENT_TIMESTAMP, current_timestamp, TRUE);
 
 -- PurchaseHeader
 INSERT INTO PurchaseHeader
@@ -145,23 +155,62 @@ VALUES
 INSERT INTO AvailableCredentialTypes
 (credentialtypeid, name, needspassword, moduleidentifier)
 VALUES
-(1, 'password', TRUE, 'password');
+    (1, 'password', TRUE, 'password');
 
 INSERT INTO AllowedCredentialUse
 (credentialtypeid, clienttypeid)
 VALUES
-(1, 1);
+    (1, 1);
 
 INSERT INTO Credentials
 (credentialid, credentialkey, credentialsecret, personid, credentialtypeid, issalespersonlogin, credentialcreatedate, lastsecretchange)
 VALUES
-(1, 'k1', 'secret', 1, 1, FALSE, current_date, current_timestamp),
-(2, 'k2', 'secret2', 2, 1, TRUE, current_date, current_timestamp),
-(3, 'p2', 'secret3', 3, 1, FALSE, current_date, current_timestamp);
+    (1, 'k1', 'secret', 1, 1, FALSE, current_date, current_timestamp),
+    (2, 'k2', 'secret2', 2, 1, TRUE, current_date, current_timestamp),
+    (3, 'p2', 'secret3', 3, 1, TRUE, current_date, current_timestamp);
 
 INSERT INTO CredentialUse
 (clienttypeid, credentialid)
 VALUES
-(1, 1),
-(1, 2),
-(1, 3);
+    (1, 1),
+    (1, 2),
+    (1, 3);
+
+-- Rights
+
+INSERT INTO AvailableRoles
+(roleid, name, description)
+VALUES
+    (1, 'admin', 'basicly root'),
+    (2, 'salesperson', 'someone who hooks you up with mate'),
+    (3, 'storeman', 'gets mate from storage'),
+    (4, 'buyer', 'buys mate'),
+    (5, 'finance', 'pays initial for the mate');
+
+INSERT INTO AvailableRights
+(rightid, name, description)
+VALUES
+    (1, 'adminright', 'adummyright'),
+    (2, 'salespersonright', 'adummyright'),
+    (3, 'storemanright', 'adummyright'),
+    (4, 'buyerright', 'adummyright'),
+    (5, 'financeright', 'adummyright');
+
+INSERT INTO RoleRightAssignment
+(roleid, rightid)
+VALUES
+    (1, 1),
+    (2, 2),
+    (3, 3),
+    (4, 4),
+    (5, 5);
+
+INSERT INTO PersonRoleAssignment
+(roleid, salespersonid)
+VALUES
+    (1, 3),
+    (2, 2),
+    (5, 6),
+    (4, 5),
+    (3, 4),
+    (2, 3);
