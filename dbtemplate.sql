@@ -1,12 +1,12 @@
 CREATE TABLE AvailableRoles (
-  RoleID                SERIAL  PRIMARY KEY,
+  RoleID                SERIAL  NOT NULL PRIMARY KEY,
   Name                  TEXT    NOT NULL,
   Description           TEXT    NOT NULL,
   EntryAddedDate        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
   EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP)
 );
 CREATE TABLE AvailableRights (
-  RightID               SERIAL  PRIMARY KEY,
+  RightID               SERIAL  NOT NULL PRIMARY KEY,
   Name                  TEXT    NOT NULL,
   Description           TEXT    NOT NULL,
   EntryAddedDate        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
@@ -20,23 +20,23 @@ CREATE TABLE RoleRightAssignment (
   PRIMARY KEY(RoleID, RightID)
 );
 CREATE TABLE Storage (
-  StorageID             SERIAL  PRIMARY KEY,
-  Name                  TEXT    NOT NULL,
+  StorageID             SERIAL  NOT NULL PRIMARY KEY,
+  Name                  TEXT    NOT NULL UNIQUE,
   Description           TEXT    NULL,
   IsSaleAllowed         BOOLEAN NOT NULL,
   EntryAddedDate        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
   EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP)
 );
 CREATE TABLE SafetyStockAmountLevels (
-  SafetyStockAmountID   SERIAL    PRIMARY KEY,
-  Name                  TEXT      NOT NULL,
+  SafetyStockAmountID   SERIAL    NOT NULL PRIMARY KEY,
+  Name                  TEXT      NOT NULL UNIQUE,
   ModuleIdentifier      TEXT      NULL,
   EntryAddedDate        TIMESTAMP NULL,
   EntryLastModifiedDate TIMESTAMP NULL
 );
 CREATE TABLE AvailableProductCategories (
-  CategoryID            SERIAL    PRIMARY KEY,
-  Name                  TEXT      NOT NULL,
+  CategoryID            SERIAL    NOT NULL PRIMARY KEY,
+  Name                  TEXT      NOT NULL UNIQUE,
   Description           TEXT      NULL,
   CategoryIconURI       TEXT      NULL,
   EntryAddedDate        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP) ,
@@ -50,8 +50,8 @@ COMMENT ON COLUMN AvailableProductCategories.CategoryIconURI       IS 'Eine URI/
 COMMENT ON COLUMN AvailableProductCategories.EntryAddedDate        IS 'Das Datum, an dem der Datenbankeintrag angelegt wurde.';
 COMMENT ON COLUMN AvailableProductCategories.EntryLastModifiedDate IS 'Das Datum, an dem der Datenbankeintrag zuletzt bearbeitet wurde. Wird bei Änderungen am Datensatz von einem Datenbank-Trigger automatisch ausgefüllt.';
 CREATE TABLE AvailableProductTags (
-  TagID                 SERIAL    PRIMARY KEY,
-  Name                  TEXT      NOT NULL,
+  TagID                 SERIAL    NOT NULL PRIMARY KEY,
+  Name                  TEXT      NOT NULL UNIQUE,
   Description           TEXT      NULL,
   EntryAddedDate        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP) ,
   EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP)
@@ -63,8 +63,8 @@ COMMENT ON COLUMN AvailableProductTags.Description           IS 'Eine optionale 
 COMMENT ON COLUMN AvailableProductTags.EntryAddedDate        IS 'Das Datum, an dem der Datenbankeintrag angelegt wurde.';
 COMMENT ON COLUMN AvailableProductTags.EntryLastModifiedDate IS 'Das Datum, an dem der Datenbankeintrag zuletzt bearbeitet wurde. Wird bei Änderungen am Datensatz von einem Datenbank-Trigger automatisch ausgefüllt.';
 CREATE TABLE TaxCategoryName (
-  TaxCategoryID         SERIAL        PRIMARY KEY,
-  Name                  TEXT          NOT NULL,
+  TaxCategoryID         SERIAL        NOT NULL PRIMARY KEY,
+  Name                  TEXT          NOT NULL UNIQUE,
   BaseValue             DECIMAL(10,4) NOT NULL,
   BaseValueUnit         TEXT          NOT NULL,
   EntryAddedDate        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
@@ -103,7 +103,7 @@ INSERT INTO TaxCategoryValue (TaxCategoryID, ValidSince, Value, Unit) VALUES (2,
 INSERT INTO TaxCategoryValue (TaxCategoryID, ValidSince, Value, Unit) VALUES (2, '2007-01-01', 7,  '%');
 INSERT INTO TaxCategoryValue (TaxCategoryID, ValidSince, Value, Unit) VALUES (3, '1968-01-01', 0,  '%');
 CREATE TABLE Product (
-  ProductID             SERIAL        PRIMARY KEY,
+  ProductID             SERIAL        NOT NULL PRIMARY KEY,
   Name                  TEXT          NOT NULL UNIQUE,
   Description           TEXT          NULL,
   Price                 DECIMAL(10,2) NOT NULL,
@@ -115,7 +115,7 @@ CREATE TABLE Product (
   EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP)
 );
 CREATE TABLE Barcode (
-  BarcodeID             SERIAL    PRIMARY KEY,
+  BarcodeID             SERIAL    NOT NULL PRIMARY KEY,
   Barcode               TEXT      NOT NULL UNIQUE,
   ProductID             INTEGER   NOT NULL REFERENCES Product(ProductID),
   EntryAddedDate        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
@@ -150,18 +150,18 @@ CREATE TABLE StorageContent (
   EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP)
 );
 CREATE TABLE StorageLog (
-  StorageLogID          SERIAL  PRIMARY KEY,
+  StorageLogID          SERIAL  NOT NULL PRIMARY KEY,
   FromStorage           INTEGER NULL REFERENCES Storage(StorageID),
   ToStorage             INTEGER NULL REFERENCES Storage(StorageID),
   ProductID             INTEGER NOT NULL REFERENCES Product(ProductID),
   Amount                INTEGER NOT NULL,
-  TransferTimeStamp     TIMESTAMP WITH TIME ZONE NOT NULL,
+  TransferTimeStamp     TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
   EntryAddedDate        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
   EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
   CHECK( FromStorage IS NOT NULL OR ToStorage IS NOT NULL )
 );
 CREATE TABLE Retailer (
-  RetailerID            SERIAL    PRIMARY KEY,
+  RetailerID            SERIAL    NOT NULL PRIMARY KEY,
   Name                  TEXT      NOT NULL,
   AdressCountry         TEXT      NULL,
   AdressZipCode         TEXT      NULL,
@@ -173,7 +173,7 @@ CREATE TABLE Retailer (
   EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP)
 );
 CREATE TABLE RetailerContactPerson (
-  ContactPersonID       SERIAL    PRIMARY KEY,
+  ContactPersonID       SERIAL    NOT NULL PRIMARY KEY,
   FirstName             TEXT      NULL,
   LastName              TEXT      NOT NULL,
   EMail                 TEXT      NULL,
@@ -196,12 +196,12 @@ COMMENT ON COLUMN ContactPersonFor.ContactPersonID IS 'Die Kontaktperson, die f�
 COMMENT ON COLUMN ContactPersonFor.EntryAddedDate IS 'Das Datum, an dem der Datenbankeintrag angelegt wurde. Durch einen Trigger vor Veränderungen geschützt.';
 COMMENT ON COLUMN ContactPersonFor.EntryLastModifiedDate IS 'Das Datum, an dem der Datenbankeintrag zuletzt bearbeitet wurde. Wird bei Änderungen am Datensatz von einem Datenbank-Trigger automatisch aktualisiert.';
 CREATE TABLE Person (
-  PersonID              SERIAL    PRIMARY KEY,
+  PersonID              SERIAL    NOT NULL PRIMARY KEY,
   FirstName             TEXT      NOT NULL,
   LastName              TEXT      NOT NULL,
   EMail                 TEXT      UNIQUE NOT NULL,
   CreationDate          TIMESTAMP WITH TIME ZONE NOT NULL,
-  Active                BOOLEAN   NOT NULL,
+  Active                BOOLEAN   NOT NULL DEFAULT(TRUE),
   EntryAddedDate        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
   EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP)
 );
@@ -210,7 +210,7 @@ CREATE TABLE Customer (
   BaseBalance           DECIMAL(10,2)            NOT NULL DEFAULT(0),
   BaseBalanceDate       TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
   AddedDate             TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
-  Active                BOOLEAN                  NOT NULL,
+  Active                BOOLEAN                  NOT NULL DEFAULT(TRUE),
   EntryAddedDate        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
   EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP)
 );
@@ -219,7 +219,7 @@ CREATE TABLE SalesPerson (
   BaseBalance           DECIMAL(10,2)            NOT NULL DEFAULT(0),
   BaseBalanceDate       TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
   AddedDate             TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
-  Active                BOOLEAN                  NOT NULL,
+  Active                BOOLEAN                  NOT NULL DEFAULT(TRUE),
   EntryAddedDate        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
   EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP)
 );
@@ -231,7 +231,7 @@ CREATE TABLE PersonRoleAssignment (
   PRIMARY KEY(RoleID, SalesPersonID)
 );
 CREATE TABLE PurchaseHeader (
-  PurchaseID            SERIAL    PRIMARY KEY,
+  PurchaseID            SERIAL    NOT NULL PRIMARY KEY,
   OrderDate             DATE      NOT NULL,
   InvoiceNumber         TEXT      NULL,
   InvoiceCopy           BYTEA     NULL,
@@ -242,7 +242,7 @@ CREATE TABLE PurchaseHeader (
   EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP)
 );
 CREATE TABLE PurchaseDetail (
-  PurchaseDetailID      SERIAL         PRIMARY KEY,
+  PurchaseDetailID      SERIAL         NOT NULL PRIMARY KEY,
   PurchaseID            INTEGER        NOT NULL REFERENCES PurchaseHeader(PurchaseID),
   ProductID             INTEGER        NOT NULL REFERENCES Product(ProductID),
   PrimeCostPerUnit      DECIMAL(10, 2) NOT NULL,
@@ -262,7 +262,7 @@ CREATE TABLE ProductInstance (
   EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP)
 );
 CREATE TABLE SalesHeader (
-  SalesID               SERIAL    PRIMARY KEY,
+  SalesID               SERIAL    NOT NULL PRIMARY KEY,
   SalesPersonID         INTEGER   NOT NULL REFERENCES SalesPerson(SalesPersonID),
   CustomerID            INTEGER   NOT NULL REFERENCES Customer(CustomerID),
   SalesDateTime         TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
@@ -270,7 +270,7 @@ CREATE TABLE SalesHeader (
   EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP)
 );
 CREATE TABLE SalesDetail (
-  SalesDetailID         SERIAL        PRIMARY KEY,
+  SalesDetailID         SERIAL        NOT NULL PRIMARY KEY,
   SalesID               INTEGER       NOT NULL REFERENCES SalesPerson(SalesPersonID),
   ProductInstanceID     INTEGER       NOT NULL REFERENCES Customer(CustomerID),
   UnitPrice             DECIMAL(10,4) NOT NULL,
@@ -280,18 +280,26 @@ CREATE TABLE SalesDetail (
   EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP)
 );
 CREATE TABLE ClientType (
-  ClientTypeID          SERIAL    PRIMARY KEY,
+  ClientTypeID          SERIAL    NOT NULL PRIMARY KEY,
   Name                  TEXT      NOT NULL UNIQUE,
   EntryAddedDate        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
   EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP)
 );
-COMMENT ON TABLE  ClientType IS 'Modelliert Zugriffe über verschiedene Systeme und Logins: HTTP-Admin-Schnittstelle, HTTP-Kunden-Schnittstelle, Kunden-App,Lager-App, User-Terminal, User-Login gesicherter Client, etc.';
+COMMENT ON TABLE  ClientType IS 'Modelliert verschiedene Client-Typen, wie Verkaufsclient, Kunden-Webseite, Admin-Client etc.';
 COMMENT ON COLUMN ClientType.ClientTypeID IS 'Eine eindeutige Identifikationsnummer';
 COMMENT ON COLUMN ClientType.Name IS 'Eine Stringbezeichnung, die benutzt werden kann, um nicht mit der ID arbeiten zu müssen';
 COMMENT ON COLUMN ClientType.EntryAddedDate IS 'Das Datum, an dem der Datenbankeintrag angelegt wurde. Durch einen Trigger vor Veränderungen geschützt.';
 COMMENT ON COLUMN ClientType.EntryLastModifiedDate IS 'Das Datum, an dem der Datenbankeintrag zuletzt bearbeitet wurde. Wird bei Änderungen am Datensatz von einem Datenbank-Trigger automatisch aktualisiert.';
+CREATE TABLE Client (
+  ClientID              SERIAL  NOT NULL PRIMARY KEY,
+  Name                  TEXT    NOT NULL,
+  ClientTypeID          INTEGER NOT NULL REFERENCES ClientType(ClientTypeID)
+  ClientSecret          BYTEA   NOT NULL,
+  EntryAddedDate        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
+  EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP)
+);
 CREATE TABLE AvailableCredentialTypes (
-  CredentialTypeID      SERIAL    PRIMARY KEY,
+  CredentialTypeID      SERIAL    NOT NULL PRIMARY KEY,
   Name                  TEXT      NOT NULL,
   NeedsPassword         BOOLEAN   NOT NULL,
   ModuleIdentifier      TEXT      NULL,
@@ -312,11 +320,18 @@ CREATE TABLE AllowedCredentialUse (
 
   PRIMARY KEY (CredentialTypeID, ClientTypeID)
 );
+CREATE TABLE Username (
+  UsernameID            SERIAL  NOT NULL PRIMARY KEY,
+  Username              TEXT    NOT NULL UNIQUE,
+  PersonID              INTEGER NOT NULL REFERENCES Person(PersonID),
+  EntryAddedDate        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
+  EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP)
+  
+);
 CREATE TABLE Credentials (
-  CredentialID          SERIAL    PRIMARY KEY,
-  CredentialKey         TEXT      NOT NULL UNIQUE,
+  CredentialID          SERIAL    NOT NULL PRIMARY KEY,
   CredentialSecret      BYTEA     NULL,
-  PersonID              INTEGER   NOT NULL REFERENCES Person(PersonID),
+  UsernameID            INTEGER   NOT NULL REFERENCES Username(UsernameID),
   CredentialTypeID      INTEGER   NOT NULL REFERENCES AvailableCredentialTypes(CredentialTypeID),
   IsSalesPersonLogin    BOOLEAN   NOT NULL,
   CredentialCreateDate  DATE      NOT NULL,
@@ -324,11 +339,10 @@ CREATE TABLE Credentials (
   EntryAddedDate        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
   EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP)
 );
-COMMENT ON TABLE Credentials IS 'Credentials sind abstrakte Kombinationen aus einem Nutzernamen und einem Geheimnis, welche die Anmeldung an einer Schnittstelle erlauben.';
+COMMENT ON TABLE Credentials IS 'Credentials sind (geheime) Login-Informationen, welche die Anmeldung an Clients erlauben.';
 COMMENT ON COLUMN Credentials.CredentialID IS 'Eine Eindeutige Identifikationsnummer';
-COMMENT ON COLUMN Credentials.CredentialKey IS 'Der Schlüssel entspricht in etwa einem Benutzernamen';
 COMMENT ON COLUMN Credentials.CredentialSecret IS 'Das Geheimnis, welches der Nutzer zum Login mit dem Credential benötigt. Format hängt vom CredentialType ab';
-COMMENT ON COLUMN Credentials.PersonID IS 'Die Person, zu der der Login gehört';
+COMMENT ON COLUMN Credentials.UsernameID IS 'Referenziert über den Username die Person, zu der der Login gehört';
 COMMENT ON COLUMN Credentials.CredentialTypeID IS 'Gibt den Typen des Credentials an.';
 COMMENT ON COLUMN Credentials.IsSalesPersonLogin IS 'Gibt an, ob das Credential für einen Kunden- oder Mitarbeiterlogin verwendet wird.';
 COMMENT ON COLUMN Credentials.CredentialCreateDate IS 'Das Datum, an dem der Login angelegt wurde.';
@@ -344,7 +358,7 @@ CREATE TABLE CredentialUse (
   PRIMARY KEY (CredentialID, ClientTypeID)
 );
 CREATE TABLE Charge (
-  ChargeID              SERIAL        PRIMARY KEY,
+  ChargeID              SERIAL        NOT NULL PRIMARY KEY,
   CustomerID            INTEGER       NOT NULL REFERENCES Customer(CustomerID),
   SalesPersonID         INTEGER       NOT NULL REFERENCES SalesPerson(SalesPersonID),
   Donation              BOOLEAN       NOT NULL,
@@ -363,7 +377,7 @@ COMMENT ON COLUMN Charge.ChargeDate IS 'Das Datum der Guthabenaufladung';
 COMMENT ON COLUMN Charge.EntryAddedDate IS 'Das Datum, an dem der Datenbankeintrag angelegt wurde. Durch einen Trigger vor Veränderungen geschützt.';
 COMMENT ON COLUMN Charge.EntryLastModifiedDate IS 'Das Datum, an dem der Datenbankeintrag zuletzt bearbeitet wurde. Wird bei Änderungen am Datensatz von einem Datenbank-Trigger automatisch aktualisiert.';
 CREATE TABLE Repayment (
-  RepaymentID           SERIAL         PRIMARY KEY,
+  RepaymentID           SERIAL         NOT NULL PRIMARY KEY,
   SalesPersonID         INTEGER        NOT NULL REFERENCES SalesPerson(SalesPersonID),
   TransactionDate       DATE           NOT NULL,
   Amount                DECIMAL(10, 2) NOT NULL,
@@ -400,5 +414,3 @@ CREATE VIEW ProductTaxes AS -- Berechnet die Steuerkategorie für jede Produktin
     WHERE i.AddedDate >= t2.ValidSince
   )
 ;
-
-
