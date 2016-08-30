@@ -150,12 +150,19 @@ CREATE TABLE ProductTagAssignment (
   EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP)
 );
 CREATE TABLE StorageContent (
-  StorageID             INTEGER NOT NULL REFERENCES Storage(StorageID),
-  ProductID             INTEGER NOT NULL REFERENCES Product(ProductID),
-  Amount                INTEGER NOT NULL,
+  StorageID             INTEGER                  NOT NULL REFERENCES Storage(StorageID),
+  ProductID             INTEGER                  NOT NULL REFERENCES Product(ProductID),
+  Amount                INTEGER                  NOT NULL,
   EntryAddedDate        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
-  EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP)
+  EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
+  PRIMARY KEY( StorageID, ProductID )
 );
+COMMENT ON StorageContent IS 'Speichert die Produktverteilung von Produkten auf die vorhandenen Lager an';
+COMMENT ON StorageContent.StorageID             IS 'Das referenzierte Lager';
+COMMENT ON StorageContent.ProductID             IS 'Das referenzierte Produkt';
+COMMENT ON StorageContent.Amount                IS 'Die im Lager verfügbare Produktmenge. Sollte positiv sein. Eine negative Produktmenge deutet auf ein inkonsistentes Lager hin.';
+COMMENT ON StorageContent.EntryAddedDate        IS 'Das Datum, an dem der Datenbankeintrag angelegt wurde. Vor Veränderungen geschützt.';
+COMMENT ON StorageContent.EntryLastModifiedDate IS 'Das Datum, an dem der Datenbankeintrag zuletzt bearbeitet wurde. Wird bei Änderungen am Datensatz von einem Datenbank-Trigger automatisch aktualisiert.';
 CREATE TABLE StorageLog (
   StorageLogID          SERIAL  NOT NULL PRIMARY KEY,
   FromStorage           INTEGER NULL REFERENCES Storage(StorageID),
