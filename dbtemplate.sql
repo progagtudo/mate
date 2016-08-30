@@ -20,13 +20,20 @@ CREATE TABLE RoleRightAssignment (
   PRIMARY KEY(RoleID, RightID)
 );
 CREATE TABLE Storage (
-  StorageID             SERIAL  NOT NULL PRIMARY KEY,
-  Name                  TEXT    NOT NULL UNIQUE,
-  Description           TEXT    NULL,
-  IsSaleAllowed         BOOLEAN NOT NULL,
+  StorageID             SERIAL                   NOT NULL PRIMARY KEY,
+  Name                  TEXT                     NOT NULL UNIQUE,
+  Description           TEXT                         NULL,
+  IsSaleAllowed         BOOLEAN                  NOT NULL,
   EntryAddedDate        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
   EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP)
 );
+COMMENT ON Storage IS 'Storage modelliert ein Warenlager. Ein solches Lager hat einen eindeutigen Namen und eine optionale Beschreibung.';
+COMMENT ON Storage.StorageID             IS 'Eine eindeutige LagerID';
+COMMENT ON Storage.Name                  IS 'Die eindeutige Bezeichnung für das Lager';
+COMMENT ON Storage.Description           IS 'Eine optionale Textbeschreibung für das Lager';
+COMMENT ON Storage.IsSaleAllowed         IS 'Gibt an, ob der Verkauf von Waren aus dem Lager erlaubt ist';
+COMMENT ON Storage.EntryAddedDate        IS 'Das Datum, an dem der Datenbankeintrag angelegt wurde. Vor Veränderungen geschützt.';
+COMMENT ON Storage.EntryLastModifiedDate IS 'Das Datum, an dem der Datenbankeintrag zuletzt bearbeitet wurde. Wird bei Änderungen am Datensatz von einem Datenbank-Trigger automatisch aktualisiert.';
 CREATE TABLE SafetyStockAmountLevels (
   SafetyStockAmountID   SERIAL    NOT NULL PRIMARY KEY,
   Name                  TEXT      NOT NULL UNIQUE,
