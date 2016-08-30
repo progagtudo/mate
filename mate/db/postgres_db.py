@@ -9,7 +9,6 @@ class PostgresDB(AbstractDB):
         self.db.close()
 
     def check_if_user_exists(self, username: str):
-        app.logger.info("check if user exists")
         cursor = self.db.cursor()
         cursor.execute("""
           SELECT *
@@ -33,7 +32,6 @@ class PostgresDB(AbstractDB):
         pass
 
     def get_customer_from_barcode(self, barcode: str):
-        app.logger.info("get_customer_from_barcode")
         cursor = self.db.cursor()
         cursor.execute("""
         SELECT Person.FirstName, Person.LastName, Person.EMail, (Customer.Active AND Person.Active) AS Active, Customer.BaseBalance, Customer.BaseBalanceDate, Person.PersonID
@@ -242,6 +240,8 @@ class PostgresDB(AbstractDB):
         success = not cursor.fetchone()[0]
         if success:
             app.logger.info("Deleting Storage with ID {}".format(storage_id))
+        if self.__exists_storage(storage_id=storage_id, cursor=cursor):
+            app.logger.info("Deleting Storage with ID {}".format(storage_id))
             cursor.execute("""
             DELETE FROM Storage AS s
             WHERE s.StorageID = %s
@@ -251,6 +251,67 @@ class PostgresDB(AbstractDB):
             self.db.commit()
         cursor.close()
         return success
+
+    def exists_storage(self, storage_id: int):
+        return self.__exists_storage(storage_id=storage_id)
+
+    def __exists_storage(self, storage_id: int, cursor=None) -> bool:
+        close_cursor = False
+        if cursor is None:
+            close_cursor = True
+            cursor = self.db.cursor()
+        # Check if there is any content in the to be deleted storage. Fail if there is any.
+        # Use 42 as a dummy value to check for tuple existence, since we are not interested in any real data.
+        cursor.execute("""
+        SELECT EXISTS(
+          SELECT 42 AS data
+          FROM Storage AS s
+          WHERE s.StorageID = %s )
+        """, (storage_id,))
+        success = not cursor.fetchone()[0]
+        if close_cursor is True:
+            cursor.close()
+        return success
+
+    def create_storage(self, name: str, description: str, is_sale_allowed: bool):
+        cursor = self.db.cursor()
+
+        cursor.execute("""
+        INSERT INTO Storage
+          (Name, Description, IsSaleAllowed)
+        VALUES
+          (%s, %s, %s)
+        RETURNING StorageID
+        """, (name, description, is_sale_allowed))
+
+        result = cursor.fetchone()[0]
+        cursor.close()
+
+        return result
+
+    def update_storage(self, storage, update_description: bool):
+        cursor = self.db.cursor()
+
+        if self.__exists_storage(storage_id=storage.storage_id, cursor=cursor):
+            cursor.execute("""BEGIN""")
+
+            if storage.name is not None:
+                cursor.execute("""UPDATE Storage
+                SET Name = %s
+                WHERE StorageID = %s""", (storage.name, storage.storage_id))
+
+            if update_description is True:
+                cursor.execute("""UPDATE Storage
+                SET Description = %s
+                WHERE StorageID = %s""", (storage.description, storage.storage_id))
+
+            if storage.is_sale_allowed is not None:
+                cursor.execute("""UPDATE Storage
+                SET IsSaleAllowed = %s
+                WHERE StorageID = %s""", (storage.is_sale_allowed, storage.storage_id))
+
+            cursor.execute("""COMMIT""")
+            cursor.close()
 
     def __init__(self, configstring: str):
         super().__init__()

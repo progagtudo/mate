@@ -43,7 +43,19 @@ class AbstractDB(ABC):
         pass
 
     @abstractmethod
+    def exists_storage(self, storage_id: int) -> bool:
+        pass
+
+    @abstractmethod
     def delete_storage(self, storage_id: int) -> bool:
+        pass
+
+    @abstractmethod
+    def create_storage(self, name: str, description: str, is_sale_allowed: bool) -> int:
+        pass
+
+    @abstractmethod
+    def update_storage(self, storage, update_description: bool):
         pass
 
     @abstractmethod
