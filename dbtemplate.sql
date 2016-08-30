@@ -219,15 +219,23 @@ COMMENT ON COLUMN ContactPersonFor.ContactPersonID IS 'Die Kontaktperson, die f�
 COMMENT ON COLUMN ContactPersonFor.EntryAddedDate IS 'Das Datum, an dem der Datenbankeintrag angelegt wurde. Durch einen Trigger vor Veränderungen geschützt.';
 COMMENT ON COLUMN ContactPersonFor.EntryLastModifiedDate IS 'Das Datum, an dem der Datenbankeintrag zuletzt bearbeitet wurde. Wird bei Änderungen am Datensatz von einem Datenbank-Trigger automatisch aktualisiert.';
 CREATE TABLE Person (
-  PersonID              SERIAL    NOT NULL PRIMARY KEY,
-  FirstName             TEXT      NOT NULL,
-  LastName              TEXT      NOT NULL,
-  EMail                 TEXT      UNIQUE NOT NULL,
-  CreationDate          TIMESTAMP WITH TIME ZONE NOT NULL,
-  Active                BOOLEAN   NOT NULL DEFAULT(TRUE),
+  PersonID              SERIAL                   NOT NULL PRIMARY KEY,
+  FirstName             TEXT                     NOT NULL,
+  LastName              TEXT                     NOT NULL,
+  EMail                 TEXT                     NOT NULL UNIQUE,
+  CreationDate          TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
+  Active                BOOLEAN                  NOT NULL DEFAULT(TRUE),
   EntryAddedDate        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
   EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP)
 );
+COMMENT ON Person IS 'Modelliert eine Person, die direkten Zugriff zum System benötigt. Händler-Kontaktpersonen werden nicht in dieser Tabelle abgelegt. Siehe dafür RetailerContactPerson';
+COMMENT ON Person.FirstName             IS 'Der Vorname der Person';
+COMMENT ON Person.LastName              IS 'Der Nachname der Person';
+COMMENT ON Person.EMail                 IS 'Die E-Mail Adresse muss eindeutig sein und dient zur eindeutigen Identifikation und zur Zurücksetzung von Logins.';
+COMMENT ON Person.CreationDate          IS 'Das Datum, an dem die Person angelegt wurde';
+COMMENT ON Person.Active                IS 'Gibt an, ob die Person aktiv ist. Mit diesem Attribut kann die Handlungsfähigkeit einer Person deaktiviert werden';
+COMMENT ON Person.EntryAddedDate        IS 'Das Datum, an dem der Datenbankeintrag angelegt wurde. Vor Veränderungen geschützt.';
+COMMENT ON Person.EntryLastModifiedDate IS 'Das Datum, an dem der Datenbankeintrag zuletzt bearbeitet wurde. Wird bei Änderungen am Datensatz von einem Datenbank-Trigger automatisch aktualisiert.';
 CREATE TABLE Customer (
   CustomerID            INTEGER                  NOT NULL PRIMARY KEY REFERENCES Person(PersonID),
   BaseBalance           DECIMAL(10,2)            NOT NULL DEFAULT(0),
