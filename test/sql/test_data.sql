@@ -2,7 +2,12 @@
 INSERT INTO ClientType
 (clienttypeid, Name)
 VALUES
-    (1, 'mollys_test_client');
+    (1, 'test_client');
+
+INSERT INTO Client
+(clientid, name, clienttypeid, clientsecret)
+VALUES
+    (1, 'mollys_test_client', 1, 'dassagichnicht');
 
 -- ProductTags
 INSERT INTO AvailableProductTags (TagID, Name, Description)
@@ -164,14 +169,21 @@ VALUES
     (1, 1),
     (2, 1);
 
-INSERT INTO Credentials
-(credentialid, credentialkey, credentialsecret, personid, credentialtypeid, issalespersonlogin, credentialcreatedate, lastsecretchange)
+INSERT INTO Username
+(usernameid, username, personid)
 VALUES
-    (1, 'k1', 'secret', 1, 1, FALSE, current_date, current_timestamp),
-    (2, 'k2', 'secret2', 2, 1, TRUE, current_date, current_timestamp),
-    (3, 'p2', 'secret3', 3, 1, TRUE, current_date, current_timestamp);
-    -- (4, 'k2', 'secret2', 2, 2, TRUE, current_date, current_timestamp),
-    -- (5, 'k1', 'secret', 1, 2, FALSE, current_date, current_timestamp);
+    (1, 'k1', 1),
+    (2, 'k2', 2),
+    (3, 'p2', 3);
+
+INSERT INTO Credentials
+(credentialid, credentialsecret, usernameid, credentialtypeid, issalespersonlogin, credentialcreatedate, lastsecretchange)
+VALUES
+    (1, 'secret', 1, 1, FALSE, current_date, current_timestamp),
+    (2, 'secret2', 2, 1, TRUE, current_date, current_timestamp),
+    (3, 'secret3', 3, 1, TRUE, current_date, current_timestamp),
+    (4, 'secret2', 2, 2, TRUE, current_date, current_timestamp),
+    (5, 'secret', 1, 2, FALSE, current_date, current_timestamp);
 
 INSERT INTO CredentialUse
 (clienttypeid, credentialid)

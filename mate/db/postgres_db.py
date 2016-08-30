@@ -9,11 +9,12 @@ class PostgresDB(AbstractDB):
         self.db.close()
 
     def check_if_user_exists(self, username: str):
+        app.logger.info("check if user exists")
         cursor = self.db.cursor()
         cursor.execute("""
           SELECT *
-          FROM Credentials AS c
-          WHERE c.credentialKey = %s """, (username,))
+          FROM username AS u
+          WHERE u.username = %s """, (username,))
         result = cursor.fetchone()
         cursor.close()
         return result is not None
@@ -22,23 +23,28 @@ class PostgresDB(AbstractDB):
         cursor = self.db.cursor()
         cursor.execute("""
           SELECT *
-          FROM Credentials AS c
-          WHERE c.credentialKey = %s AND c.IsSalesPersonLogin = TRUE""", (barcode,))
+          FROM username AS u
+          INNER JOIN credentials as c
+          ON u.usernameid = c.usernameid
+          WHERE u.username = %s AND c.IsSalesPersonLogin = TRUE""", (barcode,))
         result = cursor.fetchone()
         cursor.close()
         return result is not None
         pass
 
     def get_customer_from_barcode(self, barcode: str):
+        app.logger.info("get_customer_from_barcode")
         cursor = self.db.cursor()
         cursor.execute("""
         SELECT Person.FirstName, Person.LastName, Person.EMail, (Customer.Active AND Person.Active) AS Active, Customer.BaseBalance, Customer.BaseBalanceDate, Person.PersonID
-        FROM Credentials AS c
+        FROM username as u
+        INNER JOIN credentials as c
+        ON u.usernameid = c.usernameid
         INNER JOIN Customer
-        ON Customer.CustomerID=c.PersonID
+        ON Customer.CustomerID=u.PersonID
         INNER  JOIN Person
-        ON Person.PersonID=c.PersonID
-        WHERE c.credentialKey = %s AND c.IsSalesPersonLogin = FALSE """, (barcode,))
+        ON Person.PersonID=u.PersonID
+        WHERE u.username = %s AND c.IsSalesPersonLogin = FALSE """, (barcode,))
         result = cursor.fetchone()
         cursor.close()
         return result
@@ -47,12 +53,14 @@ class PostgresDB(AbstractDB):
         cursor = self.db.cursor()
         cursor.execute("""
         SELECT Person.FirstName, Person.LastName, Person.EMail, (SalesPerson.Active AND Person.Active) AS Active, SalesPerson.BaseBalance, SalesPerson.BaseBalanceDate, Person.PersonID
-        FROM Credentials AS c
+        FROM username as u
+        INNER JOIN credentials as c
+        ON u.usernameid = c.usernameid
         INNER JOIN SalesPerson
-        ON SalesPerson.salespersonid=c.PersonID
+        ON SalesPerson.salespersonid=u.PersonID
         INNER  JOIN Person
-        ON Person.PersonID=c.PersonID
-        WHERE c.credentialKey = %s AND c.IsSalesPersonLogin = TRUE """, (barcode,))
+        ON Person.PersonID=u.PersonID
+        WHERE u.username = %s AND c.IsSalesPersonLogin = TRUE """, (barcode,))
         result = cursor.fetchone()
         cursor.close()
         return result
@@ -61,11 +69,13 @@ class PostgresDB(AbstractDB):
         cursor = self.db.cursor()
         cursor.execute("""
         SELECT Person.FirstName, Person.LastName, Person.EMail, (Customer.Active AND Person.Active) AS Active, Customer.BaseBalance, Customer.BaseBalanceDate, Person.PersonID
-        FROM Credentials AS c
+        FROM username AS u
+        INNER JOIN Credentials AS c
+        ON u.usernameid = c.usernameid
         INNER JOIN Customer
-        ON Customer.CustomerID=c.PersonID
+        ON Customer.CustomerID=u.PersonID
         INNER  JOIN Person
-        ON Person.PersonID=c.PersonID
+        ON Person.PersonID=u.PersonID
         WHERE Person.personid = %s AND c.IsSalesPersonLogin = FALSE """, (customer_id,))
         result = cursor.fetchone()
         cursor.close()
@@ -125,15 +135,19 @@ class PostgresDB(AbstractDB):
         app.logger.info("client: " + client_name + " user: " + username + " is_staff: " + str(is_staff))
         cursor = self.db.cursor()
         cursor.execute("""SELECT act.Name AS CredentialTypeName
-        FROM ClientType    AS clt
+        FROM client        AS cl
+        JOIN ClientType    AS clt
+        ON cl.clienttypeid = clt.clienttypeid
         JOIN CredentialUse AS cu
         ON clt.ClientTypeID = cu.ClientTypeID
-        JOIN Credentials   AS c
+        INNER JOIN credentials as c
         ON  cu.CredentialID =  c.CredentialID
+        INNER JOIN username as u
+        ON u.usernameid = c.usernameid
         JOIN AvailableCredentialTypes AS act
         ON c.CredentialTypeID = act.CredentialTypeID
-        WHERE     clt.name =             %s
-            AND   c.CredentialKey =      %s
+        WHERE     cl.name =             %s
+            AND   u.username =      %s
             AND   c.IsSalesPersonLogin = %s""", (client_name, username, is_staff))
         result = [x[0] for x in cursor.fetchall()]
         cursor.close()
@@ -143,12 +157,14 @@ class PostgresDB(AbstractDB):
         app.logger.info("client: " + client_name + " user: " + username + " is_staff: " + str(is_staff) + " login_type: " + login_type)
         cursor = self.db.cursor()
         cursor.execute("""SELECT c.CredentialSecret
-        FROM ClientType    AS clt
+        FROM client        AS cl
+        JOIN ClientType    AS clt ON cl.clienttypeid = clt.clienttypeid
         JOIN CredentialUse AS cu ON clt.ClientTypeID = cu.ClientTypeID
         JOIN Credentials   AS c  ON  cu.CredentialID =  c.CredentialID
+        JOIN username      AS u  ON u.usernameid = c.usernameid
         JOIN AvailableCredentialTypes AS act ON c.CredentialTypeID = act.CredentialTypeID
-        WHERE clt.name               = (%s)
-          AND   c.CredentialKey      = (%s)
+        WHERE cl.name                = (%s)
+          AND   u.username           = (%s)
           AND   c.IsSalesPersonLogin = (%s)
           AND act.Name               = (%s)
         """, (client_name, username, is_staff, login_type))
@@ -160,8 +176,8 @@ class PostgresDB(AbstractDB):
         cursor = self.db.cursor()
         cursor.execute("""SELECT EXISTS(
           SELECT *
-          FROM ClientType AS ct
-          WHERE ct.Name = %s )""", (client_name,))
+          FROM Client AS cl
+          WHERE cl.Name = %s )""", (client_name,))
         result = cursor.fetchone()[0]
         cursor.close()
         return result
