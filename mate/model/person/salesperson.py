@@ -1,3 +1,4 @@
+from mate import app
 from mate.model.person.right import Right
 from mate.model.person.right_type import RightType
 from schematics.types import IntType, ListType
@@ -28,8 +29,8 @@ class SalesPerson(Person):
     def get_rights(self):
         result = PostgresDB.get_rights_from_id(get_db(), person_id=self.id)
         for obj in result:
-            print(obj)
-            print("Found a Right: "+obj[1]+", "+obj[2])
+            app.logger.info(obj)
+            app.logger.info("Found a Right: "+obj[1]+", "+obj[2])
             a = Right()
             a.id = obj[0]
             a.name = obj[2]
@@ -46,8 +47,3 @@ class SalesPerson(Person):
             return instance
         else:
             return cls(active=False)
-
-    @classmethod
-    def dummy(cls):
-        return cls("Sternhart", "Beffen", "test@example.com", True, 20,
-                   datetime.datetime.now().isoformat(), 123, True)

@@ -49,11 +49,11 @@ def add_retailer():
     add a new retailer
     """
     data = request.json
-    print("test")
+    app.logger.info("test")
     a_retailer = Retailer.from_json_new_object(json.loads(data))
     # ToDo: create storage in DB
     a_retailer.id = 12  # ToDo add id from DB to Object.
-    print("added stub id to retailer")  # remove print when ToDo is done
+    app.logger.warning("added stub id to retailer")  # remove print when ToDo is done
     return jsonify(a_retailer)
 
 
@@ -65,7 +65,7 @@ def update_retailer(retailer_id):
     update the retailer with the id
     """
     # check_storage_id(storage_id)
-    print("test")
+    app.logger.info("test")
     data = request.data
     # validate(data, retaile_modul.json_scheme_new_object)
     a_retailer = Retailer.from_json_new_object(json.loads(data))

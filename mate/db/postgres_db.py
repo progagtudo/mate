@@ -1,6 +1,7 @@
 import psycopg2
 
 from mate.db.abstract_db import AbstractDB
+from mate import app
 
 
 class PostgresDB(AbstractDB):
@@ -121,7 +122,7 @@ class PostgresDB(AbstractDB):
         return result
 
     def get_login_types(self, client_name: str, username: str, is_staff: bool):
-        print("client: " + client_name + " user: " + username + " is_staff: " + str(is_staff))
+        app.logger.info("client: " + client_name + " user: " + username + " is_staff: " + str(is_staff))
         cursor = self.db.cursor()
         cursor.execute("""SELECT act.Name AS CredentialTypeName
         FROM ClientType    AS clt
@@ -139,7 +140,7 @@ class PostgresDB(AbstractDB):
         return result
 
     def get_login_credential_secret(self, client_name: str, username: str, login_type: str, is_staff: bool):
-        print("client: " + client_name + " user: " + username + " is_staff: " + str(is_staff) + " login_type: " + login_type)
+        app.logger.info("client: " + client_name + " user: " + username + " is_staff: " + str(is_staff) + " login_type: " + login_type)
         cursor = self.db.cursor()
         cursor.execute("""SELECT c.CredentialSecret
         FROM ClientType    AS clt
@@ -224,13 +225,13 @@ class PostgresDB(AbstractDB):
         """, (storage_id,))
         success = not cursor.fetchone()[0]
         if success:
-            print("Deleting Storage with ID {}".format(storage_id))
+            app.logger.info("Deleting Storage with ID {}".format(storage_id))
             cursor.execute("""
             DELETE FROM Storage AS s
             WHERE s.StorageID = %s
             """, (storage_id,))
             success = cursor.rowcount == 1
-            print("Deleted {} entries".format(cursor.rowcount))
+            app.logger.info("Deleted {} entries".format(cursor.rowcount))
             self.db.commit()
         cursor.close()
         return success

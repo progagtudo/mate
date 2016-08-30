@@ -48,7 +48,6 @@ def add_contact_person():
     add a new contact person
     """
     data = request.json
-    print("test")
     a_contact_person = ContactPerson.from_json_new_object(json.loads(data))
     # ToDo: Verify if retailer of contact person exists
     # ToDo: create contact person in DB

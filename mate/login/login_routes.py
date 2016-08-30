@@ -19,7 +19,6 @@ def all_login_types():
     """ This method returns all available login types."""
     db = get_db()
     result = db.get_all_login_types()
-    print(result)
     return jsonify({"types": result})
 
 
@@ -106,7 +105,7 @@ def login_customer(username: str):
 
     if success:
         # TODO: Fix this
-        print("INFO: Logged in user {} as a customer".format(username))
+        app.logger.info("Logged in user {} as a customer".format(username))
         token = jwt.encode({
             "exp": datetime.utcnow() + timedelta(hours=1),
             "sub": "cust",
@@ -163,7 +162,7 @@ def login_staff(staffname: str):
         rights = []
         for right in salesperson.rights:
             rights.append(right.to_dict())
-        print("INFO: Logged in user {} as staff".format(staffname))
+        app.logger.info("Logged in user {} as staff".format(staffname))
         token = jwt.encode({
             "exp": datetime.utcnow() + timedelta(hours=1),
             "sub": "staff",
@@ -183,7 +182,7 @@ def login_client(client_name: str):
     # This currently always returns a valid token
     if validate_client_login(client_name=client_name):
         # Do something with content
-        print("WARNING: Not doing anything useful!")
+        app.logger.warning("Not doing anything useful!")
         # TODO: this should contain the correct client type and permissions
         # TODO: mate.prm should contain array of permissions
         token = jwt.encode({

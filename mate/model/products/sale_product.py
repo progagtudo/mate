@@ -1,5 +1,6 @@
+from mate import app
 from mate.mate import get_db
-from schematics.transforms import blacklist, whitelist
+from schematics.transforms import whitelist
 from schematics.types import BooleanType
 
 from mate.model.products.abstract_product import AbstractProduct
@@ -29,15 +30,16 @@ class SaleProduct(AbstractProduct):
     def get_tags(self):
         result = PostgresDB.get_product_tags(get_db(), product_id=self.product_id)
         for obj in result:
-            print("Found a Tag: "+obj[0]+", "+obj[1])
+            app.logger.info("Found a Tag: "+obj[0]+", "+obj[1])
             a = ProductTag()
             a.name = obj[0]
             a.description = obj[1]
+            a.validate()
             self.tags.append(a)
 
     @classmethod
     def from_barcode(cls, barcode):
-        print("product barcode: "+barcode)
+        app.logger.info("product barcode: "+barcode)
         r = PostgresDB.get_product_from_barcode(get_db(), barcode)
         if r is None:
             return cls(is_sale_allowed=False)

@@ -34,7 +34,6 @@ class Storage(AbstractModel):
         """inits an storage Object from incoming json dict
         :param json: a python object from json
         """
-        print("ist")
         instance = cls()
         instance.name = json["name"]
         instance.is_sale_allowed = json["is_sale_allowed"]

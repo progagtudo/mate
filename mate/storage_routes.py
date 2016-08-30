@@ -8,11 +8,11 @@ from mate.model.storage.storage import Storage
 
 
 def check_storage_id(storage_id):
-    print("test")
-    print(type(storage_id))
+    app.logger.info("test")
+    app.logger.info(type(storage_id))
     assert storage_id is int
     if storage_id < 0:
-        print("storage_id is to low")
+        app.logger.warning("storage_id is to low")
         return "storage_id is to low", 500
     else:
         pass
@@ -54,11 +54,11 @@ def add_storage():
     :return: new storage
     """
     data = request.json
-    print("test12")
+    app.logger.info("test12")
     a_storage = Storage.from_json_new_object(json.loads(data))
     # TODO: create storage in DB
     a_storage.storage_id = 12 # TODO: add id from DB to Object.
-    print("added stub id to storage") # remove print when ToDo is done
+    app.logger.warning("added stub id to storage") # remove print when ToDo is done
     return jsonify(a_storage)
 
 
@@ -77,7 +77,7 @@ def get_storage_info(storage_id: int):
 # @auth #TODO
 def update_storage(storage_id):
     #check_storage_id(storage_id)
-    print("test")
+    app.logger.info("test")
     data = request.data
     #validate(data, storage_modul.json_scheme_new_object)
     a_storage = Storage.from_json_new_object(json.loads(data))

@@ -17,7 +17,7 @@ from mate.db.postgres_db import PostgresDB
 @auth(AuthType.staff)
 def get_barcode(code):
     if code is not None:
-        print("/barcode/" + code + " found.")
+        app.logger.info("/barcode/" + code + " found.")
         # ToDo: find customer
         customer = "null"
         customer_obj = Customer.from_barcode(code)
