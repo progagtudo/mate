@@ -31,8 +31,8 @@ CREATE TABLE SafetyStockAmountLevels (
   SafetyStockAmountID   SERIAL    NOT NULL PRIMARY KEY,
   Name                  TEXT      NOT NULL UNIQUE,
   ModuleIdentifier      TEXT      NULL,
-  EntryAddedDate        TIMESTAMP NULL,
-  EntryLastModifiedDate TIMESTAMP NULL
+  EntryAddedDate        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
+  EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP)
 );
 CREATE TABLE AvailableProductCategories (
   CategoryID            SERIAL    NOT NULL PRIMARY KEY,

@@ -26,6 +26,7 @@ class Storage(AbstractModel):
         instance = cls()
         instance.storage_id = json["storage_id"]
         instance.name = json["name"]
+        instance.description = json["description"]
         instance.is_sale_allowed = json["is_sale_allowed"]
         return instance
 
@@ -34,9 +35,9 @@ class Storage(AbstractModel):
         """inits an storage Object from incoming json dict
         :param json: a python object from json
         """
-        print("ist")
         instance = cls()
         instance.name = json["name"]
+        instance.description = json["description"]
         instance.is_sale_allowed = json["is_sale_allowed"]
         return instance
 
@@ -54,6 +55,10 @@ class Storage(AbstractModel):
             # TODO: fix storage_amounts, this item has a useless type and cannot be filled with useful data.
             instance.storage_amounts = []
             return instance
+
+    @classmethod
+    def update_in_db(cls, storage, update_description: bool):
+        get_db().update_storage(storage=storage, update_description=update_description)
 
     @classmethod
     def delete_instance_in_db(cls, storage_id: int) -> bool:
