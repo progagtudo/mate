@@ -164,16 +164,25 @@ COMMENT ON StorageContent.Amount                IS 'Die im Lager verfügbare Pro
 COMMENT ON StorageContent.EntryAddedDate        IS 'Das Datum, an dem der Datenbankeintrag angelegt wurde. Vor Veränderungen geschützt.';
 COMMENT ON StorageContent.EntryLastModifiedDate IS 'Das Datum, an dem der Datenbankeintrag zuletzt bearbeitet wurde. Wird bei Änderungen am Datensatz von einem Datenbank-Trigger automatisch aktualisiert.';
 CREATE TABLE StorageLog (
-  StorageLogID          SERIAL  NOT NULL PRIMARY KEY,
-  FromStorage           INTEGER NULL REFERENCES Storage(StorageID),
-  ToStorage             INTEGER NULL REFERENCES Storage(StorageID),
-  ProductID             INTEGER NOT NULL REFERENCES Product(ProductID),
-  Amount                INTEGER NOT NULL,
-  TransferTimeStamp     TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
+  StorageLogID          SERIAL                   NOT NULL PRIMARY KEY,
+  FromStorage           INTEGER                      NULL REFERENCES Storage(StorageID),
+  ToStorage             INTEGER                      NULL REFERENCES Storage(StorageID),
+  ProductID             INTEGER                  NOT NULL REFERENCES Product(ProductID),
+  Amount                INTEGER                  NOT NULL,
+  TransferTimestamp     TIMESTAMP WITH TIME ZONE NOT NULL,
   EntryAddedDate        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
   EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
-  CHECK( FromStorage IS NOT NULL OR ToStorage IS NOT NULL )
+  CONSTRAINT OneStorageMustExist CHECK( FromStorage IS NOT NULL OR ToStorage IS NOT NULL )
 );
+COMMENT ON StorageLog IS 'Modelliert einen Lagergang. Ein Eintrag ist eine Warenverschiebung von einem Lager in ein anderes. Ist FromStorage NULL, wird ein neu gekauftes Produkt eingelagert. Ist ToStorage NULL, wird ein gekauftes Produkt verkauft oder ein verschwundenes Produkt während einer Inventur entfernt.';
+COMMENT ON StorageLog.FromStorage           IS 'Das Lager, aus dem das Produkt entnommen wird. Ist es NULL, wird ein neues Produkt eingelagert.';
+COMMENT ON StorageLog.ToStorage             IS 'Das Lager, in dem das Produkt eingelagert wird. Ist es NULL, wird ein Produkt endgültig entnommen.';
+COMMENT ON StorageLog.ProductID             IS 'Das verschobene Produkt';
+COMMENT ON StorageLog.Amount                IS 'Die Produktmenge, die verschoben wird';
+COMMENT ON StorageLog.TransferTimestamp     IS 'Der Zeitpunkt, an dem das Produkt verschoben wird.';
+COMMENT ON StorageLog.EntryAddedDate        IS 'Das Datum, an dem der Datenbankeintrag angelegt wurde. Vor Veränderungen geschützt.';
+COMMENT ON StorageLog.EntryLastModifiedDate IS 'Das Datum, an dem der Datenbankeintrag zuletzt bearbeitet wurde. Wird bei Änderungen am Datensatz von einem Datenbank-Trigger automatisch aktualisiert.';
+COMMENT ON CONSTRAINT OneStorageMustExist ON StorageLog IS 'Mindestens eins der Lager muss existieren. Beide Lager NULL ist ungültig.';
 CREATE TABLE Retailer (
   RetailerID            SERIAL    NOT NULL PRIMARY KEY,
   Name                  TEXT      NOT NULL,
