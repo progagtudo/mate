@@ -206,7 +206,7 @@ CREATE TABLE Person (
   EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP)
 );
 CREATE TABLE Customer (
-  CustomerID            INTEGER PRIMARY KEY REFERENCES Person(PersonID),
+  CustomerID            INTEGER                  NOT NULL PRIMARY KEY REFERENCES Person(PersonID),
   BaseBalance           DECIMAL(10,2)            NOT NULL DEFAULT(0),
   BaseBalanceDate       TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
   AddedDate             TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
@@ -215,7 +215,7 @@ CREATE TABLE Customer (
   EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP)
 );
 CREATE TABLE SalesPerson (
-  SalesPersonID         INTEGER PRIMARY KEY REFERENCES Person(PersonID),
+  SalesPersonID         INTEGER                  NOT NULL PRIMARY KEY REFERENCES Person(PersonID),
   BaseBalance           DECIMAL(10,2)            NOT NULL DEFAULT(0),
   BaseBalanceDate       TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
   AddedDate             TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
@@ -251,7 +251,7 @@ CREATE TABLE PurchaseDetail (
   EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP)
 );
 CREATE TABLE ProductInstance (
-  ProductInstanceID     INTEGER       PRIMARY KEY REFERENCES PurchaseDetail(PurchaseDetailID),
+  ProductInstanceID     INTEGER       NOT NULL PRIMARY KEY REFERENCES PurchaseDetail(PurchaseDetailID),
   ProductID             INTEGER       NOT NULL REFERENCES Product(ProductID),
   AddedDate             DATE          NOT NULL,
   InStockAmount         INTEGER       NOT NULL,
@@ -261,8 +261,8 @@ CREATE TABLE ProductInstance (
   EntryAddedDate        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
   EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP)
 );
-CREATE TABLE SalesHeader (
-  SalesID               SERIAL    NOT NULL PRIMARY KEY,
+CREATE TABLE SaleHeader (
+  SaleID                SERIAL    NOT NULL PRIMARY KEY,
   SalesPersonID         INTEGER   NOT NULL REFERENCES SalesPerson(SalesPersonID),
   CustomerID            INTEGER   NOT NULL REFERENCES Customer(CustomerID),
   SalesDateTime         TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
@@ -271,8 +271,8 @@ CREATE TABLE SalesHeader (
 );
 CREATE TABLE SalesDetail (
   SalesDetailID         SERIAL        NOT NULL PRIMARY KEY,
-  SalesID               INTEGER       NOT NULL REFERENCES SalesPerson(SalesPersonID),
-  ProductInstanceID     INTEGER       NOT NULL REFERENCES Customer(CustomerID),
+  SaleID                INTEGER       NOT NULL REFERENCES SaleHeader(SaleID),
+  ProductInstanceID     INTEGER       NOT NULL REFERENCES ProductInstance(ProductInstanceID),
   UnitPrice             DECIMAL(10,4) NOT NULL,
   UnitQuantity          INTEGER       NOT NULL,
   IsRedemption          BOOLEAN       NOT NULL,
