@@ -45,8 +45,3 @@ class Customer(Person):
             return instance
         else:
             return cls(active=False)
-
-    @classmethod
-    def dummy(cls):
-        return cls("Sternhart", "Beffen", "test@example.com", True, 20,
-                   datetime.datetime.now().isoformat(), 123, True)

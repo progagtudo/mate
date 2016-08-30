@@ -165,7 +165,7 @@ paths:
        - staff_jwt: []
       responses:
         200:
-          description: returns a barcode details object
+          description: returns a barcode details object that could contain nothing
           schema:
             $ref: '#/definitions/Barcode'
         401:
@@ -174,7 +174,7 @@ paths:
             type: string
             description: simple error message
         404:
-          description: Neither a user nor a product is associated with the given barcode
+          description: no barcode given
           schema:
             type: string
             description: simple error message

@@ -73,11 +73,17 @@ def test_client_login(client_login, tclient):
     assert answer.status_code == 200
 
 
-def test_failed_client_login(tclient):
+def test_client_login_wrong_jwt(tclient):
     answer = tclient.get("/test/client_auth", headers={ConfigHolder.jwt_header_client: ""})
     assert answer.status_code == 401
     answer = tclient.get("/test/client_auth")
     assert answer.status_code == 401
+
+
+def test_failed_client_login(tclient, test_db):
+    answer = tclient.get('/login/client/foobar')
+    assert answer.data.decode("UTF-8") == "Client Authentication failed"
+    assert answer.status_code == 403
 
 
 def test_customer_login(customer_login, tclient):
@@ -85,7 +91,7 @@ def test_customer_login(customer_login, tclient):
     assert answer.status_code == 200
 
 
-def test_failed_customer_login(tclient):
+def test_customer_login_wrong_jwt(tclient):
     answer = tclient.get("/test/customer_auth", headers={ConfigHolder.jwt_header_customer: "absoluterFoo"})
     assert answer.status_code == 401
     answer = tclient.get("/test/customer_auth", headers={ConfigHolder.jwt_header_customer: ""})
@@ -94,12 +100,36 @@ def test_failed_customer_login(tclient):
     assert answer.status_code == 401
 
 
+def test_failed_customer_login(tclient, client_login):
+    answer = tclient.get("/login/customer/k1?secret=secret",
+                         headers={ConfigHolder.jwt_header_client: client_login})
+    assert answer.status_code == 403
+    assert answer.data.decode("UTF-8") == "Login for user »k1« failed. " \
+                                          "Login type »none« is not usable for this user and client combination"
+
+    answer = tclient.get("/login/customer/foo?secret=secret",
+                         headers={ConfigHolder.jwt_header_client: client_login})
+    assert answer.status_code == 404
+    assert answer.data.decode("UTF-8") == "Could not find user!"
+
+    answer = tclient.get("/login/customer/k1?login_type=password&secret=secret2",
+                         headers={ConfigHolder.jwt_header_client: client_login})
+    assert answer.status_code == 403
+    assert answer.data.decode("UTF-8") == "Login Failed"
+
+    # ToDo: Add this test once multiple logins per barcode are possible
+    # answer = tclient.get("/login/customer/k1?login_type=test&secret=secret",
+    #                     headers={ConfigHolder.jwt_header_client: client_login})
+    # assert answer.status_code == 400
+    # assert answer.data.decode("UTF-8") == "Unknown login type: »test«"
+
+
 def test_staff_login(staff_login, tclient):
     answer = tclient.get("/test/staff_auth", headers={ConfigHolder.jwt_header_staff: staff_login})
     assert answer.status_code == 200
 
 
-def test_failed_staff_login(tclient):
+def test_staff_login_wrong_jwt(tclient):
     answer = tclient.get("/test/staff_auth", headers={ConfigHolder.jwt_header_staff: "AuchAbsoluterFoo"})
     assert answer.status_code == 401
     answer = tclient.get("/test/staff_auth", headers={ConfigHolder.jwt_header_staff: ""})
@@ -108,11 +138,35 @@ def test_failed_staff_login(tclient):
     assert answer.status_code == 401
 
 
+def test_failed_staff_login(tclient, client_login):
+    answer = tclient.get("/login/staff/k2?secret=secret2",
+                         headers={ConfigHolder.jwt_header_client: client_login})
+    assert answer.status_code == 403
+    assert answer.data.decode("UTF-8") == "Login for user »k2« failed. " \
+                                          "Login type »none« is not usable for this user and client combination"
+
+    answer = tclient.get("/login/staff/foo?login_type=password&secret=secret2",
+                         headers={ConfigHolder.jwt_header_client: client_login})
+    assert answer.status_code == 404
+    assert answer.data.decode("UTF-8") == "Could not find user!"
+
+    answer = tclient.get("/login/staff/k2?login_type=password&secret=secret",
+                         headers={ConfigHolder.jwt_header_client: client_login})
+    assert answer.status_code == 403
+    assert answer.data.decode("UTF-8") == "Login Failed"
+
+    # ToDo: Add this test once multiple logins per barcode are possible
+    # answer = tclient.get("/login/staff/k2?login_type=test&secret=secret2",
+    #                     headers={ConfigHolder.jwt_header_client: client_login})
+    # assert answer.status_code == 400
+    # assert answer.data.decode("UTF-8") == "Unknown login type: »test«"
+
+
 def test_all_login_types(tclient, client_login):
     answer = tclient.get("/login_types", headers={ConfigHolder.jwt_header_client: client_login})
     js = json.loads(answer.data.decode("UTF-8"))
     assert answer.status_code == 200
-    login_type = ["password"]
+    login_type = ['password', 'test']
     assert js["types"] == login_type
 
 
@@ -132,8 +186,71 @@ def test_version(tclient):
     assert mate.__version__ == answer.data.decode('utf-8')
 
 
+def test_login_types(tclient, client_login):
+    answer = tclient.get("/login_types/k1", headers={ConfigHolder.jwt_header_client: client_login})
+    js = json.loads(answer.data.decode("UTF-8"))
+    assert answer.status_code == 200
+    types = {
+        "staff": [],
+        "customer": ['password']
+    }
+    assert js["types"] == types
+
+    answer = tclient.get("/login_types/k2", headers={ConfigHolder.jwt_header_client: client_login})
+    js = json.loads(answer.data.decode("UTF-8"))
+    assert answer.status_code == 200
+    types = {
+        "staff": ['password'],
+        "customer": []
+    }
+    assert js["types"] == types
+
+
+def test_failed_login_types(tclient, client_login):
+    answer = tclient.get("/login_types/2", headers={ConfigHolder.jwt_header_client: client_login})
+    assert answer.data.decode("UTF-8") == "Could not find user!"
+    assert answer.status_code == 404
+
+
+def test_specific_login_types(tclient, client_login):
+    answer = tclient.get("/login_types/k2/customer", headers={ConfigHolder.jwt_header_client: client_login})
+    js = json.loads(answer.data.decode("UTF-8"))
+    assert answer.status_code == 200
+    assert js["types"] == []
+
+    answer = tclient.get("/login_types/k2/staff", headers={ConfigHolder.jwt_header_client: client_login})
+    js = json.loads(answer.data.decode("UTF-8"))
+    assert answer.status_code == 200
+    assert js["types"] == ['password']
+
+
+def test_failed_specific_login_types(tclient, client_login):
+    answer = tclient.get("/login_types/k2/foo", headers={ConfigHolder.jwt_header_client: client_login})
+    assert answer.data.decode("UTF-8") == "Wrong type supplied. Valid values: customer, staff"
+    assert answer.status_code == 400
+
+    answer = tclient.get("/login_types/2/customer", headers={ConfigHolder.jwt_header_client: client_login})
+    assert answer.data.decode("UTF-8") == "Could not find user!"
+    assert answer.status_code == 404
+
+
 def test_db_create(plain_db):
     print("DB created")
+
+
+def test_failed_barcode(tclient, client_login, staff_login):
+    answer = tclient.get('/barcode/foobar',
+                         headers={ConfigHolder.jwt_header_client: client_login,
+                                  ConfigHolder.jwt_header_staff: staff_login})
+    js = json.loads(answer.data.decode("UTF-8"))
+    assert js['customer'] == "null"
+    assert js['product'] == "null"
+    assert answer.status_code == 200
+
+    answer = tclient.get('/barcode/',
+                         headers={ConfigHolder.jwt_header_client: client_login,
+                                  ConfigHolder.jwt_header_staff: staff_login})
+    assert answer.status_code == 404
 
 
 def test_get_product_from_barcode(tclient, client_login, staff_login):
@@ -179,3 +296,11 @@ def test_customer_balance(tclient, client_login, staff_login, customer_login):
     js = json.loads(answer.data.decode('utf-8'))
     assert js["value"] == '20.00'
     assert answer.status_code == 200
+
+
+def test_failed_customer_balance(tclient, client_login, staff_login, customer_login):
+    answer = tclient.get('/customer/2/balance', headers={ConfigHolder.jwt_header_client: client_login,
+                                                         ConfigHolder.jwt_header_staff: staff_login,
+                                                         ConfigHolder.jwt_header_customer: customer_login})
+    assert answer.data.decode('utf-8') == "Customer is not valid"
+    assert answer.status_code == 403

@@ -39,7 +39,7 @@ def person_login_types(username: str):
     login_type_list_staff = get_db().get_login_types(client_name, username, True)
     login_type_list_customer = get_db().get_login_types(client_name, username, False)
     return jsonify({"types": {
-        "salesperson": login_type_list_staff,
+        "staff": login_type_list_staff,
         "customer": login_type_list_customer
     }})
 
@@ -94,9 +94,10 @@ def login_customer(username: str):
     if login_type == "password":
         authenticator = PasswordUserAuthenticator()
     elif login_type == "none":
+        # ToDo: Add NoneAuthenticator
         pass
     else:
-        return "Unknown login type: {}".format(login_type), 400
+        return "Unknown login type: »{}«".format(login_type), 400
     success = authenticator.auth_user(username=username,
                                       login_type=login_type,
                                       secret=secret,
@@ -147,6 +148,7 @@ def login_staff(staffname: str):
     if login_type == "password":
         authenticator = PasswordUserAuthenticator()
     elif login_type == "none":
+        # ToDo: Add NoneAuthenticator
         pass
     else:
         return "Unknown login type: {}".format(login_type), 400
@@ -161,17 +163,6 @@ def login_staff(staffname: str):
         rights = []
         for right in salesperson.rights:
             rights.append(right.to_dict())
-        #     rights.append({
-        #         "id": right.id,
-        #         "name": right.name,
-        #         "description"
-        #     }) = "{" \
-        #          "id: " + str(right.id) + "," \
-        #          "name: " + right.name + "," \
-        #          "description: " + right.description +\
-        #          "},"
-        # rights += "}"
-        # TODO: Fix this
         print("INFO: Logged in user {} as staff".format(staffname))
         token = jwt.encode({
             "exp": datetime.utcnow() + timedelta(hours=1),

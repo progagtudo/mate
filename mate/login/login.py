@@ -74,7 +74,6 @@ def validate_client_login(client_name: str) -> bool:
     db = get_db()
     result = db.get_does_client_exist_with_name(client_name=client_name)
     return result
-    # return True
 
 
 def validate_staff(authkey: str):

@@ -155,12 +155,14 @@ VALUES
 INSERT INTO AvailableCredentialTypes
 (credentialtypeid, name, needspassword, moduleidentifier)
 VALUES
-    (1, 'password', TRUE, 'password');
+    (1, 'password', TRUE, 'password'),
+    (2, 'test', TRUE, 'test');
 
 INSERT INTO AllowedCredentialUse
 (credentialtypeid, clienttypeid)
 VALUES
-    (1, 1);
+    (1, 1),
+    (2, 1);
 
 INSERT INTO Credentials
 (credentialid, credentialkey, credentialsecret, personid, credentialtypeid, issalespersonlogin, credentialcreatedate, lastsecretchange)
@@ -168,6 +170,8 @@ VALUES
     (1, 'k1', 'secret', 1, 1, FALSE, current_date, current_timestamp),
     (2, 'k2', 'secret2', 2, 1, TRUE, current_date, current_timestamp),
     (3, 'p2', 'secret3', 3, 1, TRUE, current_date, current_timestamp);
+    -- (4, 'k2', 'secret2', 2, 2, TRUE, current_date, current_timestamp),
+    -- (5, 'k1', 'secret', 1, 2, FALSE, current_date, current_timestamp);
 
 INSERT INTO CredentialUse
 (clienttypeid, credentialid)

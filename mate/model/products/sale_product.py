@@ -45,12 +45,3 @@ class SaleProduct(AbstractProduct):
             instance = cls(product_id=r[0], name=r[1], price=r[3], category_id=r[6], description=r[2], is_sale_allowed=r[4], is_default_redemption=r[5], amount_in_sale_storage=r[7])
             instance.get_tags()
             return instance
-
-    @classmethod
-    def dummy(cls):
-        instance = cls(1337, "Club Mate 0,5l", 0.90, 1, "Der originale Mate Eistee von Löscher", False, False, 100)
-        p = ProductTag()
-        p.name = "koffeinhaltig"
-        p.description = "enthält Koffein"
-        instance.tags = [p]
-        return instance

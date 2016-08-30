@@ -11,7 +11,7 @@ from mate.model.retailer.contact_person import ContactPerson
 # @auth(AuthType.client)
 def get_contact_person(cperson_id):
     """
-    returns the contact persons
+    returns a contact persons
     """
     # ToDo : implement this shit
     # ToDo: find the id in the db
@@ -22,7 +22,7 @@ def get_contact_person(cperson_id):
 # @auth(AuthType.client)
 def get_contact_persons():
     """
-    returns the contact persons
+    returns multiple contact persons
     """
     limit = request.args.get("limit", 20, type=int)
     offset = request.args.get("offset", 0, type=int)
@@ -50,7 +50,8 @@ def add_contact_person():
     data = request.json
     print("test")
     a_contact_person = ContactPerson.from_json_new_object(json.loads(data))
-    # ToDo: create storage in DB
+    # ToDo: Verify if retailer of contact person exists
+    # ToDo: create contact person in DB
     return jsonify(a_contact_person)
 
 
