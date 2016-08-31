@@ -110,28 +110,38 @@ INSERT INTO TaxCategoryValue (TaxCategoryID, ValidSince, Value, Unit) VALUES (2,
 INSERT INTO TaxCategoryValue (TaxCategoryID, ValidSince, Value, Unit) VALUES (2, '2007-01-01', 7,  '%');
 INSERT INTO TaxCategoryValue (TaxCategoryID, ValidSince, Value, Unit) VALUES (3, '1968-01-01', 0,  '%');
 CREATE TABLE Product (
-  ProductID             SERIAL        NOT NULL PRIMARY KEY,
-  Name                  TEXT          NOT NULL UNIQUE,
-  Description           TEXT          NULL,
-  Price                 DECIMAL(10,2) NOT NULL,
-  TaxCategoryID         INTEGER       NOT NULL REFERENCES TaxCategoryName(TaxCategoryID),
-  CategoryID            INTEGER       NULL REFERENCES AvailableProductCategories(CategoryID),
-  IsSaleAllowed         BOOLEAN       NOT NULL,
-  IsDefaultRedemption   BOOLEAN       NOT NULL,
+  ProductID             SERIAL                   NOT NULL PRIMARY KEY,
+  Name                  TEXT                     NOT NULL UNIQUE,
+  Description           TEXT                         NULL,
+  Price                 DECIMAL(10,2)            NOT NULL,
+  TaxCategoryID         INTEGER                  NOT NULL REFERENCES TaxCategoryName(TaxCategoryID),
+  CategoryID            INTEGER                      NULL REFERENCES AvailableProductCategories(CategoryID),
+  IsSaleAllowed         BOOLEAN                  NOT NULL,
+  IsDefaultRedemtion    BOOLEAN                  NOT NULL,
   EntryAddedDate        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
   EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP)
 );
+COMMENT ON Product IS 'Modelliert ein Produkt mit seinen allgemeinen Eigenschaften. Produkt wird auch in der Lagerverwaltung verwendet.';
+COMMENT ON Product.ProductID             IS 'Eindeutige Nummer zur Identifizierung eines Produktes';
+COMMENT ON Product.Name                  IS 'Eindeutiger Produktname. Ist UNIQUE, um nicht unterscheidbare Produkte mit gleichem Namen zu vermeiden.';
+COMMENT ON Product.Description           IS 'Eine optionale Textbeschreibung. Kann die Zutatenliste oder eine Produktbeschreibung enthalten.';
+COMMENT ON Product.Price                 IS 'Der Verkaufspreis des Produkts.';
+COMMENT ON Product.TaxCategoryID         IS 'Referenz auf die Steuerkategorie. Der genaue Steuersatz einer Produktinstanz ergibt sich aus der Kategorie und dem Einkaufsdatum.';
+COMMENT ON Product.IsSaleAllowed         IS 'Gibt an, ob das Produkt verkauft werden darf. Es ist möglich, dass ein Produkt aus administrativen Gründen nicht mehr verkauft werden darf.';
+COMMENT ON Product.IsDefaultRedemption   IS 'Gibt an, ob das Produkt normal verkauft oder zurückgegeben wird. Ein Rückgabeprodukt (Wert TRUE) ist z.B. Pfand.';
+COMMENT ON Product.EntryAddedDate        IS 'Das Datum, an dem der Datenbankeintrag angelegt wurde. Vor Veränderungen geschützt.';
+COMMENT ON Product.EntryLastModifiedDate IS 'Das Datum, an dem der Datenbankeintrag zuletzt bearbeitet wurde. Wird bei Änderungen am Datensatz von einem Datenbank-Trigger automatisch aktualisiert.';
 CREATE TABLE Barcode (
-  BarcodeID             SERIAL    NOT NULL PRIMARY KEY,
-  Barcode               TEXT      NOT NULL UNIQUE,
-  ProductID             INTEGER   NOT NULL REFERENCES Product(ProductID),
+  BarcodeID             SERIAL                   NOT NULL PRIMARY KEY,
+  Barcode               TEXT                     NOT NULL UNIQUE,
+  ProductID             INTEGER                  NOT NULL REFERENCES Product(ProductID),
   EntryAddedDate        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
   EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP)
 );
 COMMENT ON TABLE Barcode IS 'Die Tabelle beinhaltet alle im Verkauf verwendeten Produktbarcodes. Kundenlogins via Barcode werden nicht von dieser Tabelle erfasst.';
-COMMENT ON COLUMN Barcode.Barcode IS 'Der dekodierte Barcode-Inhalt. Wird nur für Produkte verwendet.';
-COMMENT ON COLUMN Barcode.ProductID IS 'Das mit dem Barcode verknüpfte Produkt';
-COMMENT ON COLUMN Barcode.EntryAddedDate IS 'Das Datum, an dem der Datenbankeintrag angelegt wurde. Durch einen Trigger vor Veränderungen geschützt.';
+COMMENT ON COLUMN Barcode.Barcode               IS 'Der dekodierte Barcode-Inhalt. Wird nur für Produkte verwendet.';
+COMMENT ON COLUMN Barcode.ProductID             IS 'Das mit dem Barcode verknüpfte Produkt';
+COMMENT ON COLUMN Barcode.EntryAddedDate        IS 'Das Datum, an dem der Datenbankeintrag angelegt wurde. Vor Veränderungen geschützt.';
 COMMENT ON COLUMN Barcode.EntryLastModifiedDate IS 'Das Datum, an dem der Datenbankeintrag zuletzt bearbeitet wurde. Wird bei Änderungen am Datensatz von einem Datenbank-Trigger automatisch aktualisiert.';
 CREATE TABLE ProductSafetyStockAmounts (
   ProductID             INTEGER   NOT NULL REFERENCES Product(ProductID),
