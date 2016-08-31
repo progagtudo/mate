@@ -292,16 +292,26 @@ CREATE TABLE PurchaseDetail (
   EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP)
 );
 CREATE TABLE ProductInstance (
-  ProductInstanceID     INTEGER       NOT NULL PRIMARY KEY REFERENCES PurchaseDetail(PurchaseDetailID),
-  ProductID             INTEGER       NOT NULL REFERENCES Product(ProductID),
-  AddedDate             DATE          NOT NULL,
-  InStockAmount         INTEGER       NOT NULL,
-  BestBeforeDate        DATE          NULL,
-  PriceOverride         DECIMAL(10,2) NULL,
-  TaxCategoryID         INTEGER       NOT NULL REFERENCES TaxCategoryName(TaxCategoryID),
+  ProductInstanceID     INTEGER                  NOT NULL PRIMARY KEY REFERENCES PurchaseDetail(PurchaseDetailID),
+  ProductID             INTEGER                  NOT NULL REFERENCES Product(ProductID),
+  AddedDate             DATE                     NOT NULL,
+  InStockAmount         INTEGER                  NOT NULL,
+  BestBeforeDate        DATE                         NULL,
+  PriceOverride         DECIMAL(10,2)                NULL,
+  TaxCategoryID         INTEGER                  NOT NULL REFERENCES TaxCategoryName(TaxCategoryID),
   EntryAddedDate        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
   EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP)
 );
+COMMENT ON ProductInstance IS 'Eine Produktinstanz ist ein reales Produkt, eingekauft bei einem Händler. Es hat einen Lagerbestand und Kaufdatum, eventuell Mindesthaltbarkeitsdatum.';
+COMMENT ON ProductInstance.ProductInstanceID     IS 'Eindeutiger Identifikator, wird durch das PurchaseDetail bestimmt und in Verkäufen (SaleDetail) verwendet.';
+COMMENT ON ProductInstance.ProductID             IS 'Die Produktinstanz ist eine Instanz des referenzierten Produktes und teilt alle Eigenschaften des Produkts';
+COMMENT ON ProductInstance.AddedDate             IS 'Das Einlagerdatum des Produkts. Wird auf das Datum des Produkteinkaufs oder der Lieferung gesetzt.';
+COMMENT ON ProductInstance.InStockAmount         IS 'Die Menge der Produktinstanz, die noch im Lager verfügbar ist.';
+COMMENT ON ProductInstance.BestBeforeDate        IS 'Ein optionales Mindesthaltbarkeitsdatum. Kann bei verderblichen Waren gesetzt werden, um bei Ablauf zu warnen.';
+COMMENT ON ProductInstance.PriceOverride         IS 'Überschreibt den Produktpreis für eine einzelne Instanz mit einem anderen Preis';
+COMMENT ON ProductInstance.TaxCategoryID         IS 'Die Steuerkategorie, unter der das Produkt eingekauft werden. Wird bei anlegen der Instanz aus Product kopiert und hält die Steuerkategorie auch nach Änderung am Produkt';
+COMMENT ON ProductInstance.EntryCreatedDate      IS 'Das Datum, an dem der Datenbankeintrag angelegt wurde. Vor Veränderungen geschützt.';
+COMMENT ON ProductInstance.EntryLastModifiedDate IS 'Das Datum, an dem der Datenbankeintrag zuletzt bearbeitet wurde. Wird bei Änderungen am Datensatz von einem Datenbank-Trigger automatisch aktualisiert.';
 CREATE TABLE SaleHeader (
   SaleID                SERIAL    NOT NULL PRIMARY KEY,
   SalesPersonID         INTEGER   NOT NULL REFERENCES SalesPerson(SalesPersonID),
@@ -310,8 +320,8 @@ CREATE TABLE SaleHeader (
   EntryAddedDate        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
   EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP)
 );
-CREATE TABLE SalesDetail (
-  SalesDetailID         SERIAL        NOT NULL PRIMARY KEY,
+CREATE TABLE SaleDetail (
+  SaleDetailID          SERIAL        NOT NULL PRIMARY KEY,
   SaleID                INTEGER       NOT NULL REFERENCES SaleHeader(SaleID),
   ProductInstanceID     INTEGER       NOT NULL REFERENCES ProductInstance(ProductInstanceID),
   UnitPrice             DECIMAL(10,4) NOT NULL,
