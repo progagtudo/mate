@@ -27,7 +27,7 @@ CREATE TABLE Storage (
   EntryAddedDate        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
   EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP)
 );
-COMMENT ON TABLE Storage IS 'Storage modelliert ein Warenlager. Ein solches Lager hat einen eindeutigen Namen und eine optionale Beschreibung.';
+COMMENT ON TABLE  Storage IS 'Storage modelliert ein Warenlager. Ein solches Lager hat einen eindeutigen Namen und eine optionale Beschreibung.';
 COMMENT ON COLUMN Storage.StorageID             IS 'Eine eindeutige LagerID';
 COMMENT ON COLUMN Storage.Name                  IS 'Die eindeutige Bezeichnung für das Lager';
 COMMENT ON COLUMN Storage.Description           IS 'Eine optionale Textbeschreibung für das Lager';
@@ -49,7 +49,7 @@ CREATE TABLE AvailableProductCategories (
   EntryAddedDate        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP) ,
   EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP)
 );
-COMMENT ON TABLE AvailableProductCategories IS 'Listet die verfügbaren Produktkategorien auf. Eine Produktkategorie hat einen Namen und eine optionale Textbeschreibung.';
+COMMENT ON TABLE  AvailableProductCategories IS 'Listet die verfügbaren Produktkategorien auf. Eine Produktkategorie hat einen Namen und eine optionale Textbeschreibung.';
 COMMENT ON COLUMN AvailableProductCategories.CategoryID            IS 'Eindeutige Nummer zur Identifizierung der Produktkategorie';
 COMMENT ON COLUMN AvailableProductCategories.Name                  IS 'Der Name der Produktkategorie';
 COMMENT ON COLUMN AvailableProductCategories.Description           IS 'Eine optionale Textbeschreibung';
@@ -123,7 +123,7 @@ CREATE TABLE Product (
   EntryAddedDate        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
   EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP)
 );
-COMMENT ON TABLE Product IS 'Modelliert ein Produkt mit seinen allgemeinen Eigenschaften. Produkt wird auch in der Lagerverwaltung verwendet.';
+COMMENT ON TABLE  Product IS 'Modelliert ein Produkt mit seinen allgemeinen Eigenschaften. Produkt wird auch in der Lagerverwaltung verwendet.';
 COMMENT ON COLUMN Product.ProductID             IS 'Eindeutige Nummer zur Identifizierung eines Produktes';
 COMMENT ON COLUMN Product.Name                  IS 'Eindeutiger Produktname. Ist UNIQUE, um nicht unterscheidbare Produkte mit gleichem Namen zu vermeiden.';
 COMMENT ON COLUMN Product.Description           IS 'Eine optionale Textbeschreibung. Kann die Zutatenliste oder eine Produktbeschreibung enthalten.';
@@ -140,7 +140,7 @@ CREATE TABLE Barcode (
   EntryAddedDate        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
   EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP)
 );
-COMMENT ON TABLE Barcode IS 'Die Tabelle beinhaltet alle im Verkauf verwendeten Produktbarcodes. Kundenlogins via Barcode werden nicht von dieser Tabelle erfasst.';
+COMMENT ON TABLE  Barcode IS 'Die Tabelle beinhaltet alle im Verkauf verwendeten Produktbarcodes. Kundenlogins via Barcode werden nicht von dieser Tabelle erfasst.';
 COMMENT ON COLUMN Barcode.Barcode               IS 'Der dekodierte Barcode-Inhalt. Wird nur für Produkte verwendet.';
 COMMENT ON COLUMN Barcode.ProductID             IS 'Das mit dem Barcode verknüpfte Produkt';
 COMMENT ON COLUMN Barcode.EntryAddedDate        IS 'Das Datum, an dem der Datenbankeintrag angelegt wurde. Vor Veränderungen geschützt.';
@@ -169,7 +169,7 @@ CREATE TABLE StorageContent (
   EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
   PRIMARY KEY( StorageID, ProductID )
 );
-COMMENT ON TABLE StorageContent IS 'Speichert die Produktverteilung von Produkten auf die vorhandenen Lager an';
+COMMENT ON TABLE  StorageContent IS 'Speichert die Produktverteilung von Produkten auf die vorhandenen Lager an';
 COMMENT ON COLUMN StorageContent.StorageID             IS 'Das referenzierte Lager';
 COMMENT ON COLUMN StorageContent.ProductID             IS 'Das referenzierte Produkt';
 COMMENT ON COLUMN StorageContent.Amount                IS 'Die im Lager verfügbare Produktmenge. Sollte positiv sein. Eine negative Produktmenge deutet auf ein inkonsistentes Lager hin.';
@@ -186,7 +186,7 @@ CREATE TABLE StorageLog (
   EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
   CONSTRAINT OneStorageMustExist CHECK( FromStorage IS NOT NULL OR ToStorage IS NOT NULL )
 );
-COMMENT ON TABLE StorageLog IS 'Modelliert einen Lagergang. Ein Eintrag ist eine Warenverschiebung von einem Lager in ein anderes. Ist FromStorage NULL, wird ein neu gekauftes Produkt eingelagert. Ist ToStorage NULL, wird ein gekauftes Produkt verkauft oder ein verschwundenes Produkt während einer Inventur entfernt.';
+COMMENT ON TABLE  StorageLog IS 'Modelliert einen Lagergang. Ein Eintrag ist eine Warenverschiebung von einem Lager in ein anderes. Ist FromStorage NULL, wird ein neu gekauftes Produkt eingelagert. Ist ToStorage NULL, wird ein gekauftes Produkt verkauft oder ein verschwundenes Produkt während einer Inventur entfernt.';
 COMMENT ON COLUMN StorageLog.FromStorage           IS 'Das Lager, aus dem das Produkt entnommen wird. Ist es NULL, wird ein neues Produkt eingelagert.';
 COMMENT ON COLUMN StorageLog.ToStorage             IS 'Das Lager, in dem das Produkt eingelagert wird. Ist es NULL, wird ein Produkt endgültig entnommen.';
 COMMENT ON COLUMN StorageLog.ProductID             IS 'Das verschobene Produkt';
@@ -469,20 +469,24 @@ COMMENT ON COLUMN Charge.EntryAddedDate        IS 'Das Datum, an dem der Datenba
 COMMENT ON COLUMN Charge.EntryLastModifiedDate IS 'Das Datum, an dem der Datenbankeintrag zuletzt bearbeitet wurde. Wird bei Änderungen am Datensatz von einem Datenbank-Trigger automatisch aktualisiert.';
 -- TODO: nächste Tabellendefinition zusammen mit den  SQL-Kommentaren ins Wiki kopieren
 CREATE TABLE Repayment (
-  RepaymentID           SERIAL                   NOT NULL PRIMARY KEY,
-  SalesPersonID         INTEGER                  NOT NULL REFERENCES SalesPerson(SalesPersonID),
-  TransactionDate       DATE                     NOT NULL,
-  Amount                DECIMAL(10, 2)           NOT NULL,
-  EntryAddedDate        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
-  EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP)
+  RepaymentID             SERIAL                   NOT NULL PRIMARY KEY,
+  SalesPersonID           INTEGER                  NOT NULL REFERENCES SalesPerson(SalesPersonID),
+  TransactionDate         DATE                     NOT NULL,
+  Amount                  DECIMAL(10, 2)           NOT NULL,
+  RequiredAmountRedeemers INTEGER                  NOT NULL DEFAULT(1),
+  EntryAddedDate          TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
+  EntryLastModifiedDate   TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
+  CONSTRAINT PositiveRequiredAmountRedeemers CHECK(RequiredAmountRedeemers >= 0)
 );
 COMMENT ON TABLE  Repayment IS 'Eine Guthabenaufladung eines Kunden belastet das Verkäuferkonto. Dieses wird durch Eintragungen von Geldrückzahlungen in dieser Tabelle ausgeglichen';
-COMMENT ON COLUMN Repayment.RepaymentID           IS 'Eindeutige Identifikationsnummer für die Geldrückzahlung';
-COMMENT ON COLUMN Repayment.SalesPersonID         IS 'Der Geld rückzahlende Verkäufer';
-COMMENT ON COLUMN Repayment.TransactionDate       IS 'Das Datum, an dem die Transaktion getätigt wurde';
-COMMENT ON COLUMN Repayment.Amount                IS 'Der zurückgezahlte Geldbetrag';
-COMMENT ON COLUMN Repayment.EntryAddedDate        IS 'Das Datum, an dem der Datenbankeintrag angelegt wurde. Vor Veränderungen geschützt.';
-COMMENT ON COLUMN Repayment.EntryLastModifiedDate IS 'Das Datum, an dem der Datenbankeintrag zuletzt bearbeitet wurde. Wird bei Änderungen am Datensatz von einem Datenbank-Trigger automatisch aktualisiert.';
+COMMENT ON COLUMN Repayment.RepaymentID             IS 'Eindeutige Identifikationsnummer für die Geldrückzahlung';
+COMMENT ON COLUMN Repayment.SalesPersonID           IS 'Der Geld rückzahlende Verkäufer';
+COMMENT ON COLUMN Repayment.TransactionDate         IS 'Das Datum, an dem die Transaktion getätigt wurde';
+COMMENT ON COLUMN Repayment.Amount                  IS 'Der zurückgezahlte Geldbetrag';
+COMMENT ON COLUMN Repayment.RequiredAmountRedeemers IS 'Die minimale Anzahl an Bestätigungen durch Finanzbeauftragte, um den Eintrag als bestätigt anzusehen.';
+COMMENT ON COLUMN Repayment.EntryAddedDate          IS 'Das Datum, an dem der Datenbankeintrag angelegt wurde. Vor Veränderungen geschützt.';
+COMMENT ON COLUMN Repayment.EntryLastModifiedDate   IS 'Das Datum, an dem der Datenbankeintrag zuletzt bearbeitet wurde. Wird bei Änderungen am Datensatz von einem Datenbank-Trigger automatisch aktualisiert.';
+COMMENT ON CONSTRAINT PositiveRequiredAmountRedeemers ON Repayment IS 'Die Minimalanzahl an Einträgen in RedeemerFor für das Akzeptieren des Eintrag darf nicht negativ sein.';
 -- TODO: nächste Tabellendefinition zusammen mit den  SQL-Kommentaren ins Wiki kopieren
 CREATE TABLE RedeemerFor (
   SalesPersonID         INTEGER                  NOT NULL REFERENCES SalesPerson(SalesPersonID),
@@ -501,7 +505,7 @@ CREATE VIEW TaxCategory AS
   FROM TaxCategoryName  AS n
     JOIN TaxCategoryValue AS v ON n.TaxCategoryID = v.TaxCategoryID
 ;
-CREATE VIEW ProductTaxes AS -- Berechnet die Steuerkategorie für jede Produktinstanz aus den verfügbaren Daten.
+CREATE VIEW ProductTaxes AS
   SELECT p.ProductID, i.ProductInstanceID,
                      p.Name AS ProductName, i.AddedDate AS ProductAddedDate, i.InStockAmount,
     t.TaxCategoryID, t.ValidSince AS TaxCategoryValidSince, t.Name AS TaxCategoryName, t.Value AS TaxAmount, t.Unit AS TaxUnit
@@ -514,3 +518,87 @@ CREATE VIEW ProductTaxes AS -- Berechnet die Steuerkategorie für jede Produktin
     WHERE i.AddedDate >= t2.ValidSince
   )
 ;
+COMMENT ON VIEW ProductTaxes IS 'Berechnet die Steuerkategorie für jede Produktinstanz aus den verfügbaren Daten.';
+CREATE VIEW CustomerCharges AS
+  SELECT
+    cu.CustomerID,
+    cp.FirstName   AS CustomerFirstName,
+    cp.LastName    AS CustomerLastName,
+    sp.SalesPersonID,
+    spp.FirstName  AS SalesPersonFirstName,
+    spp.LastName   AS SalesPersonLastName,
+    ch.ChargeID,
+    ch.ChargeDate,
+    ch.ChargeAmount,
+    ch.Donation AS IsDonation
+  FROM Person AS cp
+  JOIN Customer AS cu    ON cp.PersonID = cu.CustomerID
+  JOIN Charge AS ch      ON cu.CustomerID = ch.CustomerID
+  JOIN SalesPerson AS sp ON ch.SalesPersonID = sp.SalesPersonID
+  JOIN Person AS spp     ON sp.SalesPersonID = spp.PersonID
+;
+COMMENT ON VIEW CustomerCharges IS 'Berechnet eine Übersicht über alle Kundenkontoaufladungen';
+CREATE VIEW CustomerBalance AS
+  SELECT cu.CustomerID,
+  (cu.BaseBalance
+    + COALESCE(CustChargeSum.Charge, 0) -- ist NULL, wenn der Kunde noch keine Aufladung getätigt hat
+    - COALESCE(CustSaleSum.SaleTotal, 0) -- ist NULL, wenn der Kunde noch nichts gekauft hat
+    + COALESCE(CustRedemptSum.RedemptionTotal, 0) -- ist NULL, wenn der Kunde noch keine Waren zurückgegeben hat
+  ) AS Balance
+  
+  FROM Customer AS cu
+  
+  LEFT OUTER JOIN ( -- Summe aller Aufladungen
+    SELECT ch.CustomerID, SUM( ch.ChargeAmount) AS Charge
+    FROM Charge AS ch
+    WHERE ch.Donation IS FALSE
+    GROUP BY ch.CustomerID
+  ) AS CustChargeSum ON CustChargeSum.CustomerID = cu.CustomerID
+  
+  LEFT OUTER JOIN ( -- Summe aller Warenkäufe
+    SELECT sh.CustomerID, SUM( sd.UnitQuantity * sd.UnitPrice) AS SaleTotal
+    FROM SaleHeader AS sh
+    JOIN SaleDetail AS sd ON sh.SaleID = sd.SaleID
+    WHERE sd.IsRedemption IS FALSE
+    GROUP BY sh.CustomerID
+  ) AS CustSaleSum ON CustSaleSum.CustomerID = cu.CustomerID
+  
+  LEFT OUTER JOIN ( -- Summe aller Warenrückgaben
+    SELECT sh.CustomerID, SUM( sd.UnitQuantity * sd.UnitPrice) AS RedemptionTotal
+    FROM SaleHeader AS sh
+    JOIN SaleDetail AS sd ON sh.SaleID = sd.SaleID
+    WHERE sd.IsRedemption IS true
+    GROUP BY sh.CustomerID
+  ) AS CustRedemptSum ON CustRedemptSum.CustomerID = cu.CustomerID
+;
+COMMENT ON VIEW CustomerBalance IS 'Berechnet den aktuellen Kontostand der Kunden als Summe aller Aufladungen und Verkäufe';
+CREATE VIEW SalesPersonBalance AS
+  SELECT sp.SalesPersonID,
+  (sp.BaseBalance
+    - COALESCE(SPChargeSum.Charge, 0) -- ist NULL, wenn der Verkäufer noch kein Geld angenommen hat
+    + COALESCE(SPRepaymentSum.RepaidAmount, 0) -- ist NULL, wenn der Verkäufer noch nichts zurückgezahlt hat
+  ) AS Balance
+  
+  FROM SalesPerson AS sp
+  
+  LEFT OUTER JOIN ( -- Summe aller Aufladungen
+    SELECT ch.SalesPersonID, SUM( ch.ChargeAmount ) AS Charge
+    FROM Charge AS ch
+    -- Hier nicht nach Donation filtern wie bei Customer, Das Verkäuferkonto wird auch für Spenden belastet
+    GROUP BY ch.SalesPersonID
+  ) AS SPChargeSum ON SPChargeSum.SalesPersonID = sp.SalesPersonID
+  
+  LEFT OUTER JOIN ( -- Summe aller vollständig bestätigten Geldrückzahlungen
+    SELECT rp.SalesPersonID, SUM( rp.Amount) AS RepaidAmount
+    FROM Repayment AS rp
+    WHERE rp.RequiredAmountRedeemers <= ( -- Die Anzahl Bestätigungen muss größer/gleich dem Wert RequiredAmountRedeemers sein
+      -- SELECT COUNT(*) ist ein sicheres Aggregat für eine solche Subanfrage,
+      -- weil es garantiert immer exakt einen Wert liefert.
+      SELECT COUNT(*) 
+      FROM RedeemerFor AS rf
+      WHERE rf.RepaymentID = rp.RepaymentID
+    )
+    GROUP BY rp.SalesPersonID
+  ) AS SPRepaymentSum ON SPRepaymentSum.SalesPersonID = sp.SalesPersonID
+;
+COMMENT ON VIEW SalesPersonBalance IS 'Berechnet den aktuellen Kontostand des Verkäufers als Summe aller Kundenkontoaufladungen und Geldrückzahlungen';
