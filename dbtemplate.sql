@@ -1,24 +1,55 @@
-CREATE TABLE AvailableRoles (
-  RoleID                SERIAL  NOT NULL PRIMARY KEY,
-  Name                  TEXT    NOT NULL,
-  Description           TEXT    NOT NULL,
-  EntryAddedDate        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
-  EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP)
-);
+--  COMMENT ON COLUMN . IS '';
+--  COMMENT ON COLUMN .EntryAddedDate        IS 'Timestamp at which the database entry was created. Read only';
+--  COMMENT ON COLUMN .EntryLastModifiedDate IS 'Timestamp at which the database entry was modified last. If equal to EntryAddedDate, then no modification was ever done. Automatically updated by a trigger';
+
+
+
+BEGIN TRANSACTION;
+
 CREATE TABLE AvailableRights (
-  RightID               SERIAL  NOT NULL PRIMARY KEY,
-  Name                  TEXT    NOT NULL,
-  Description           TEXT    NOT NULL,
+  RightID               SERIAL                   NOT NULL PRIMARY KEY,
+  Name                  TEXT                     NOT NULL UNIQUE,
+  Description           TEXT                         NULL,
   EntryAddedDate        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
   EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP)
 );
+COMMENT ON TABLE  AvailableRights IS 'Detines the list of all atomic user or client rights used to recstrict access to the API calls. It is not meant to be modified as the right names are used inside the backend code.';
+COMMENT ON COLUMN AvailableRights.RightID               IS 'The unique id is used as a reference to a specific right';
+COMMENT ON COLUMN AvailableRights.Name                  IS 'The unique name of the right';
+COMMENT ON COLUMN AvailableRights.Description           IS 'An optional description text that can clarify the intention of the right';
+COMMENT ON COLUMN AvailableRights.EntryAddedDate        IS 'Timestamp at which the database entry was created. Read only';
+COMMENT ON COLUMN AvailableRights.EntryLastModifiedDate IS 'Timestamp at which the database entry was modified last. If equal to EntryAddedDate, then no modification was ever done. Automatically updated by a trigger';
+
+
+CREATE TABLE AvailableRoles (
+  RoleID                SERIAL                   NOT NULL PRIMARY KEY,
+  Name                  TEXT                     NOT NULL UNIQUE,
+  Description           TEXT                         NULL,
+  EntryAddedDate        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
+  EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP)
+);
+COMMENT ON TABLE  AvailableRoles IS 'Defines the user roles. A role consists of API access rights and defines what a logged in user can do.';
+COMMENT ON COLUMN AvailableRoles.RoleID                IS 'The unique id is used as a referecne to a specific role';
+COMMENT ON COLUMN AvailableRoles.Name                  IS 'The usique name can be used instead of the id to reference a role';
+COMMENT ON COLUMN AvailableRoles.Description           IS 'An optional description text that can clarify the intention of the role';
+COMMENT ON COLUMN AvailableRoles.EntryAddedDate        IS 'Timestamp at which the database entry was created. Read only';
+COMMENT ON COLUMN AvailableRoles.EntryLastModifiedDate IS 'Timestamp at which the database entry was modified last. If equal to EntryAddedDate, then no modification was ever done. Automatically updated by a trigger';
+
+
 CREATE TABLE RoleRightAssignment (
-  RoleID                INTEGER NOT NULL REFERENCES AvailableRoles(RoleID),
-  RightID               INTEGER NOT NULL REFERENCES AvailableRights(RightID),
+  RoleID                INTEGER                  NOT NULL REFERENCES AvailableRoles(RoleID),
+  RightID               INTEGER                  NOT NULL REFERENCES AvailableRights(RightID),
   EntryAddedDate        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
   EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
   PRIMARY KEY(RoleID, RightID)
 );
+COMMENT ON TABLE  RoleRightAssignment IS 'Defines the user role scopes by assigning rights user roles.';
+COMMENT ON COLUMN RoleRightAssignment.RoleID                IS 'The user role';
+COMMENT ON COLUMN RoleRightAssignment.RightID               IS 'The right that is assiged to the role';
+COMMENT ON COLUMN RoleRightAssignment.EntryAddedDate        IS 'Timestamp at which the database entry was created. Read only';
+COMMENT ON COLUMN RoleRightAssignment.EntryLastModifiedDate IS 'Timestamp at which the database entry was modified last. If equal to EntryAddedDate, then no modification was ever done. Automatically updated by a trigger';
+
+
 CREATE TABLE Storage (
   StorageID             SERIAL                   NOT NULL PRIMARY KEY,
   Name                  TEXT                     NOT NULL UNIQUE,
@@ -27,71 +58,87 @@ CREATE TABLE Storage (
   EntryAddedDate        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
   EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP)
 );
-COMMENT ON TABLE  Storage IS 'Storage modelliert ein Warenlager. Ein solches Lager hat einen eindeutigen Namen und eine optionale Beschreibung.';
-COMMENT ON COLUMN Storage.StorageID             IS 'Eine eindeutige LagerID';
-COMMENT ON COLUMN Storage.Name                  IS 'Die eindeutige Bezeichnung für das Lager';
-COMMENT ON COLUMN Storage.Description           IS 'Eine optionale Textbeschreibung für das Lager';
-COMMENT ON COLUMN Storage.IsSaleAllowed         IS 'Gibt an, ob der Verkauf von Waren aus dem Lager erlaubt ist';
-COMMENT ON COLUMN Storage.EntryAddedDate        IS 'Das Datum, an dem der Datenbankeintrag angelegt wurde. Vor Veränderungen geschützt.';
-COMMENT ON COLUMN Storage.EntryLastModifiedDate IS 'Das Datum, an dem der Datenbankeintrag zuletzt bearbeitet wurde. Wird bei Änderungen am Datensatz von einem Datenbank-Trigger automatisch aktualisiert.';
-CREATE TABLE SafetyStockAmountLevels (
-  SafetyStockAmountID   SERIAL    NOT NULL PRIMARY KEY,
-  Name                  TEXT      NOT NULL UNIQUE,
-  ModuleIdentifier      TEXT      NULL,
-  EntryAddedDate        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
-  EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP)
-);
+COMMENT ON TABLE  Storage IS 'A storage is used to store products. Product sale is only allowed from a storage which has attribute IsSaleAllowed set to TRUE.';
+COMMENT ON COLUMN Storage.StorageID             IS 'The unique id is used to reference a specific storage';
+COMMENT ON COLUMN Storage.Name                  IS 'The unique name of a storage';
+COMMENT ON COLUMN Storage.Description           IS 'The optional description can be used to provide additional location information or textual usage rules for a storage that do not (yet) fit in the database otherwise';
+COMMENT ON COLUMN Storage.IsSaleAllowed         IS 'Boolean flag that indicates whether product sale is allowed in a specific storage';
+COMMENT ON COLUMN Storage.EntryAddedDate        IS 'Timestamp at which the database entry was created. Read only';
+COMMENT ON COLUMN Storage.EntryLastModifiedDate IS 'Timestamp at which the database entry was modified last. If equal to EntryAddedDate, then no modification was ever done. Automatically updated by a trigger';
+
+
 CREATE TABLE AvailableProductCategories (
-  CategoryID            SERIAL    NOT NULL PRIMARY KEY,
-  Name                  TEXT      NOT NULL UNIQUE,
-  Description           TEXT      NULL,
-  CategoryIconURI       TEXT      NULL,
-  EntryAddedDate        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP) ,
+  CategoryID            SERIAL                   NOT NULL PRIMARY KEY,
+  Name                  TEXT                     NOT NULL UNIQUE,
+  Description           TEXT                         NULL,
+  CategoryIconURI       TEXT                         NULL,
+  EntryAddedDate        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
   EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP)
 );
-COMMENT ON TABLE  AvailableProductCategories IS 'Listet die verfügbaren Produktkategorien auf. Eine Produktkategorie hat einen Namen und eine optionale Textbeschreibung.';
-COMMENT ON COLUMN AvailableProductCategories.CategoryID            IS 'Eindeutige Nummer zur Identifizierung der Produktkategorie';
-COMMENT ON COLUMN AvailableProductCategories.Name                  IS 'Der Name der Produktkategorie';
-COMMENT ON COLUMN AvailableProductCategories.Description           IS 'Eine optionale Textbeschreibung';
-COMMENT ON COLUMN AvailableProductCategories.CategoryIconURI       IS 'Eine URI/URL zu einem Icon. Die GUI kann die URI benutzen, um ein zur Kategorie passendes Icon anzuzeigen';
-COMMENT ON COLUMN AvailableProductCategories.EntryAddedDate        IS 'Das Datum, an dem der Datenbankeintrag angelegt wurde.';
-COMMENT ON COLUMN AvailableProductCategories.EntryLastModifiedDate IS 'Das Datum, an dem der Datenbankeintrag zuletzt bearbeitet wurde. Wird bei Änderungen am Datensatz von einem Datenbank-Trigger automatisch ausgefüllt.';
+COMMENT ON TABLE  AvailableProductCategories IS 'Lists all available product categories. Each product can optionally be assigned to a product category. The granularity of the categories is up to the defining user.';
+COMMENT ON COLUMN AvailableProductCategories.CategoryID            IS 'The unique id is used to reference a specific category';
+COMMENT ON COLUMN AvailableProductCategories.Name                  IS 'The unique name of a product category.';
+COMMENT ON COLUMN AvailableProductCategories.Description           IS 'An optional text description. It can be used to clarify the category intention or scope.';
+COMMENT ON COLUMN AvailableProductCategories.CategoryIconURI       IS 'A URI to an external icon resource. The icon can be displayed instead of or in addition to the textual category name.';
+COMMENT ON COLUMN AvailableProductCategories.EntryAddedDate        IS 'Timestamp at which the database entry was created. Read only';
+COMMENT ON COLUMN AvailableProductCategories.EntryLastModifiedDate IS 'Timestamp at which the database entry was modified last. If equal to EntryAddedDate, then no modification was ever done. Automatically updated by a trigger';
+
+
 CREATE TABLE AvailableProductTags (
-  TagID                 SERIAL    NOT NULL PRIMARY KEY,
-  Name                  TEXT      NOT NULL UNIQUE,
-  Description           TEXT      NULL,
+  TagID                 SERIAL                   NOT NULL PRIMARY KEY,
+  Name                  TEXT                     NOT NULL UNIQUE,
+  Description           TEXT                         NULL,
   EntryAddedDate        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
   EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP)
 );
-COMMENT ON TABLE  AvailableProductTags IS 'Listet die verfügbaren Produkttags auf. Ein Produkttag hat einen Namen und eine optionale Textbeschreibung.';
-COMMENT ON COLUMN AvailableProductTags.TagID                 IS 'Eindeutige Nummer zur Identifizierung des Tags';
-COMMENT ON COLUMN AvailableProductTags.Name                  IS 'Der Name des Tags';
-COMMENT ON COLUMN AvailableProductTags.Description           IS 'Eine optionale Textbeschreibung';
-COMMENT ON COLUMN AvailableProductTags.EntryAddedDate        IS 'Das Datum, an dem der Datenbankeintrag angelegt wurde.';
-COMMENT ON COLUMN AvailableProductTags.EntryLastModifiedDate IS 'Das Datum, an dem der Datenbankeintrag zuletzt bearbeitet wurde. Wird bei Änderungen am Datensatz von einem Datenbank-Trigger automatisch ausgefüllt.';
+COMMENT ON TABLE  AvailableProductTags IS 'Lists all available product tags. Each product can be assigned to any number of tags';
+COMMENT ON COLUMN AvailableProductTags.TagID                 IS 'The unique id is used to reference a specific tag';
+COMMENT ON COLUMN AvailableProductTags.Name                  IS 'The unique product tag. It should be short and to the point (like at most 3 words), as there may be many tags assigned to a product';
+COMMENT ON COLUMN AvailableProductTags.Description           IS 'An optional text description, which might be useful to describe the intention or scope of the tag.';
+COMMENT ON COLUMN AvailableProductTags.EntryAddedDate        IS 'Timestamp at which the database entry was created. Read only';
+COMMENT ON COLUMN AvailableProductTags.EntryLastModifiedDate IS 'Timestamp at which the database entry was modified last. If equal to EntryAddedDate, then no modification was ever done. Automatically updated by a trigger';
+
+
 CREATE TABLE TaxCategoryName (
-  TaxCategoryID         SERIAL        NOT NULL PRIMARY KEY,
-  Name                  TEXT          NOT NULL UNIQUE,
-  BaseValue             DECIMAL(10,4) NOT NULL,
-  BaseValueUnit         TEXT          NOT NULL,
+  TaxCategoryID         SERIAL                   NOT NULL PRIMARY KEY,
+  Name                  TEXT                     NOT NULL UNIQUE,
+  BaseValue             DECIMAL(10,4)            NOT NULL DEFAULT(0),
+  BaseValueUnit         TEXT                     NOT NULL,
   EntryAddedDate        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
   EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP)
 );
+COMMENT ON TABLE  TaxCategoryName IS 'Defines a tax category. It defines a administrative product category for which a certain amount of taxes have to be paid per sold product product unit. The exact values are defined in TaxCategoryValue';
+COMMENT ON COLUMN TaxCategoryName.TaxCategoryID         IS 'The unique id is used to reference a specific tax category';
+COMMENT ON COLUMN TaxCategoryName.Name                  IS 'The unique name of the tax category';
+COMMENT ON COLUMN TaxCategoryName.BaseValue             IS 'The base value is a tax value that should be assigned to a product with the given tax category, if no other value is defined for this tax category, like when the earliest tax category value ValidSince value is in the future. It should rarely be useful and probably only ever be set to 0';
+COMMENT ON COLUMN TaxCategoryName.BaseValueUnit         IS 'The unit used for the base value. Should probably be set to ''%'' or be left empty for an absolute base value. May also be set to values like ''‰''';
+COMMENT ON COLUMN TaxCategoryName.EntryAddedDate        IS 'Timestamp at which the database entry was created. Read only';
+COMMENT ON COLUMN TaxCategoryName.EntryLastModifiedDate IS 'Timestamp at which the database entry was modified last. If equal to EntryAddedDate, then no modification was ever done. Automatically updated by a trigger';
 -- Standardsteuersätze anlegen: Standard, Reduziert und Steuerbefreit
 -- Dies sind keine Testdaten, sondern die realen Daten für Deutschland, die als Standardwerte in der Datenbank vordefiniert werden sollen.
 INSERT INTO TaxCategoryName (TaxCategoryID, Name, BaseValue, BaseValueUnit) VALUES (1, 'Standard', 0, '%');
 INSERT INTO TaxCategoryName (TaxCategoryID, Name, BaseValue, BaseValueUnit) VALUES (2, 'Reduziert', 0, '%');
 INSERT INTO TaxCategoryName (TaxCategoryID, Name, BaseValue, BaseValueUnit) VALUES (3, 'Steuerbefreit', 0, '%');
+
+
 CREATE TABLE TaxCategoryValue (
-  TaxCategoryID         INTEGER       NOT NULL REFERENCES TaxCategoryName(TaxCategoryID),
-  ValidSince            DATE          NOT NULL,
-  Value                 DECIMAL(10,4) NOT NULL,
-  Unit                  TEXT          NOT NULL,
+  TaxCategoryID         INTEGER                  NOT NULL REFERENCES TaxCategoryName(TaxCategoryID),
+  ValidSince            DATE                     NOT NULL,
+  Value                 DECIMAL(10,4)            NOT NULL,
+  Unit                  TEXT                     NOT NULL,
   EntryAddedDate        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
   EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
 
-  PRIMARY KEY(TaxCategoryID, ValidSince)
+  CONSTRAINT TaxCategoryValue_PrimaryKey PRIMARY KEY(TaxCategoryID, ValidSince)
 );
+COMMENT ON TABLE  TaxCategoryValue IS 'Defines a value for a tax category. It has a valid since date after which the entry is valid, until the next valid since entry for the same category';
+COMMENT ON COLUMN TaxCategoryValue.TaxCategoryID         IS 'The tax value belongs to this tax category';
+COMMENT ON COLUMN TaxCategoryValue.ValidSince            IS 'The value is valid since this date. The end date is defined the next valid since value for the same category';
+COMMENT ON COLUMN TaxCategoryValue.Value                 IS 'The tax value that has to be paid for a product belonging to the category bought after the valid since date';
+COMMENT ON COLUMN TaxCategoryValue.Unit                  IS 'The unit used for this value. Should probably be set to ''%'' or be left empty for an absolute base value. May also be set to values like ''‰''';
+COMMENT ON COLUMN TaxCategoryValue.EntryAddedDate        IS 'Timestamp at which the database entry was created. Read only';
+COMMENT ON COLUMN TaxCategoryValue.EntryLastModifiedDate IS 'Timestamp at which the database entry was modified last. If equal to EntryAddedDate, then no modification was ever done. Automatically updated by a trigger';
+COMMENT ON CONSTRAINT TaxCategoryValue_PrimaryKey ON TaxCategoryValue IS 'The tax category and the ValidSince date together form a primary key for the tax category value.';
 -- Umsatzsteuerwerte seit 1968 laut Wikipedia. Für die verwendeten TaxCategoryIDs siehe Standardeinträge in Relation TaxCategoryName
 -- Dies sind keine Testdaten, sondern die realen Daten für Deutschland, die als Standardwerte in der Datenbank vordefiniert werden sollen.
 INSERT INTO TaxCategoryValue (TaxCategoryID, ValidSince, Value, Unit) VALUES (1, '1968-01-01', 10, '%');
@@ -111,6 +158,8 @@ INSERT INTO TaxCategoryValue (TaxCategoryID, ValidSince, Value, Unit) VALUES (2,
 INSERT INTO TaxCategoryValue (TaxCategoryID, ValidSince, Value, Unit) VALUES (2, '1998-04-01', 7,  '%');
 INSERT INTO TaxCategoryValue (TaxCategoryID, ValidSince, Value, Unit) VALUES (2, '2007-01-01', 7,  '%');
 INSERT INTO TaxCategoryValue (TaxCategoryID, ValidSince, Value, Unit) VALUES (3, '1968-01-01', 0,  '%');
+
+
 CREATE TABLE Product (
   ProductID             SERIAL                   NOT NULL PRIMARY KEY,
   Name                  TEXT                     NOT NULL UNIQUE,
@@ -118,21 +167,23 @@ CREATE TABLE Product (
   Price                 DECIMAL(10,2)            NOT NULL,
   TaxCategoryID         INTEGER                  NOT NULL REFERENCES TaxCategoryName(TaxCategoryID),
   CategoryID            INTEGER                      NULL REFERENCES AvailableProductCategories(CategoryID),
-  IsSaleAllowed         BOOLEAN                  NOT NULL,
-  IsDefaultRedemption   BOOLEAN                  NOT NULL,
+  IsSaleAllowed         BOOLEAN                  NOT NULL DEFAULT(TRUE),
+  IsDefaultRedemption   BOOLEAN                  NOT NULL DEFAULT(FALSE),
   EntryAddedDate        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
   EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP)
 );
-COMMENT ON TABLE  Product IS 'Modelliert ein Produkt mit seinen allgemeinen Eigenschaften. Produkt wird auch in der Lagerverwaltung verwendet.';
-COMMENT ON COLUMN Product.ProductID             IS 'Eindeutige Nummer zur Identifizierung eines Produktes';
-COMMENT ON COLUMN Product.Name                  IS 'Eindeutiger Produktname. Ist UNIQUE, um nicht unterscheidbare Produkte mit gleichem Namen zu vermeiden.';
-COMMENT ON COLUMN Product.Description           IS 'Eine optionale Textbeschreibung. Kann die Zutatenliste oder eine Produktbeschreibung enthalten.';
-COMMENT ON COLUMN Product.Price                 IS 'Der Verkaufspreis des Produkts.';
-COMMENT ON COLUMN Product.TaxCategoryID         IS 'Referenz auf die Steuerkategorie. Der genaue Steuersatz einer Produktinstanz ergibt sich aus der Kategorie und dem Einkaufsdatum.';
-COMMENT ON COLUMN Product.IsSaleAllowed         IS 'Gibt an, ob das Produkt verkauft werden darf. Es ist möglich, dass ein Produkt aus administrativen Gründen nicht mehr verkauft werden darf.';
-COMMENT ON COLUMN Product.IsDefaultRedemption   IS 'Gibt an, ob das Produkt normal verkauft oder zurückgegeben wird. Ein Rückgabeprodukt (Wert TRUE) ist z.B. Pfand.';
-COMMENT ON COLUMN Product.EntryAddedDate        IS 'Das Datum, an dem der Datenbankeintrag angelegt wurde. Vor Veränderungen geschützt.';
-COMMENT ON COLUMN Product.EntryLastModifiedDate IS 'Das Datum, an dem der Datenbankeintrag zuletzt bearbeitet wurde. Wird bei Änderungen am Datensatz von einem Datenbank-Trigger automatisch aktualisiert.';
+COMMENT ON TABLE  Product IS 'Describes a product with its general product information. Used in Storage, too.';
+COMMENT ON COLUMN Product.ProductID             IS 'The unique id is used to reference a specific product';
+COMMENT ON COLUMN Product.Name                  IS 'The product name is unique to disallow multiple products with the same name.';
+COMMENT ON COLUMN Product.Description           IS 'An optional description for the product. It might contain additional information, an appeareance description or an ingrediants list.';
+COMMENT ON COLUMN Product.Price                 IS 'The sale price of the product';
+COMMENT ON COLUMN Product.TaxCategoryID         IS 'The tax category of a product is used as a default / template for the tax category stored in ProductInstance';
+COMMENT ON COLUMN Product.IsSaleAllowed         IS 'Indicates whether a product is allowed to be sold, or not. It might be needed to stop a product sale for administrative purposes.';
+COMMENT ON COLUMN Product.IsDefaultRedemption   IS 'Indicates whether a product is normally sold or normally redempted.';
+COMMENT ON COLUMN Product.EntryAddedDate        IS 'Timestamp at which the database entry was created. Read only';
+COMMENT ON COLUMN Product.EntryLastModifiedDate IS 'Timestamp at which the database entry was modified last. If equal to EntryAddedDate, then no modification was ever done. Automatically updated by a trigger';
+
+
 CREATE TABLE Barcode (
   BarcodeID             SERIAL                   NOT NULL PRIMARY KEY,
   Barcode               TEXT                     NOT NULL UNIQUE,
@@ -140,41 +191,83 @@ CREATE TABLE Barcode (
   EntryAddedDate        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
   EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP)
 );
-COMMENT ON TABLE  Barcode IS 'Die Tabelle beinhaltet alle im Verkauf verwendeten Produktbarcodes. Kundenlogins via Barcode werden nicht von dieser Tabelle erfasst.';
-COMMENT ON COLUMN Barcode.Barcode               IS 'Der dekodierte Barcode-Inhalt. Wird nur für Produkte verwendet.';
-COMMENT ON COLUMN Barcode.ProductID             IS 'Das mit dem Barcode verknüpfte Produkt';
-COMMENT ON COLUMN Barcode.EntryAddedDate        IS 'Das Datum, an dem der Datenbankeintrag angelegt wurde. Vor Veränderungen geschützt.';
-COMMENT ON COLUMN Barcode.EntryLastModifiedDate IS 'Das Datum, an dem der Datenbankeintrag zuletzt bearbeitet wurde. Wird bei Änderungen am Datensatz von einem Datenbank-Trigger automatisch aktualisiert.';
-CREATE TABLE ProductSafetyStockAmounts (
-  ProductID             INTEGER   NOT NULL REFERENCES Product(ProductID),
-  SafetyStockAmountID   INTEGER   NOT NULL REFERENCES SafetyStockAmountLevels(SafetyStockAmountID),
-  Amount                INTEGER   NOT NULL,
-  IsNotified            BOOLEAN   NOT NULL,
-  EntryAddedDate        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
-  EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
+COMMENT ON TABLE  Barcode IS 'Barcode contains all product barcode used during product purchase or product sale. Logins using usernames encoded in barcodes are not stored here. See Username, Credential for user logins.';
+COMMENT ON COLUMN Barcode.BarcodeID             IS 'The unique id is used to reference a specific barcode';
+COMMENT ON COLUMN Barcode.Barcode               IS 'The decoded barcode content. Might be a number or any kind of (short) text encoded in a barcode';
+COMMENT ON COLUMN Barcode.ProductID             IS 'The product that is linked to this barcode. Each barcode can only reference a single product.';
+COMMENT ON COLUMN Barcode.EntryAddedDate        IS 'Timestamp at which the database entry was created. Read only';
+COMMENT ON COLUMN Barcode.EntryLastModifiedDate IS 'Timestamp at which the database entry was modified last. If equal to EntryAddedDate, then no modification was ever done. Automatically updated by a trigger';
 
-  PRIMARY KEY(ProductID, SafetyStockAmountID)
-);
-CREATE TABLE ProductTagAssignment (
-  ProductID             INTEGER NOT NULL REFERENCES Product(ProductID),
-  TagID                 INTEGER NOT NULL REFERENCES AvailableProductTags(TagID),
+
+CREATE TABLE SafetyStockAmountLevels (
+  SafetyStockAmountID   SERIAL                   NOT NULL PRIMARY KEY,
+  Name                  TEXT                     NOT NULL UNIQUE,
+  ModuleIdentifier      TEXT                         NULL,
   EntryAddedDate        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
   EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP)
 );
+COMMENT ON TABLE  SafetyStockAmountLevels IS 'Define a stock amount level at which can be assigned to a product and given an amount to trigger an action at the definad stock amount. It is more or less just a name, like "Storage empty" or "Storage full"';
+COMMENT ON COLUMN SafetyStockAmountLevels.SafetyStockAmountID   IS 'The unique id is used to reference a specific stock amount';
+COMMENT ON COLUMN SafetyStockAmountLevels.Name                  IS 'The unique name of the stock amount level';
+COMMENT ON COLUMN SafetyStockAmountLevels.EntryAddedDate        IS 'Timestamp at which the database entry was created. Read only';
+COMMENT ON COLUMN SafetyStockAmountLevels.EntryLastModifiedDate IS 'Timestamp at which the database entry was modified last. If equal to EntryAddedDate, then no modification was ever done. Automatically updated by a trigger';
+
+
+CREATE TABLE ProductSafetyStockAmounts (
+  ProductID               INTEGER                  NOT NULL REFERENCES Product(ProductID),
+  SafetyStockAmountID     INTEGER                  NOT NULL REFERENCES SafetyStockAmountLevels(SafetyStockAmountID),
+  Amount                  INTEGER                  NOT NULL,
+  EnableNotification      BOOLEAN                  NOT NULL DEFAULT(TRUE),
+  IsNotified              BOOLEAN                  NOT NULL DEFAULT(FALSE),
+  NotifyOnUnderflow       BOOLEAN                  NOT NULL DEFAULT(TRUE),
+  EntryAddedDate          TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
+  EntryLastModifiedDate   TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
+  CONSTRAINT ProductSafetyStockAmounts_PrimaryKey PRIMARY KEY(ProductID, SafetyStockAmountID)
+);
+COMMENT ON TABLE  ProductSafetyStockAmounts IS 'Define a SafetyStockAmountLevel for a product. That is, relate a stock amount with a product at an amount.';
+COMMENT ON COLUMN ProductSafetyStockAmounts.ProductID             IS 'The product for which the stock amount is defined';
+COMMENT ON COLUMN ProductSafetyStockAmounts.SafetyStockAmountID   IS 'The safety stock amount level ';
+COMMENT ON COLUMN ProductSafetyStockAmounts.Amount                IS 'The product amount at which the stock level is related to the product';
+COMMENT ON COLUMN ProductSafetyStockAmounts.EnableNotification    IS 'Enable notifications for this entry. If set to FALSE, the entry is informational and can be displayed. If TRUE, additional e-mail or instant-messaging notifications may be sent.';
+COMMENT ON COLUMN ProductSafetyStockAmounts.IsNotified            IS 'Stores if the enabled notification has already been sent if the notification condition remains true, to prevent excessive spam due to a large amount of notifications triggering again and again';
+COMMENT ON COLUMN ProductSafetyStockAmounts.NotifyOnUnderflow     IS 'If TRUE, send a notification if the product amount is below the stored amount (useful for normal products). If FALSE, send a notification if the product amount is above the amount (useful for normally redempted products).';
+COMMENT ON COLUMN ProductSafetyStockAmounts.EntryAddedDate        IS 'Timestamp at which the database entry was created. Read only';
+COMMENT ON COLUMN ProductSafetyStockAmounts.EntryLastModifiedDate IS 'Timestamp at which the database entry was modified last. If equal to EntryAddedDate, then no modification was ever done. Automatically updated by a trigger';
+COMMENT ON CONSTRAINT ProductSafetyStockAmounts_PrimaryKey ON ProductSafetyStockAmounts IS 'The n×m relation is defined between Product and SafetyStockAmountLevels, so both PKs together form this relation PK';
+
+
+CREATE TABLE ProductTagAssignment (
+  ProductID             INTEGER                  NOT NULL REFERENCES Product(ProductID),
+  TagID                 INTEGER                  NOT NULL REFERENCES AvailableProductTags(TagID),
+  EntryAddedDate        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
+  EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
+  CONSTRAINT ProductTagAssignment_PrimaryKey PRIMARY KEY(ProductID, TagID)
+);
+COMMENT ON TABLE  ProductTagAssignment IS 'Assign product tags to products. Both tag and product are referenced by their numerical primary key.';
+COMMENT ON COLUMN ProductTagAssignment.ProductID             IS 'The product';
+COMMENT ON COLUMN ProductTagAssignment.TagID                 IS 'The product tag that is assigned to the product';
+COMMENT ON COLUMN ProductTagAssignment.EntryAddedDate        IS 'Timestamp at which the database entry was created. Read only';
+COMMENT ON COLUMN ProductTagAssignment.EntryLastModifiedDate IS 'Timestamp at which the database entry was modified last. If equal to EntryAddedDate, then no modification was ever done. Automatically updated by a trigger';
+COMMENT ON CONSTRAINT ProductTagAssignment_PrimaryKey ON ProductTagAssignment IS 'Define both foreign keys as a composite PK to prevent duplicate assignments, as there are additional columns in the table definition';
+
+
 CREATE TABLE StorageContent (
   StorageID             INTEGER                  NOT NULL REFERENCES Storage(StorageID),
   ProductID             INTEGER                  NOT NULL REFERENCES Product(ProductID),
   Amount                INTEGER                  NOT NULL,
   EntryAddedDate        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
   EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
-  PRIMARY KEY( StorageID, ProductID )
+  CONSTRAINT StorageContent_PrimaryKey PRIMARY KEY( StorageID, ProductID )
 );
-COMMENT ON TABLE  StorageContent IS 'Speichert die Produktverteilung von Produkten auf die vorhandenen Lager an';
-COMMENT ON COLUMN StorageContent.StorageID             IS 'Das referenzierte Lager';
-COMMENT ON COLUMN StorageContent.ProductID             IS 'Das referenzierte Produkt';
-COMMENT ON COLUMN StorageContent.Amount                IS 'Die im Lager verfügbare Produktmenge. Sollte positiv sein. Eine negative Produktmenge deutet auf ein inkonsistentes Lager hin.';
-COMMENT ON COLUMN StorageContent.EntryAddedDate        IS 'Das Datum, an dem der Datenbankeintrag angelegt wurde. Vor Veränderungen geschützt.';
-COMMENT ON COLUMN StorageContent.EntryLastModifiedDate IS 'Das Datum, an dem der Datenbankeintrag zuletzt bearbeitet wurde. Wird bei Änderungen am Datensatz von einem Datenbank-Trigger automatisch aktualisiert.';
+COMMENT ON TABLE  StorageContent IS 'StorageContent defines the stored amount of each product in a storage';
+COMMENT ON COLUMN StorageContent.StorageID             IS 'The storage';
+COMMENT ON COLUMN StorageContent.ProductID             IS 'The referenced product';
+COMMENT ON COLUMN StorageContent.Amount                IS 'The product amount stored in the storage. Should always be positive. A negative number is allowed but means an inconsistency occured like a double sold or unlogged product.';
+COMMENT ON COLUMN StorageContent.EntryAddedDate        IS 'Timestamp at which the database entry was created. Read only';
+COMMENT ON COLUMN StorageContent.EntryLastModifiedDate IS 'Timestamp at which the database entry was modified last. If equal to EntryAddedDate, then no modification was ever done. Automatically updated by a trigger';
+COMMENT ON CONSTRAINT StorageContent_PrimaryKey ON StorageContent IS 'The n×m relation is defined between Storage and Product, so both PKs together form this relation PK';
+
+
 CREATE TABLE StorageLog (
   StorageLogID          SERIAL                   NOT NULL PRIMARY KEY,
   FromStorage           INTEGER                      NULL REFERENCES Storage(StorageID),
@@ -186,50 +279,78 @@ CREATE TABLE StorageLog (
   EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
   CONSTRAINT OneStorageMustExist CHECK( FromStorage IS NOT NULL OR ToStorage IS NOT NULL )
 );
-COMMENT ON TABLE  StorageLog IS 'Modelliert einen Lagergang. Ein Eintrag ist eine Warenverschiebung von einem Lager in ein anderes. Ist FromStorage NULL, wird ein neu gekauftes Produkt eingelagert. Ist ToStorage NULL, wird ein gekauftes Produkt verkauft oder ein verschwundenes Produkt während einer Inventur entfernt.';
-COMMENT ON COLUMN StorageLog.FromStorage           IS 'Das Lager, aus dem das Produkt entnommen wird. Ist es NULL, wird ein neues Produkt eingelagert.';
-COMMENT ON COLUMN StorageLog.ToStorage             IS 'Das Lager, in dem das Produkt eingelagert wird. Ist es NULL, wird ein Produkt endgültig entnommen.';
-COMMENT ON COLUMN StorageLog.ProductID             IS 'Das verschobene Produkt';
-COMMENT ON COLUMN StorageLog.Amount                IS 'Die Produktmenge, die verschoben wird';
-COMMENT ON COLUMN StorageLog.TransferTimestamp     IS 'Der Zeitpunkt, an dem das Produkt verschoben wird.';
-COMMENT ON COLUMN StorageLog.EntryAddedDate        IS 'Das Datum, an dem der Datenbankeintrag angelegt wurde. Vor Veränderungen geschützt.';
-COMMENT ON COLUMN StorageLog.EntryLastModifiedDate IS 'Das Datum, an dem der Datenbankeintrag zuletzt bearbeitet wurde. Wird bei Änderungen am Datensatz von einem Datenbank-Trigger automatisch aktualisiert.';
-COMMENT ON CONSTRAINT OneStorageMustExist ON StorageLog IS 'Mindestens eins der Lager muss existieren. Beide Lager NULL ist ungültig.';
+COMMENT ON TABLE  StorageLog IS 'StorageLog is a logged product shift from one storage to another. If FromStorage is NULL, a newly purchased product is put into a storage. If ToStorage is NULL, a product is given out of the system, because it was sold or stolen.';
+COMMENT ON COLUMN StorageLog.FromStorage           IS 'The storage where the product is taken from, If NULL, the product is newly put into a storage.';
+COMMENT ON COLUMN StorageLog.ToStorage             IS 'The storage where the product is put into. If NULL, the product is completely removed from the system.';
+COMMENT ON COLUMN StorageLog.ProductID             IS 'The shifted/added/removed product';
+COMMENT ON COLUMN StorageLog.Amount                IS 'The shifted/added/removed product amount';
+COMMENT ON COLUMN StorageLog.TransferTimestamp     IS 'The shift/transfer timestamp.';
+COMMENT ON COLUMN StorageLog.EntryAddedDate        IS 'Timestamp at which the database entry was created. Read only';
+COMMENT ON COLUMN StorageLog.EntryLastModifiedDate IS 'Timestamp at which the database entry was modified last. If equal to EntryAddedDate, then no modification was ever done. Automatically updated by a trigger';
+COMMENT ON CONSTRAINT OneStorageMustExist ON StorageLog IS 'At least one storage must exist. Both storages beeing NULL is invalid, as this has no useful semantics.';
+
+
 CREATE TABLE Retailer (
-  RetailerID            SERIAL    NOT NULL PRIMARY KEY,
-  Name                  TEXT      NOT NULL,
-  AdressCountry         TEXT      NULL,
-  AdressZipCode         TEXT      NULL,
-  AdressCity            TEXT      NULL,
-  AdressStreet          TEXT      NULL,
-  AdressStreetNumber    TEXT      NULL,
-  CustomerNumber        TEXT      NULL,
+  RetailerID            SERIAL                   NOT NULL PRIMARY KEY,
+  Name                  TEXT                     NOT NULL,
+  AdressCountry         TEXT                         NULL,
+  AdressZipCode         TEXT                         NULL,
+  AdressCity            TEXT                         NULL,
+  AdressStreet          TEXT                         NULL,
+  AdressStreetNumber    TEXT                         NULL,
+  CustomerNumber        TEXT                         NULL,
   EntryAddedDate        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
   EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP)
 );
+COMMENT ON TABLE  Retailer IS 'Products can be ordered or purchased at retailers.';
+COMMENT ON COLUMN Retailer.RetailerID            IS 'The unique id is used to reference a specific retailer.';
+COMMENT ON COLUMN Retailer.Name                  IS 'The retailer name is the only required attribute for a retailer, as the rest may not be known or existant.';
+COMMENT ON COLUMN Retailer.AdressCountry         IS 'Retailer adress: Country';
+COMMENT ON COLUMN Retailer.AdressZipCode         IS 'Retailer adress: Zip/postal code';
+COMMENT ON COLUMN Retailer.AdressCity            IS 'Retailer adress: City';
+COMMENT ON COLUMN Retailer.AdressStreet          IS 'Retailer adress: Street name';
+COMMENT ON COLUMN Retailer.AdressStreetNumber    IS 'Retailer adress: Street number. May be any text like ''4A''';
+COMMENT ON COLUMN Retailer.CustomerNumber        IS 'A customer number registered at the retailer.';
+COMMENT ON COLUMN Retailer.EntryAddedDate        IS 'Timestamp at which the database entry was created. Read only';
+COMMENT ON COLUMN Retailer.EntryLastModifiedDate IS 'Timestamp at which the database entry was modified last. If equal to EntryAddedDate, then no modification was ever done. Automatically updated by a trigger';
+
+
 CREATE TABLE RetailerContactPerson (
-  ContactPersonID       SERIAL    NOT NULL PRIMARY KEY,
-  FirstName             TEXT      NULL,
-  LastName              TEXT      NOT NULL,
-  EMail                 TEXT      NULL,
-  Telephone             TEXT      NULL,
-  Fax                   TEXT      NULL,
+  ContactPersonID       SERIAL                   NOT NULL PRIMARY KEY,
+  FirstName             TEXT                         NULL,
+  LastName              TEXT                     NOT NULL,
+  EMail                 TEXT                         NULL,
+  Telephone             TEXT                         NULL,
+  Fax                   TEXT                         NULL,
   EntryAddedDate        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
   EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP)
 );
+COMMENT ON TABLE  RetailerContactPerson IS 'Some retailers assign a contact person to a customer to aid the purchase process.';
+COMMENT ON COLUMN RetailerContactPerson.ContactPersonID       IS 'The unique id is used to reference a specific contact person';
+COMMENT ON COLUMN RetailerContactPerson.FirstName             IS 'The contact person’s first name might not be known';
+COMMENT ON COLUMN RetailerContactPerson.LastName              IS 'The last name is required.';
+COMMENT ON COLUMN RetailerContactPerson.EMail                 IS 'There might be an e-mail adress known used for e-mail conversations';
+COMMENT ON COLUMN RetailerContactPerson.Telephone             IS 'The contact person might be reachable by telephone';
+COMMENT ON COLUMN RetailerContactPerson.Fax                   IS 'The contact person might be reachable by fax';
+COMMENT ON COLUMN RetailerContactPerson.EntryAddedDate        IS 'Timestamp at which the database entry was created. Read only';
+COMMENT ON COLUMN RetailerContactPerson.EntryLastModifiedDate IS 'Timestamp at which the database entry was modified last. If equal to EntryAddedDate, then no modification was ever done. Automatically updated by a trigger';
+
+
 CREATE TABLE ContactPersonFor (
-  RetailerID            INTEGER   NOT NULL REFERENCES Retailer(RetailerID),
-  ContactPersonID       INTEGER   NOT NULL REFERENCES RetailerContactPerson(ContactPersonID),
+  RetailerID            INTEGER                  NOT NULL REFERENCES Retailer(RetailerID),
+  ContactPersonID       INTEGER                  NOT NULL REFERENCES RetailerContactPerson(ContactPersonID),
   EntryAddedDate        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
   EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
 
   PRIMARY KEY(RetailerID, ContactPersonID)
 );
-COMMENT ON TABLE  ContactPersonFor IS 'ContactPersonFor modelliert das Arbeitsverhältnis einer Kontaktperson und ihrem Arbeitgeber.';
-COMMENT ON COLUMN ContactPersonFor.RetailerID IS 'Der Händler, für den die Kontaktperson arbeitet.';
-COMMENT ON COLUMN ContactPersonFor.ContactPersonID IS 'Die Kontaktperson, die für den Händler arbeitet.';
-COMMENT ON COLUMN ContactPersonFor.EntryAddedDate IS 'Das Datum, an dem der Datenbankeintrag angelegt wurde. Vor Veränderungen geschützt.';
-COMMENT ON COLUMN ContactPersonFor.EntryLastModifiedDate IS 'Das Datum, an dem der Datenbankeintrag zuletzt bearbeitet wurde. Wird bei Änderungen am Datensatz von einem Datenbank-Trigger automatisch aktualisiert.';
+COMMENT ON TABLE  ContactPersonFor IS 'ContactPersonFor models the work relation between a retailer and a contact person.';
+COMMENT ON COLUMN ContactPersonFor.RetailerID            IS 'The workplace of the contact person.';
+COMMENT ON COLUMN ContactPersonFor.ContactPersonID       IS 'The contact person.';
+COMMENT ON COLUMN ContactPersonFor.EntryAddedDate        IS 'Timestamp at which the database entry was created. Read only';
+COMMENT ON COLUMN ContactPersonFor.EntryLastModifiedDate IS 'Timestamp at which the database entry was modified last. If equal to EntryAddedDate, then no modification was ever done. Automatically updated by a trigger';
+
+
 CREATE TABLE Person (
   PersonID              SERIAL                   NOT NULL PRIMARY KEY,
   FirstName             TEXT                     NOT NULL,
@@ -240,14 +361,16 @@ CREATE TABLE Person (
   EntryAddedDate        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
   EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP)
 );
-COMMENT ON TABLE  Person IS 'Modelliert eine Person, die direkten Zugriff zum System benötigt. Händler-Kontaktpersonen werden nicht in dieser Tabelle abgelegt. Siehe dafür RetailerContactPerson';
-COMMENT ON COLUMN Person.FirstName             IS 'Der Vorname der Person';
-COMMENT ON COLUMN Person.LastName              IS 'Der Nachname der Person';
-COMMENT ON COLUMN Person.EMail                 IS 'Die E-Mail Adresse muss eindeutig sein und dient zur eindeutigen Identifikation und zur Zurücksetzung von Logins.';
-COMMENT ON COLUMN Person.CreationDate          IS 'Das Datum, an dem die Person angelegt wurde';
-COMMENT ON COLUMN Person.Active                IS 'Gibt an, ob die Person aktiv ist. Mit diesem Attribut kann die Handlungsfähigkeit einer Person deaktiviert werden';
-COMMENT ON COLUMN Person.EntryAddedDate        IS 'Das Datum, an dem der Datenbankeintrag angelegt wurde. Vor Veränderungen geschützt.';
-COMMENT ON COLUMN Person.EntryLastModifiedDate IS 'Das Datum, an dem der Datenbankeintrag zuletzt bearbeitet wurde. Wird bei Änderungen am Datensatz von einem Datenbank-Trigger automatisch aktualisiert.';
+COMMENT ON TABLE  Person IS 'A person that can be granted access to the system. See RetailerContactPerson for contact persons working at a retailer.';
+COMMENT ON COLUMN Person.FirstName             IS 'The person’s first name';
+COMMENT ON COLUMN Person.LastName              IS 'The person’s last name';
+COMMENT ON COLUMN Person.EMail                 IS 'The e-mail must be unique to reset login credentials or uniquely identify a person';
+COMMENT ON COLUMN Person.CreationDate          IS 'The creation date for the person';
+COMMENT ON COLUMN Person.Active                IS 'Can be used to completely deactivate an account';
+COMMENT ON COLUMN Person.EntryAddedDate        IS 'Timestamp at which the database entry was created. Read only';
+COMMENT ON COLUMN Person.EntryLastModifiedDate IS 'Timestamp at which the database entry was modified last. If equal to EntryAddedDate, then no modification was ever done. Automatically updated by a trigger';
+
+
 CREATE TABLE Customer (
   CustomerID            INTEGER                  NOT NULL PRIMARY KEY REFERENCES Person(PersonID),
   BaseBalance           DECIMAL(10,2)            NOT NULL DEFAULT(0),
@@ -257,6 +380,9 @@ CREATE TABLE Customer (
   EntryAddedDate        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
   EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP)
 );
+
+
+
 CREATE TABLE SalesPerson (
   SalesPersonID         INTEGER                  NOT NULL PRIMARY KEY REFERENCES Person(PersonID),
   BaseBalance           DECIMAL(10,2)            NOT NULL DEFAULT(0),
@@ -266,6 +392,9 @@ CREATE TABLE SalesPerson (
   EntryAddedDate        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
   EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP)
 );
+
+
+
 CREATE TABLE PersonRoleAssignment (
   RoleID                INTEGER NOT NULL REFERENCES AvailableRoles(RoleID),
   SalesPersonID         INTEGER NOT NULL REFERENCES SalesPerson(SalesPersonID),
@@ -273,6 +402,9 @@ CREATE TABLE PersonRoleAssignment (
   EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
   PRIMARY KEY(RoleID, SalesPersonID)
 );
+
+
+
 CREATE TABLE PurchaseHeader (
   PurchaseID            SERIAL                   NOT NULL PRIMARY KEY,
   OrderDate             DATE                     NOT NULL,
@@ -284,25 +416,37 @@ CREATE TABLE PurchaseHeader (
   EntryAddedDate        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP) ,
   EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP)
 );
-COMMENT ON TABLE  PurchaseHeader IS 'Speichert Wareneinkäufe eines Einkäufers bei einem Händler';
-COMMENT ON COLUMN PurchaseHeader.PurchaseID            IS 'Eindeutige Identifikationsnummer des Einkaufs';
-COMMENT ON COLUMN PurchaseHeader.OrderDate             IS 'Das Einkaufs- bzw. Bestelldatum. Eine Bestellung hat noch keine Produktinstanzen zu den Details in PurchaseDetail zugeordnet';
-COMMENT ON COLUMN PurchaseHeader.InvoiceNumber         IS 'Eine optionale Rechnungsnummer.';
-COMMENT ON COLUMN PurchaseHeader.InvoiceCopy           IS 'Eine optionale Rechnungskopie. Dieses Feld beinhaltet eine Digitalkopie der Rechnung oder des Kassenbons.';
-COMMENT ON COLUMN PurchaseHeader.InvoiceIsPreTax       IS 'Gibt an, ob die Beträge auf der Rechnung (PurchaseDetail) die Steuern beinhalten oder nicht';
-COMMENT ON COLUMN PurchaseHeader.RetailerID            IS 'Referenz auf den Händler, bei dem der Einkauf / die Bestellung getätigt wurde';
-COMMENT ON COLUMN PurchaseHeader.SalesPersonID         IS 'Referenz auf den verantwortlichen Einkäufer';
-COMMENT ON COLUMN PurchaseHeader.EntryAddedDate        IS 'Das Datum, an dem der Datenbankeintrag angelegt wurde. Vor Veränderungen geschützt.';
-COMMENT ON COLUMN PurchaseHeader.EntryLastModifiedDate IS 'Das Datum, an dem der Datenbankeintrag zuletzt bearbeitet wurde. Wird bei Änderungen am Datensatz von einem Datenbank-Trigger automatisch aktualisiert.';
+COMMENT ON TABLE  PurchaseHeader IS 'PurchaseHeader is a cart at a retailer. Its elements are stored in PurchaseDetail.';
+COMMENT ON COLUMN PurchaseHeader.PurchaseID            IS 'The unique id is used to reference a specific purchase';
+COMMENT ON COLUMN PurchaseHeader.OrderDate             IS 'The order or purchase date. It is a still open order, if there are no product instances in the database for this purchase';
+COMMENT ON COLUMN PurchaseHeader.InvoiceNumber         IS 'An optional invoice number. One is available, if products are oredered';
+COMMENT ON COLUMN PurchaseHeader.InvoiceCopy           IS 'An optional copy of the invoice. Can be a scanned picture of the invoice for reference purposes.';
+COMMENT ON COLUMN PurchaseHeader.InvoiceIsPreTax       IS 'Defines if the price on the associated purchase details already contains the taxes';
+COMMENT ON COLUMN PurchaseHeader.RetailerID            IS 'The retailer where the order / purchase was done';
+COMMENT ON COLUMN PurchaseHeader.SalesPersonID         IS 'Each order / purchase is done by a staff member';
+COMMENT ON COLUMN PurchaseHeader.EntryAddedDate        IS 'Timestamp at which the database entry was created. Read only';
+COMMENT ON COLUMN PurchaseHeader.EntryLastModifiedDate IS 'Timestamp at which the database entry was modified last. If equal to EntryAddedDate, then no modification was ever done. Automatically updated by a trigger';
+
+
 CREATE TABLE PurchaseDetail (
-  PurchaseDetailID      SERIAL         NOT NULL PRIMARY KEY,
-  PurchaseID            INTEGER        NOT NULL REFERENCES PurchaseHeader(PurchaseID),
-  ProductID             INTEGER        NOT NULL REFERENCES Product(ProductID),
-  PrimeCostPerUnit      DECIMAL(10, 2) NOT NULL,
-  PurchaseAmount        INTEGER        NOT NULL,
+  PurchaseDetailID      SERIAL                   NOT NULL PRIMARY KEY,
+  PurchaseID            INTEGER                  NOT NULL REFERENCES PurchaseHeader(PurchaseID),
+  ProductID             INTEGER                  NOT NULL REFERENCES Product(ProductID),
+  PrimeCostPerUnit      DECIMAL(10, 2)           NOT NULL,
+  PurchaseAmount        INTEGER                  NOT NULL,
   EntryAddedDate        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
   EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP)
 );
+COMMENT ON TABLE  PurchaseDetail IS 'A purchase consists of several purchased products. Each oredered / purchased product has an entry in this table.';
+COMMENT ON COLUMN PurchaseDetail.PurchaseDetailID      IS 'The unique id is used to reference a specific purchase detail and is used as a product instance id when the product instance is created';
+COMMENT ON COLUMN PurchaseDetail.PurchaseID            IS 'The detail belongs to a purchase cart';
+COMMENT ON COLUMN PurchaseDetail.ProductID             IS 'The ordered / purchased product';
+COMMENT ON COLUMN PurchaseDetail.PrimeCostPerUnit      IS 'The paid price per single product';
+COMMENT ON COLUMN PurchaseDetail.PurchaseAmount        IS 'The oredered / purchased product amount.';
+COMMENT ON COLUMN PurchaseDetail.EntryAddedDate        IS 'Timestamp at which the database entry was created. Read only';
+COMMENT ON COLUMN PurchaseDetail.EntryLastModifiedDate IS 'Timestamp at which the database entry was modified last. If equal to EntryAddedDate, then no modification was ever done. Automatically updated by a trigger';
+
+
 CREATE TABLE ProductInstance (
   ProductInstanceID     INTEGER                  NOT NULL PRIMARY KEY REFERENCES PurchaseDetail(PurchaseDetailID),
   ProductID             INTEGER                  NOT NULL REFERENCES Product(ProductID),
@@ -314,17 +458,18 @@ CREATE TABLE ProductInstance (
   EntryAddedDate        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
   EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP)
 );
-COMMENT ON TABLE  ProductInstance IS 'Eine Produktinstanz ist ein reales Produkt, eingekauft bei einem Händler. Es hat einen Lagerbestand und Kaufdatum, eventuell Mindesthaltbarkeitsdatum.';
-COMMENT ON COLUMN ProductInstance.ProductInstanceID     IS 'Eindeutiger Identifikator, wird durch das PurchaseDetail bestimmt und in Verkäufen (SaleDetail) verwendet.';
-COMMENT ON COLUMN ProductInstance.ProductID             IS 'Die Produktinstanz ist eine Instanz des referenzierten Produktes und teilt alle Eigenschaften des Produkts';
-COMMENT ON COLUMN ProductInstance.AddedDate             IS 'Das Einlagerdatum des Produkts. Wird auf das Datum des Produkteinkaufs oder der Lieferung gesetzt.';
-COMMENT ON COLUMN ProductInstance.InStockAmount         IS 'Die Menge der Produktinstanz, die noch im Lager verfügbar ist.';
-COMMENT ON COLUMN ProductInstance.BestBeforeDate        IS 'Ein optionales Mindesthaltbarkeitsdatum. Kann bei verderblichen Waren gesetzt werden, um bei Ablauf zu warnen.';
-COMMENT ON COLUMN ProductInstance.PriceOverride         IS 'Überschreibt den Produktpreis für eine einzelne Instanz mit einem anderen Preis';
-COMMENT ON COLUMN ProductInstance.TaxCategoryID         IS 'Die Steuerkategorie, unter der das Produkt eingekauft werden. Wird bei anlegen der Instanz aus Product kopiert und hält die Steuerkategorie auch nach Änderung am Produkt';
-COMMENT ON COLUMN ProductInstance.EntryAddedDate        IS 'Das Datum, an dem der Datenbankeintrag angelegt wurde. Vor Veränderungen geschützt.';
-COMMENT ON COLUMN ProductInstance.EntryLastModifiedDate IS 'Das Datum, an dem der Datenbankeintrag zuletzt bearbeitet wurde. Wird bei Änderungen am Datensatz von einem Datenbank-Trigger automatisch aktualisiert.';
--- TODO: nächste Tabellendefinition zusammen mit den  SQL-Kommentaren ins Wiki kopieren
+COMMENT ON TABLE  ProductInstance IS 'A product instance is a purchased batch of a product';
+COMMENT ON COLUMN ProductInstance.ProductInstanceID     IS 'The unique id is used to reference a specific product instance. It is used e.g. in the SaleDetail.';
+COMMENT ON COLUMN ProductInstance.ProductID             IS 'The instance is a bought batch of the given product.';
+COMMENT ON COLUMN ProductInstance.AddedDate             IS 'The date at which the instance was put into a storage. Is set to the purchase or delivery date.';
+COMMENT ON COLUMN ProductInstance.InStockAmount         IS 'The still available product amount from the batch.';
+COMMENT ON COLUMN ProductInstance.BestBeforeDate        IS 'Optional best before date. If set, the system can warn if an instance that still has a positive in stock amount has reached its best before date';
+COMMENT ON COLUMN ProductInstance.PriceOverride         IS 'The price override can override the general product price';
+COMMENT ON COLUMN ProductInstance.TaxCategoryID         IS 'The tax category of this product batch. It is used in combination with the added date to define the exact tax value.';
+COMMENT ON COLUMN ProductInstance.EntryAddedDate        IS 'Timestamp at which the database entry was created. Read only';
+COMMENT ON COLUMN ProductInstance.EntryLastModifiedDate IS 'Timestamp at which the database entry was modified last. If equal to EntryAddedDate, then no modification was ever done. Automatically updated by a trigger';
+
+
 CREATE TABLE SaleHeader (
   SaleID                SERIAL                   NOT NULL PRIMARY KEY,
   SalesPersonID         INTEGER                  NOT NULL REFERENCES SalesPerson(SalesPersonID),
@@ -333,14 +478,15 @@ CREATE TABLE SaleHeader (
   EntryAddedDate        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
   EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP)
 );
-COMMENT ON TABLE  SaleHeader IS 'Modelliert einen Warenverkauf durch einen Verkäufer an einen Kunden. Speichert allgemeine Daten zum Verkauf';
-COMMENT ON COLUMN SaleHeader.SaleID                IS 'Eine eindeutige Identifikationsnummer für den Warenverkauf';
-COMMENT ON COLUMN SaleHeader.SalesPersonID         IS 'Der den Verkauf durchführende Verkäufer';
-COMMENT ON COLUMN SaleHeader.CustomerID            IS 'Der die Waren kaufende Kunde';
-COMMENT ON COLUMN SaleHeader.SalesDateTime         IS 'Der Zeitpunkt des Verkaufsabschlusses';
-COMMENT ON COLUMN SaleHeader.EntryAddedDate        IS 'Das Datum, an dem der Datenbankeintrag angelegt wurde. Vor Veränderungen geschützt.';
-COMMENT ON COLUMN SaleHeader.EntryLastModifiedDate IS 'Das Datum, an dem der Datenbankeintrag zuletzt bearbeitet wurde. Wird bei Änderungen am Datensatz von einem Datenbank-Trigger automatisch aktualisiert.';
--- TODO: nächste Tabellendefinition zusammen mit den  SQL-Kommentaren ins Wiki kopieren
+COMMENT ON TABLE  SaleHeader IS 'SaleHeader is a sold customer cart. Its elements are stored in SaleDetail.';
+COMMENT ON COLUMN SaleHeader.SaleID                IS 'The unique id is used to reference a specific sale cart.';
+COMMENT ON COLUMN SaleHeader.SalesPersonID         IS 'The staff member that sold the products to the customer';
+COMMENT ON COLUMN SaleHeader.CustomerID            IS 'The purchasing customer.';
+COMMENT ON COLUMN SaleHeader.SalesDateTime         IS 'The timestamp at which the cart was sold.';
+COMMENT ON COLUMN SaleHeader.EntryAddedDate        IS 'Timestamp at which the database entry was created. Read only';
+COMMENT ON COLUMN SaleHeader.EntryLastModifiedDate IS 'Timestamp at which the database entry was modified last. If equal to EntryAddedDate, then no modification was ever done. Automatically updated by a trigger';
+
+
 CREATE TABLE SaleDetail (
   SaleDetailID          SERIAL                   NOT NULL PRIMARY KEY,
   SaleID                INTEGER                  NOT NULL REFERENCES SaleHeader(SaleID),
@@ -351,39 +497,44 @@ CREATE TABLE SaleDetail (
   EntryAddedDate        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
   EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP)
 );
-COMMENT ON TABLE  SaleDetail IS 'Modelliert einen Warenverkauf durch einen Verkäufer an einen Kunden. Speichert die Warenwechsel. Analogie zu den einzelnen Zeilen eines Kassenbons';
-COMMENT ON COLUMN SaleDetail.SaleDetailID          IS 'Eine eindeutige Identifikationsnummer für das Verkaufsdetail';
-COMMENT ON COLUMN SaleDetail.SaleID                IS 'Der Verkaufsvorgang, zu dem das Detail gehört';
-COMMENT ON COLUMN SaleDetail.ProductInstanceID     IS 'Die verkaufte Produktinstanz';
-COMMENT ON COLUMN SaleDetail.UnitPrice             IS 'Der Stückpreis';
-COMMENT ON COLUMN SaleDetail.UnitQuantity          IS 'Die verkaufte Menge';
-COMMENT ON COLUMN SaleDetail.IsRedemption          IS 'Gibt an, ob es sich um eine Warenrückgabe handelt.';
-COMMENT ON COLUMN SaleDetail.EntryAddedDate        IS 'Das Datum, an dem der Datenbankeintrag angelegt wurde. Vor Veränderungen geschützt.';
-COMMENT ON COLUMN SaleDetail.EntryLastModifiedDate IS 'Das Datum, an dem der Datenbankeintrag zuletzt bearbeitet wurde. Wird bei Änderungen am Datensatz von einem Datenbank-Trigger automatisch aktualisiert.';
+COMMENT ON TABLE  SaleDetail IS 'A sale consists of several sold products. Each sold product has an entry in this table.';
+COMMENT ON COLUMN SaleDetail.SaleDetailID          IS 'The unique id is used to reference a specific sale detail.';
+COMMENT ON COLUMN SaleDetail.SaleID                IS 'The detail belongs to a sale cart';
+COMMENT ON COLUMN SaleDetail.ProductInstanceID     IS 'The sold product instance.';
+COMMENT ON COLUMN SaleDetail.UnitPrice             IS 'The unit price at which the product is sold';
+COMMENT ON COLUMN SaleDetail.UnitQuantity          IS 'The sold product amount';
+COMMENT ON COLUMN SaleDetail.IsRedemption          IS 'If set to TRUE, the detail is a product redemption.';
+COMMENT ON COLUMN SaleDetail.EntryAddedDate        IS 'Timestamp at which the database entry was created. Read only';
+COMMENT ON COLUMN SaleDetail.EntryLastModifiedDate IS 'Timestamp at which the database entry was modified last. If equal to EntryAddedDate, then no modification was ever done. Automatically updated by a trigger';
+
+
 CREATE TABLE ClientType (
-  ClientTypeID          SERIAL    NOT NULL PRIMARY KEY,
-  Name                  TEXT      NOT NULL UNIQUE,
+  ClientTypeID          SERIAL                   NOT NULL PRIMARY KEY,
+  Name                  TEXT                     NOT NULL UNIQUE,
   EntryAddedDate        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
   EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP)
 );
-COMMENT ON TABLE  ClientType IS 'Modelliert verschiedene Client-Typen, wie Verkaufsclient, Kunden-Webseite, Admin-Client etc.';
-COMMENT ON COLUMN ClientType.ClientTypeID IS 'Eine eindeutige Identifikationsnummer';
-COMMENT ON COLUMN ClientType.Name IS 'Eine Stringbezeichnung, die benutzt werden kann, um nicht mit der ID arbeiten zu müssen';
-COMMENT ON COLUMN ClientType.EntryAddedDate IS 'Das Datum, an dem der Datenbankeintrag angelegt wurde. Vor Veränderungen geschützt.';
-COMMENT ON COLUMN ClientType.EntryLastModifiedDate IS 'Das Datum, an dem der Datenbankeintrag zuletzt bearbeitet wurde. Wird bei Änderungen am Datensatz von einem Datenbank-Trigger automatisch aktualisiert.';
+COMMENT ON TABLE  ClientType IS 'ClientType defines a type of application that is connected to the backend. It may be something like a sale client, a storage management client, a customer web client or an admin client.
+It can used to limit the scope of login credentials. It might be desireable to have credential-less logins for controlled clients, but not for the web interface, so each credential type can be limited to certain client types.';
+COMMENT ON COLUMN ClientType.ClientTypeID          IS 'The unique id is used to reference a specific client type';
+COMMENT ON COLUMN ClientType.Name                  IS 'The unique client type name. ';
+COMMENT ON COLUMN ClientType.EntryAddedDate        IS 'Timestamp at which the database entry was created. Read only';
+COMMENT ON COLUMN ClientType.EntryLastModifiedDate IS 'Timestamp at which the database entry was modified last. If equal to EntryAddedDate, then no modification was ever done. Automatically updated by a trigger';
+
+
 CREATE TABLE Client (
-  ClientID              SERIAL  NOT NULL PRIMARY KEY,
-  Name                  TEXT    NOT NULL,
-  ClientTypeID          INTEGER NOT NULL REFERENCES ClientType(ClientTypeID),
-  ClientSecret          BYTEA   NOT NULL,
+  ClientID              SERIAL                   NOT NULL PRIMARY KEY,
+  Name                  TEXT                     NOT NULL,
+  ClientTypeID          INTEGER                  NOT NULL REFERENCES ClientType(ClientTypeID),
+  ClientSecret          BYTEA                    NOT NULL,
   EntryAddedDate        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
   EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP)
 );
 CREATE TABLE AvailableCredentialTypes (
-  CredentialTypeID      SERIAL    NOT NULL PRIMARY KEY,
-  Name                  TEXT      NOT NULL,
-  NeedsPassword         BOOLEAN   NOT NULL,
-  ModuleIdentifier      TEXT      NULL,
+  CredentialTypeID      SERIAL                   NOT NULL PRIMARY KEY,
+  Name                  TEXT                     NOT NULL,
+  NeedsPassword         BOOLEAN                  NOT NULL,
+  ModuleIdentifier      TEXT                         NULL,
   EntryAddedDate        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
   EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP)
 );
@@ -391,11 +542,11 @@ COMMENT ON TABLE  AvailableCredentialTypes IS NULL;
 COMMENT ON COLUMN AvailableCredentialTypes.Name IS 'Der Name des Credentialtypen';
 COMMENT ON COLUMN AvailableCredentialTypes.NeedsPassword IS 'Gibt an, ob der Credentialtyp zwingend ein gesetztes CredentialSecret vorraussetzt';
 COMMENT ON COLUMN AvailableCredentialTypes.ModuleIdentifier IS 'Der Name des für den Typen zuständigen Programmmoduls';
-COMMENT ON COLUMN AvailableCredentialTypes.EntryAddedDate IS 'Das Datum, an dem der Datenbankeintrag angelegt wurde. Vor Veränderungen geschützt.';
-COMMENT ON COLUMN AvailableCredentialTypes.EntryLastModifiedDate IS 'Das Datum, an dem der Datenbankeintrag zuletzt bearbeitet wurde. Wird bei Änderungen am Datensatz von einem Datenbank-Trigger automatisch aktualisiert.';
+COMMENT ON COLUMN AvailableCredentialTypes.EntryAddedDate IS 'Timestamp at which the database entry was created. Read only';
+COMMENT ON COLUMN AvailableCredentialTypes.EntryLastModifiedDate IS 'Timestamp at which the database entry was modified last. If equal to EntryAddedDate, then no modification was ever done. Automatically updated by a trigger';
 CREATE TABLE AllowedCredentialUse (
-  CredentialTypeID      INTEGER   NOT NULL REFERENCES AvailableCredentialTypes(CredentialTypeID),
-  ClientTypeID          INTEGER   NOT NULL REFERENCES ClientType(ClientTypeID),
+  CredentialTypeID      INTEGER                  NOT NULL REFERENCES AvailableCredentialTypes(CredentialTypeID),
+  ClientTypeID          INTEGER                  NOT NULL REFERENCES ClientType(ClientTypeID),
   EntryAddedDate        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
   EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
 
@@ -414,8 +565,8 @@ COMMENT ON TABLE  Username IS 'Ein Nutzername identifiziert einen Benutzer für 
 COMMENT ON COLUMN Username.UsernameID            IS 'Die eindeutige Identifikationsnummer des Nutzernamens wird bei den Secrets in Credential benutzt';
 COMMENT ON COLUMN Username.Username              IS 'Der Nutzername, ermöglicht den Login einer Person an einem Client.';
 COMMENT ON COLUMN Username.PersonID              IS 'Die Person, zu der der Nutzername gehört.';
-COMMENT ON COLUMN Username.EntryAddedDate        IS 'Das Datum, an dem der Datenbankeintrag angelegt wurde. Vor Veränderungen geschützt.';
-COMMENT ON COLUMN Username.EntryLastModifiedDate IS 'Das Datum, an dem der Datenbankeintrag zuletzt bearbeitet wurde. Wird bei Änderungen am Datensatz von einem Datenbank-Trigger automatisch aktualisiert.';
+COMMENT ON COLUMN Username.EntryAddedDate        IS 'Timestamp at which the database entry was created. Read only';
+COMMENT ON COLUMN Username.EntryLastModifiedDate IS 'Timestamp at which the database entry was modified last. If equal to EntryAddedDate, then no modification was ever done. Automatically updated by a trigger';
 -- TODO: nächste Tabellendefinition zusammen mit den  SQL-Kommentaren ins Wiki kopieren
 CREATE TABLE Credentials (
   CredentialID          SERIAL                   NOT NULL PRIMARY KEY,
@@ -436,8 +587,8 @@ COMMENT ON COLUMN Credentials.CredentialTypeID      IS 'Gibt den Typen des Crede
 COMMENT ON COLUMN Credentials.IsSalesPersonLogin    IS 'Gibt an, ob das Credential für einen Kunden- oder Mitarbeiterlogin verwendet wird.';
 COMMENT ON COLUMN Credentials.CredentialCreateDate  IS 'Das Datum, an dem der Login angelegt wurde.';
 COMMENT ON COLUMN Credentials.LastSecretChange      IS 'Das Datum, an dem das Geheimnis das letzte mal geändert wurde';
-COMMENT ON COLUMN Credentials.EntryAddedDate        IS 'Das Datum, an dem der Datenbankeintrag angelegt wurde. Vor Veränderungen geschützt.';
-COMMENT ON COLUMN Credentials.EntryLastModifiedDate IS 'Das Datum, an dem der Datenbankeintrag zuletzt bearbeitet wurde. Wird bei Änderungen am Datensatz von einem Datenbank-Trigger automatisch aktualisiert.';
+COMMENT ON COLUMN Credentials.EntryAddedDate        IS 'Timestamp at which the database entry was created. Read only';
+COMMENT ON COLUMN Credentials.EntryLastModifiedDate IS 'Timestamp at which the database entry was modified last. If equal to EntryAddedDate, then no modification was ever done. Automatically updated by a trigger';
 -- TODO: nächste Tabellendefinition zusammen mit den  SQL-Kommentaren ins Wiki kopieren
 CREATE TABLE CredentialUse (
   ClientTypeID          INTEGER                  NOT NULL REFERENCES ClientType(ClientTypeID),
@@ -465,8 +616,8 @@ COMMENT ON COLUMN Charge.SalesPersonID         IS 'Der Verkäufer, der die Gutha
 COMMENT ON COLUMN Charge.Donation              IS 'Gibt an, ob es sich bei der Aufladung um eine Spende handelt. Bei einer Spende wird das Geld nicht auf dem Kundenkonto gutgeschrieben.';
 COMMENT ON COLUMN Charge.ChargeAmount          IS 'Der aufgeladene oder gespendete Geldbetrag';
 COMMENT ON COLUMN Charge.ChargeDate            IS 'Das Datum der Guthabenaufladung';
-COMMENT ON COLUMN Charge.EntryAddedDate        IS 'Das Datum, an dem der Datenbankeintrag angelegt wurde. Vor Veränderungen geschützt.';
-COMMENT ON COLUMN Charge.EntryLastModifiedDate IS 'Das Datum, an dem der Datenbankeintrag zuletzt bearbeitet wurde. Wird bei Änderungen am Datensatz von einem Datenbank-Trigger automatisch aktualisiert.';
+COMMENT ON COLUMN Charge.EntryAddedDate        IS 'Timestamp at which the database entry was created. Read only';
+COMMENT ON COLUMN Charge.EntryLastModifiedDate IS 'Timestamp at which the database entry was modified last. If equal to EntryAddedDate, then no modification was ever done. Automatically updated by a trigger';
 -- TODO: nächste Tabellendefinition zusammen mit den  SQL-Kommentaren ins Wiki kopieren
 CREATE TABLE Repayment (
   RepaymentID             SERIAL                   NOT NULL PRIMARY KEY,
@@ -484,8 +635,8 @@ COMMENT ON COLUMN Repayment.SalesPersonID           IS 'Der Geld rückzahlende V
 COMMENT ON COLUMN Repayment.TransactionDate         IS 'Das Datum, an dem die Transaktion getätigt wurde';
 COMMENT ON COLUMN Repayment.Amount                  IS 'Der zurückgezahlte Geldbetrag';
 COMMENT ON COLUMN Repayment.RequiredAmountRedeemers IS 'Die minimale Anzahl an Bestätigungen durch Finanzbeauftragte, um den Eintrag als bestätigt anzusehen.';
-COMMENT ON COLUMN Repayment.EntryAddedDate          IS 'Das Datum, an dem der Datenbankeintrag angelegt wurde. Vor Veränderungen geschützt.';
-COMMENT ON COLUMN Repayment.EntryLastModifiedDate   IS 'Das Datum, an dem der Datenbankeintrag zuletzt bearbeitet wurde. Wird bei Änderungen am Datensatz von einem Datenbank-Trigger automatisch aktualisiert.';
+COMMENT ON COLUMN Repayment.EntryAddedDate          IS 'Timestamp at which the database entry was created. Read only';
+COMMENT ON COLUMN Repayment.EntryLastModifiedDate   IS 'Timestamp at which the database entry was modified last. If equal to EntryAddedDate, then no modification was ever done. Automatically updated by a trigger';
 COMMENT ON CONSTRAINT PositiveRequiredAmountRedeemers ON Repayment IS 'Die Minimalanzahl an Einträgen in RedeemerFor für das Akzeptieren des Eintrag darf nicht negativ sein.';
 -- TODO: nächste Tabellendefinition zusammen mit den  SQL-Kommentaren ins Wiki kopieren
 CREATE TABLE RedeemerFor (
@@ -602,3 +753,4 @@ CREATE VIEW SalesPersonBalance AS
   ) AS SPRepaymentSum ON SPRepaymentSum.SalesPersonID = sp.SalesPersonID
 ;
 COMMENT ON VIEW SalesPersonBalance IS 'Berechnet den aktuellen Kontostand des Verkäufers als Summe aller Kundenkontoaufladungen und Geldrückzahlungen';
+COMMIT;
