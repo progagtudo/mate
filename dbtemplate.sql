@@ -177,7 +177,7 @@ COMMENT ON COLUMN Product.ProductID             IS 'The unique id is used to ref
 COMMENT ON COLUMN Product.Name                  IS 'The product name is unique to disallow multiple products with the same name.';
 COMMENT ON COLUMN Product.Description           IS 'An optional description for the product. It might contain additional information, an appeareance description or an ingrediants list.';
 COMMENT ON COLUMN Product.Price                 IS 'The sale price of the product';
-COMMENT ON COLUMN Product.TaxCategoryID         IS 'The tax category of a product is used as a default / template for the tax category stored in ProductInstance';
+COMMENT ON COLUMN Product.TaxCategoryID         IS 'The tax category of a product is used as a default / template for the tax category stored in PurchaseDetail';
 COMMENT ON COLUMN Product.IsSaleAllowed         IS 'Indicates whether a product is allowed to be sold, or not. It might be needed to stop a product sale for administrative purposes.';
 COMMENT ON COLUMN Product.IsDefaultRedemption   IS 'Indicates whether a product is normally sold or normally redempted.';
 COMMENT ON COLUMN Product.EntryAddedDate        IS 'Timestamp at which the database entry was created. Read only';
@@ -407,7 +407,7 @@ CREATE TABLE PersonRoleAssignment (
 
 CREATE TABLE PurchaseHeader (
   PurchaseID            BIGSERIAL                NOT NULL PRIMARY KEY,
-  OrderDate             DATE                     NOT NULL,
+  OrderDate             DATE                     NOT NULL DEFAULT(CURRENT_DATE),
   InvoiceNumber         TEXT                         NULL,
   InvoiceCopy           BYTEA                        NULL,
   InvoiceIsPreTax       BOOLEAN                  NOT NULL,
@@ -432,42 +432,29 @@ CREATE TABLE PurchaseDetail (
   PurchaseDetailID      BIGSERIAL                NOT NULL PRIMARY KEY,
   PurchaseID            BIGINT                   NOT NULL REFERENCES PurchaseHeader(PurchaseID),
   ProductID             BIGINT                   NOT NULL REFERENCES Product(ProductID),
+  OrderAmount           BIGINT                   NOT NULL,
+  IsShipped             BOOLEAN                  NOT NULL,
+  PurchaseAmount        BIGINT                       NULL,
   PrimeCostPerUnit      DECIMAL(10, 2)           NOT NULL,
-  PurchaseAmount        BIGINT                   NOT NULL,
+  TaxCategoryID         BIGINT                   NOT NULL REFERENCES TaxCategoryName(TaxCategoryID),
+  BestBeforeDate        DATE                         NULL,
   EntryAddedDate        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
-  EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP)
+  EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
+  CONSTRAINT PurchaseAmountSetIfShipped CHECK(IsShipped IS FALSE OR PurchaseAmount IS NOT NULL) -- IsShipped = TRUE implies PurchaseAmount IS NOT NULL
 );
 COMMENT ON TABLE  PurchaseDetail IS 'A purchase consists of several purchased products. Each oredered / purchased product has an entry in this table.';
-COMMENT ON COLUMN PurchaseDetail.PurchaseDetailID      IS 'The unique id is used to reference a specific purchase detail and is used as a product instance id when the product instance is created';
+COMMENT ON COLUMN PurchaseDetail.PurchaseDetailID      IS 'The unique id is used to reference a specific purchase detail';
 COMMENT ON COLUMN PurchaseDetail.PurchaseID            IS 'The detail belongs to a purchase cart';
 COMMENT ON COLUMN PurchaseDetail.ProductID             IS 'The ordered / purchased product';
-COMMENT ON COLUMN PurchaseDetail.PrimeCostPerUnit      IS 'The paid price per single product';
+COMMENT ON COLUMN PurchaseDetail.OrderAmount           IS 'The ordered product amount.';
+COMMENT ON COLUMN PurchaseDetail.IsShipped             IS 'If TRUE, the ordered product is shipped and the purchase amount must be set. ';
 COMMENT ON COLUMN PurchaseDetail.PurchaseAmount        IS 'The oredered / purchased product amount.';
+COMMENT ON COLUMN PurchaseDetail.BestBeforeDate        IS 'Optional best before date.';
+COMMENT ON COLUMN PurchaseDetail.PrimeCostPerUnit      IS 'The paid price per single product';
+COMMENT ON COLUMN PurchaseDetail.TaxCategoryID         IS 'The tax category for this specific product purchase. It might be different from the default stored in Product';
 COMMENT ON COLUMN PurchaseDetail.EntryAddedDate        IS 'Timestamp at which the database entry was created. Read only';
 COMMENT ON COLUMN PurchaseDetail.EntryLastModifiedDate IS 'Timestamp at which the database entry was modified last. If equal to EntryAddedDate, then no modification was ever done. Automatically updated by a trigger';
-
-
-CREATE TABLE ProductInstance (
-  ProductInstanceID     BIGINT                   NOT NULL PRIMARY KEY REFERENCES PurchaseDetail(PurchaseDetailID),
-  ProductID             BIGINT                   NOT NULL REFERENCES Product(ProductID),
-  AddedDate             DATE                     NOT NULL,
-  InStockAmount         BIGINT                   NOT NULL,
-  BestBeforeDate        DATE                         NULL,
-  PriceOverride         DECIMAL(10,2)                NULL,
-  TaxCategoryID         BIGINT                   NOT NULL REFERENCES TaxCategoryName(TaxCategoryID),
-  EntryAddedDate        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
-  EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP)
-);
-COMMENT ON TABLE  ProductInstance IS 'A product instance is a purchased batch of a product';
-COMMENT ON COLUMN ProductInstance.ProductInstanceID     IS 'The unique id is used to reference a specific product instance. It is used e.g. in the SaleDetail.';
-COMMENT ON COLUMN ProductInstance.ProductID             IS 'The instance is a bought batch of the given product.';
-COMMENT ON COLUMN ProductInstance.AddedDate             IS 'The date at which the instance was put into a storage. Is set to the purchase or delivery date.';
-COMMENT ON COLUMN ProductInstance.InStockAmount         IS 'The still available product amount from the batch.';
-COMMENT ON COLUMN ProductInstance.BestBeforeDate        IS 'Optional best before date. If set, the system can warn if an instance that still has a positive in stock amount has reached its best before date';
-COMMENT ON COLUMN ProductInstance.PriceOverride         IS 'The price override can override the general product price';
-COMMENT ON COLUMN ProductInstance.TaxCategoryID         IS 'The tax category of this product batch. It is used in combination with the added date to define the exact tax value.';
-COMMENT ON COLUMN ProductInstance.EntryAddedDate        IS 'Timestamp at which the database entry was created. Read only';
-COMMENT ON COLUMN ProductInstance.EntryLastModifiedDate IS 'Timestamp at which the database entry was modified last. If equal to EntryAddedDate, then no modification was ever done. Automatically updated by a trigger';
+COMMENT ON CONSTRAINT PurchaseAmountSetIfShipped ON PurchaseDetail IS 'The PurchaseAmount is NULL, if the product is not yet shipped. It must be set, if the product is shipped.a';
 
 
 CREATE TABLE SaleHeader (
@@ -490,7 +477,7 @@ COMMENT ON COLUMN SaleHeader.EntryLastModifiedDate IS 'Timestamp at which the da
 CREATE TABLE SaleDetail (
   SaleDetailID          BIGSERIAL                NOT NULL PRIMARY KEY,
   SaleID                BIGINT                   NOT NULL REFERENCES SaleHeader(SaleID),
-  ProductInstanceID     BIGINT                   NOT NULL REFERENCES ProductInstance(ProductInstanceID),
+  ProductID             BIGINT                   NOT NULL REFERENCES Product(ProductID),
   UnitPrice             DECIMAL(10,4)            NOT NULL,
   UnitQuantity          BIGINT                   NOT NULL,
   IsRedemption          BOOLEAN                  NOT NULL,
@@ -500,7 +487,7 @@ CREATE TABLE SaleDetail (
 COMMENT ON TABLE  SaleDetail IS 'A sale consists of several sold products. Each sold product has an entry in this table.';
 COMMENT ON COLUMN SaleDetail.SaleDetailID          IS 'The unique id is used to reference a specific sale detail.';
 COMMENT ON COLUMN SaleDetail.SaleID                IS 'The detail belongs to a sale cart';
-COMMENT ON COLUMN SaleDetail.ProductInstanceID     IS 'The sold product instance.';
+COMMENT ON COLUMN SaleDetail.ProductID             IS 'The sold product.';
 COMMENT ON COLUMN SaleDetail.UnitPrice             IS 'The unit price at which the product is sold';
 COMMENT ON COLUMN SaleDetail.UnitQuantity          IS 'The sold product amount';
 COMMENT ON COLUMN SaleDetail.IsRedemption          IS 'If set to TRUE, the detail is a product redemption.';
@@ -524,26 +511,31 @@ COMMENT ON COLUMN ClientType.EntryLastModifiedDate IS 'Timestamp at which the da
 
 CREATE TABLE Client (
   ClientID              BIGSERIAL                NOT NULL PRIMARY KEY,
-  Name                  TEXT                     NOT NULL,
+  Name                  TEXT                     NOT NULL UNIQUE,
   ClientTypeID          BIGINT                   NOT NULL REFERENCES ClientType(ClientTypeID),
   ClientSecret          BYTEA                    NOT NULL,
   EntryAddedDate        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
   EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP)
 );
+
+
 CREATE TABLE AvailableCredentialTypes (
   CredentialTypeID      BIGSERIAL                NOT NULL PRIMARY KEY,
-  Name                  TEXT                     NOT NULL,
+  Name                  TEXT                     NOT NULL UNIQUE,
   NeedsPassword         BOOLEAN                  NOT NULL,
   ModuleIdentifier      TEXT                         NULL,
   EntryAddedDate        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
   EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP)
 );
-COMMENT ON TABLE  AvailableCredentialTypes IS NULL;
-COMMENT ON COLUMN AvailableCredentialTypes.Name IS 'Der Name des Credentialtypen';
-COMMENT ON COLUMN AvailableCredentialTypes.NeedsPassword IS 'Gibt an, ob der Credentialtyp zwingend ein gesetztes CredentialSecret vorraussetzt';
-COMMENT ON COLUMN AvailableCredentialTypes.ModuleIdentifier IS 'Der Name des für den Typen zuständigen Programmmoduls';
-COMMENT ON COLUMN AvailableCredentialTypes.EntryAddedDate IS 'Timestamp at which the database entry was created. Read only';
+COMMENT ON TABLE  AvailableCredentialTypes IS 'A credential secret blob might be of different types, like a hashed password or a X.509 certificate public key used for smartcard authentification';
+COMMENT ON COLUMN AvailableCredentialTypes.CredentialTypeID      IS 'The unique id is used to reference a specific credential type.';
+COMMENT ON COLUMN AvailableCredentialTypes.Name                  IS 'The unique name of this credential type. More or less informational purposes.';
+COMMENT ON COLUMN AvailableCredentialTypes.NeedsPassword         IS 'If set to TRUE, all Credentials with this type need a password. If FALSE, dummy credentials without secret with this type are possible.';
+COMMENT ON COLUMN AvailableCredentialTypes.ModuleIdentifier      IS 'A module that can be used for secrets of this type (LEGACY?)';
+COMMENT ON COLUMN AvailableCredentialTypes.EntryAddedDate        IS 'Timestamp at which the database entry was created. Read only';
 COMMENT ON COLUMN AvailableCredentialTypes.EntryLastModifiedDate IS 'Timestamp at which the database entry was modified last. If equal to EntryAddedDate, then no modification was ever done. Automatically updated by a trigger';
+
+
 CREATE TABLE AllowedCredentialUse (
   CredentialTypeID      BIGINT                   NOT NULL REFERENCES AvailableCredentialTypes(CredentialTypeID),
   ClientTypeID          BIGINT                   NOT NULL REFERENCES ClientType(ClientTypeID),
@@ -552,7 +544,8 @@ CREATE TABLE AllowedCredentialUse (
 
   PRIMARY KEY (CredentialTypeID, ClientTypeID)
 );
--- TODO: nächste Tabellendefinition zusammen mit den  SQL-Kommentaren ins Wiki kopieren
+
+
 CREATE TABLE Username (
   UsernameID            BIGSERIAL                NOT NULL PRIMARY KEY,
   Username              TEXT                     NOT NULL UNIQUE,
@@ -561,14 +554,15 @@ CREATE TABLE Username (
   EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP)
   
 );
-COMMENT ON TABLE  Username IS 'Ein Nutzername identifiziert einen Benutzer für den Login. Jeder Nutzername gehört zu genau einer Person.';
-COMMENT ON COLUMN Username.UsernameID            IS 'Die eindeutige Identifikationsnummer des Nutzernamens wird bei den Secrets in Credential benutzt';
-COMMENT ON COLUMN Username.Username              IS 'Der Nutzername, ermöglicht den Login einer Person an einem Client.';
-COMMENT ON COLUMN Username.PersonID              IS 'Die Person, zu der der Nutzername gehört.';
+COMMENT ON TABLE  Username IS 'A username identifies a person for login purposes. Belongs to exactly one person.';
+COMMENT ON COLUMN Username.UsernameID            IS 'The unique id is used to reference a specific username';
+COMMENT ON COLUMN Username.Username              IS 'The unique username is used to login a user into the system.';
+COMMENT ON COLUMN Username.PersonID              IS 'The person to which this username belongs.';
 COMMENT ON COLUMN Username.EntryAddedDate        IS 'Timestamp at which the database entry was created. Read only';
 COMMENT ON COLUMN Username.EntryLastModifiedDate IS 'Timestamp at which the database entry was modified last. If equal to EntryAddedDate, then no modification was ever done. Automatically updated by a trigger';
--- TODO: nächste Tabellendefinition zusammen mit den  SQL-Kommentaren ins Wiki kopieren
-CREATE TABLE Credentials (
+
+
+CREATE TABLE Credential (
   CredentialID          BIGSERIAL                NOT NULL PRIMARY KEY,
   CredentialSecret      BYTEA                        NULL,
   UsernameID            BIGINT                   NOT NULL REFERENCES Username(UsernameID),
@@ -579,26 +573,29 @@ CREATE TABLE Credentials (
   EntryAddedDate        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
   EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP)
 );
-COMMENT ON TABLE  Credentials IS 'Credentials sind (geheime) Login-Informationen, welche die Anmeldung an Clients erlauben.';
-COMMENT ON COLUMN Credentials.CredentialID          IS 'Eine eindeutige Identifikationsnummer';
-COMMENT ON COLUMN Credentials.CredentialSecret      IS 'Das Geheimnis, welches der Nutzer zum Login mit dem Credential benötigt. Format hängt vom CredentialType ab';
-COMMENT ON COLUMN Credentials.UsernameID            IS 'Referenziert über den Username die Person, zu der der Login gehört';
-COMMENT ON COLUMN Credentials.CredentialTypeID      IS 'Gibt den Typen des Credentials an.';
-COMMENT ON COLUMN Credentials.IsSalesPersonLogin    IS 'Gibt an, ob das Credential für einen Kunden- oder Mitarbeiterlogin verwendet wird.';
-COMMENT ON COLUMN Credentials.CredentialCreateDate  IS 'Das Datum, an dem der Login angelegt wurde.';
-COMMENT ON COLUMN Credentials.LastSecretChange      IS 'Das Datum, an dem das Geheimnis das letzte mal geändert wurde';
-COMMENT ON COLUMN Credentials.EntryAddedDate        IS 'Timestamp at which the database entry was created. Read only';
-COMMENT ON COLUMN Credentials.EntryLastModifiedDate IS 'Timestamp at which the database entry was modified last. If equal to EntryAddedDate, then no modification was ever done. Automatically updated by a trigger';
--- TODO: nächste Tabellendefinition zusammen mit den  SQL-Kommentaren ins Wiki kopieren
+COMMENT ON TABLE  Credential IS 'A credential is a secret login information blob used together with a username.';
+COMMENT ON COLUMN Credential.CredentialID          IS 'The unique id is used to reference a specific credential.';
+COMMENT ON COLUMN Credential.CredentialSecret      IS 'The secret blob type depends on the credential type, which is a hashed password or a public key. It is not unique, so multiple users can have the same credential without knowing this fact.';
+COMMENT ON COLUMN Credential.UsernameID            IS 'The username to which this credential belongs';
+COMMENT ON COLUMN Credential.CredentialTypeID      IS 'The credential type defines the type of the credential blob.';
+COMMENT ON COLUMN Credential.IsSalesPersonLogin    IS 'Defines if this credential is used for a customer or staff login.';
+COMMENT ON COLUMN Credential.CredentialCreateDate  IS 'The creation date for this credential.';
+COMMENT ON COLUMN Credential.LastSecretChange      IS 'The last password change timestamp. May be used to enforce password changes after a given time period elapsed.';
+COMMENT ON COLUMN Credential.EntryAddedDate        IS 'Timestamp at which the database entry was created. Read only';
+COMMENT ON COLUMN Credential.EntryLastModifiedDate IS 'Timestamp at which the database entry was modified last. If equal to EntryAddedDate, then no modification was ever done. Automatically updated by a trigger';
+
+
 CREATE TABLE CredentialUse (
   ClientTypeID          BIGINT                   NOT NULL REFERENCES ClientType(ClientTypeID),
-  CredentialID          BIGINT                   NOT NULL REFERENCES Credentials(CredentialID),
+  CredentialID          BIGINT                   NOT NULL REFERENCES Credential(CredentialID),
   EntryAddedDate        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
   EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
   PRIMARY KEY (CredentialID, ClientTypeID)
 );
-COMMENT ON TABLE CredentialUse IS 'Definiert, welche Credentials zur Anmeldung an welchen Client-Typen freigeschaltet ist.';
--- TODO: nächste Tabellendefinition zusammen mit den  SQL-Kommentaren ins Wiki kopieren
+COMMENT ON TABLE  CredentialUse IS 'Defines which credential can be used at which client type.';
+
+
+
 CREATE TABLE Charge (
   ChargeID              BIGSERIAL                NOT NULL PRIMARY KEY,
   CustomerID            BIGINT                   NOT NULL REFERENCES Customer(CustomerID),
@@ -609,16 +606,17 @@ CREATE TABLE Charge (
   EntryAddedDate        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
   EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP)
 );
-COMMENT ON TABLE  Charge IS 'Charge speichert die Guthabenaufladungen der Kunden. Wenn ein Kunde bei einem Verkäufer sein Kundenkonto auflädt, wird ein Eintrag für diese Aufladung in dieser Tabelle abgelegt.';
-COMMENT ON COLUMN Charge.ChargeID              IS 'Die eindeutige Identifikationsnummer der Guthabenaufladung';
-COMMENT ON COLUMN Charge.CustomerID            IS 'Der Kunde, dem das Geld auf sein Guthaben gutgeschrieben wird';
-COMMENT ON COLUMN Charge.SalesPersonID         IS 'Der Verkäufer, der die Guthabenaufladung durchführt und das Geld entgegennimmt.';
-COMMENT ON COLUMN Charge.Donation              IS 'Gibt an, ob es sich bei der Aufladung um eine Spende handelt. Bei einer Spende wird das Geld nicht auf dem Kundenkonto gutgeschrieben.';
-COMMENT ON COLUMN Charge.ChargeAmount          IS 'Der aufgeladene oder gespendete Geldbetrag';
-COMMENT ON COLUMN Charge.ChargeDate            IS 'Das Datum der Guthabenaufladung';
+COMMENT ON TABLE  Charge IS 'Charge saves the customer balance recharges. If a customer credits his account by giving money to a staff member, an entry is created in this table.';
+COMMENT ON COLUMN Charge.ChargeID              IS 'The unique id is used to reference a specific charge.';
+COMMENT ON COLUMN Charge.CustomerID            IS 'The customer who credits his account.';
+COMMENT ON COLUMN Charge.SalesPersonID         IS 'The staff member who receives the money. This debits the staff members account.';
+COMMENT ON COLUMN Charge.Donation              IS 'A customer may donate money instead of crediting his account. If set to TRUE, the customer does not credit his account, but the staff member still debits his account.';
+COMMENT ON COLUMN Charge.ChargeAmount          IS 'The received amount of money';
+COMMENT ON COLUMN Charge.ChargeDate            IS 'The exact charge timestamp';
 COMMENT ON COLUMN Charge.EntryAddedDate        IS 'Timestamp at which the database entry was created. Read only';
 COMMENT ON COLUMN Charge.EntryLastModifiedDate IS 'Timestamp at which the database entry was modified last. If equal to EntryAddedDate, then no modification was ever done. Automatically updated by a trigger';
--- TODO: nächste Tabellendefinition zusammen mit den  SQL-Kommentaren ins Wiki kopieren
+
+
 CREATE TABLE Repayment (
   RepaymentID             BIGSERIAL                NOT NULL PRIMARY KEY,
   SalesPersonID           BIGINT                   NOT NULL REFERENCES SalesPerson(SalesPersonID),
@@ -629,16 +627,17 @@ CREATE TABLE Repayment (
   EntryLastModifiedDate   TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
   CONSTRAINT PositiveRequiredAmountRedeemers CHECK(RequiredAmountRedeemers >= 0)
 );
-COMMENT ON TABLE  Repayment IS 'Eine Guthabenaufladung eines Kunden belastet das Verkäuferkonto. Dieses wird durch Eintragungen von Geldrückzahlungen in dieser Tabelle ausgeglichen';
-COMMENT ON COLUMN Repayment.RepaymentID             IS 'Eindeutige Identifikationsnummer für die Geldrückzahlung';
-COMMENT ON COLUMN Repayment.SalesPersonID           IS 'Der Geld rückzahlende Verkäufer';
-COMMENT ON COLUMN Repayment.TransactionDate         IS 'Das Datum, an dem die Transaktion getätigt wurde';
-COMMENT ON COLUMN Repayment.Amount                  IS 'Der zurückgezahlte Geldbetrag';
-COMMENT ON COLUMN Repayment.RequiredAmountRedeemers IS 'Die minimale Anzahl an Bestätigungen durch Finanzbeauftragte, um den Eintrag als bestätigt anzusehen.';
+COMMENT ON TABLE  Repayment IS 'The recharge of money on a customer account debits the staff members account. The repayment balances the staff members account.';
+COMMENT ON COLUMN Repayment.RepaymentID             IS 'The unique id is used to reference a specific repayment';
+COMMENT ON COLUMN Repayment.SalesPersonID           IS 'The staff member who repaid money';
+COMMENT ON COLUMN Repayment.TransactionDate         IS 'The transaction date.';
+COMMENT ON COLUMN Repayment.Amount                  IS 'The paid amount of money';
+COMMENT ON COLUMN Repayment.RequiredAmountRedeemers IS 'Required amount of acknowledgements by financial officers to mark this repayment as done.';
 COMMENT ON COLUMN Repayment.EntryAddedDate          IS 'Timestamp at which the database entry was created. Read only';
 COMMENT ON COLUMN Repayment.EntryLastModifiedDate   IS 'Timestamp at which the database entry was modified last. If equal to EntryAddedDate, then no modification was ever done. Automatically updated by a trigger';
-COMMENT ON CONSTRAINT PositiveRequiredAmountRedeemers ON Repayment IS 'Die Minimalanzahl an Einträgen in RedeemerFor für das Akzeptieren des Eintrag darf nicht negativ sein.';
--- TODO: nächste Tabellendefinition zusammen mit den  SQL-Kommentaren ins Wiki kopieren
+COMMENT ON CONSTRAINT PositiveRequiredAmountRedeemers ON Repayment IS 'The required amount of acknowledgements must not be negative.';
+
+
 CREATE TABLE RedeemerFor (
   SalesPersonID         BIGINT                   NOT NULL REFERENCES SalesPerson(SalesPersonID),
   RepaymentID           BIGINT                   NOT NULL REFERENCES Repayment(RepaymentID),
@@ -647,29 +646,56 @@ CREATE TABLE RedeemerFor (
   EntryLastModifiedDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(CURRENT_TIMESTAMP),
   PRIMARY KEY(SalesPersonID, RepaymentID)
 );
-COMMENT ON TABLE RedeemerFor IS 'Eine Geldrückzahlung muss von einem oder mehreren Finanzbeauftragten bestätigt werden, um wirksam zu sein. Diese Tabelle speichert die Bestätigungen';
+COMMENT ON TABLE RedeemerFor IS 'A repayment must be acknowledged by financial officers to be accepted. This table stores the acknowledgements.';
+
+
 CREATE VIEW TaxCategory AS
-  SELECT n.TaxCategoryID, n.Name, '1337-01-01' AS ValidSince, n.BaseValue AS Value, n.BaseValueUnit AS Unit
+  SELECT 
+    n.TaxCategoryID,
+    n.Name,
+    '1337-01-01'::DATE AS ValidSince,
+    n.BaseValue AS Value,
+    n.BaseValueUnit AS Unit
   FROM TaxCategoryName AS n
   UNION ALL
-  SELECT n.TaxCategoryID, n.Name, v.ValidSince, v.Value, v.Unit
-  FROM TaxCategoryName  AS n
-    JOIN TaxCategoryValue AS v ON n.TaxCategoryID = v.TaxCategoryID
+  SELECT
+    n.TaxCategoryID,
+    n.Name,
+    v.ValidSince,
+    v.Value,
+    v.Unit
+  FROM TaxCategoryName AS n
+  JOIN TaxCategoryValue AS v ON n.TaxCategoryID = v.TaxCategoryID
 ;
+COMMENT ON VIEW TaxCategory IS 'TaxCategory joins TaxCategoryName and TaxCategoryValue.';
+
+
 CREATE VIEW ProductTaxes AS
-  SELECT p.ProductID, i.ProductInstanceID,
-                     p.Name AS ProductName, i.AddedDate AS ProductAddedDate, i.InStockAmount,
-    t.TaxCategoryID, t.ValidSince AS TaxCategoryValidSince, t.Name AS TaxCategoryName, t.Value AS TaxAmount, t.Unit AS TaxUnit
-  FROM Product         AS p
-    JOIN ProductInstance AS i ON p.ProductID     = i.ProductID
-    JOIN TaxCategory     AS t ON i.TaxCategoryID = t.TaxCategoryID
+  SELECT
+    p.ProductID,
+    h.PurchaseID,
+    d.PurchaseDetailID,
+    p.Name AS ProductName,
+    h.OrderDate AS ProductOrderDate,
+    t.TaxCategoryID,
+    t.ValidSince AS TaxCategoryValidSince,
+    t.Name AS TaxCategoryName,
+    t.Value AS TaxAmount,
+    t.Unit AS TaxUnit
+  FROM Product        AS p
+  JOIN PurchaseDetail AS d ON p.ProductID     = d.ProductID
+  JOIN PurchaseHeader AS h ON h.PurchaseID    = d.PurchaseID
+    
+  JOIN TaxCategory    AS t ON d.TaxCategoryID = t.TaxCategoryID
   WHERE t.ValidSince = (
     SELECT MAX(t2.ValidSince)
     FROM TaxCategory AS t2
-    WHERE i.AddedDate >= t2.ValidSince
+    WHERE h.OrderDate >= t2.ValidSince
   )
 ;
-COMMENT ON VIEW ProductTaxes IS 'Berechnet die Steuerkategorie für jede Produktinstanz aus den verfügbaren Daten.';
+COMMENT ON VIEW ProductTaxes IS 'Computes the exact taxes for each product purchase.';
+
+
 CREATE VIEW CustomerCharges AS
   SELECT
     cu.CustomerID,
@@ -682,75 +708,121 @@ CREATE VIEW CustomerCharges AS
     ch.ChargeDate,
     ch.ChargeAmount,
     ch.Donation AS IsDonation
-  FROM Person AS cp
-  JOIN Customer AS cu    ON cp.PersonID = cu.CustomerID
-  JOIN Charge AS ch      ON cu.CustomerID = ch.CustomerID
-  JOIN SalesPerson AS sp ON ch.SalesPersonID = sp.SalesPersonID
-  JOIN Person AS spp     ON sp.SalesPersonID = spp.PersonID
+  FROM Person AS cp -- cp Customer Person
+    JOIN Customer AS cu    ON cp.PersonID = cu.CustomerID
+    JOIN Charge AS ch      ON cu.CustomerID = ch.CustomerID
+    JOIN SalesPerson AS sp ON ch.SalesPersonID = sp.SalesPersonID
+    JOIN Person AS spp     ON sp.SalesPersonID = spp.PersonID --spp SalesPerson Person
 ;
-COMMENT ON VIEW CustomerCharges IS 'Berechnet eine Übersicht über alle Kundenkontoaufladungen';
+COMMENT ON VIEW CustomerCharges IS 'Computes an overview of all customer account charges.';
+
+
 CREATE VIEW CustomerBalance AS
-  SELECT cu.CustomerID,
-  (cu.BaseBalance
-    + COALESCE(CustChargeSum.Charge, 0) -- ist NULL, wenn der Kunde noch keine Aufladung getätigt hat
-    - COALESCE(CustSaleSum.SaleTotal, 0) -- ist NULL, wenn der Kunde noch nichts gekauft hat
-    + COALESCE(CustRedemptSum.RedemptionTotal, 0) -- ist NULL, wenn der Kunde noch keine Waren zurückgegeben hat
-  ) AS Balance
+  SELECT
+    cu.CustomerID,
+    (cu.BaseBalance
+      + COALESCE(CustChargeSum.Charge, 0) -- is NULL, if the customer has never charged his balance
+      - COALESCE(CustSaleSum.SaleTotal, 0) -- is NULL, if the customer has never purchased or redempted any product
+    ) AS Balance
   
   FROM Customer AS cu
   
-  LEFT OUTER JOIN ( -- Summe aller Aufladungen
+  LEFT OUTER JOIN ( -- sum of all charges
     SELECT ch.CustomerID, SUM( ch.ChargeAmount) AS Charge
     FROM Charge AS ch
     WHERE ch.Donation IS FALSE
     GROUP BY ch.CustomerID
   ) AS CustChargeSum ON CustChargeSum.CustomerID = cu.CustomerID
   
-  LEFT OUTER JOIN ( -- Summe aller Warenkäufe
-    SELECT sh.CustomerID, SUM( sd.UnitQuantity * sd.UnitPrice) AS SaleTotal
+  LEFT OUTER JOIN ( -- sum of all product sales and redemptions. The case structure inside the SUM aggregate replaces another left outer join for all redemptions
+    SELECT sh.CustomerID,
+    SUM( sd.UnitQuantity * 
+      CASE
+        WHEN sd.IsRedemption IS FALSE THEN sd.UnitPrice -- Sum up sales
+        ELSE -sd.UnitPrice -- sd.IsRedemption IS TRUE, substract all redemptions
+      END) AS SaleTotal
     FROM SaleHeader AS sh
     JOIN SaleDetail AS sd ON sh.SaleID = sd.SaleID
-    WHERE sd.IsRedemption IS FALSE
     GROUP BY sh.CustomerID
   ) AS CustSaleSum ON CustSaleSum.CustomerID = cu.CustomerID
-  
-  LEFT OUTER JOIN ( -- Summe aller Warenrückgaben
-    SELECT sh.CustomerID, SUM( sd.UnitQuantity * sd.UnitPrice) AS RedemptionTotal
-    FROM SaleHeader AS sh
-    JOIN SaleDetail AS sd ON sh.SaleID = sd.SaleID
-    WHERE sd.IsRedemption IS true
-    GROUP BY sh.CustomerID
-  ) AS CustRedemptSum ON CustRedemptSum.CustomerID = cu.CustomerID
 ;
-COMMENT ON VIEW CustomerBalance IS 'Berechnet den aktuellen Kontostand der Kunden als Summe aller Aufladungen und Verkäufe';
+COMMENT ON VIEW CustomerBalance IS 'Calculates the customer balance as a sum of all charges and product redemptions minus all product sales';
+
+
 CREATE VIEW SalesPersonBalance AS
-  SELECT sp.SalesPersonID,
-  (sp.BaseBalance
-    - COALESCE(SPChargeSum.Charge, 0) -- ist NULL, wenn der Verkäufer noch kein Geld angenommen hat
-    + COALESCE(SPRepaymentSum.RepaidAmount, 0) -- ist NULL, wenn der Verkäufer noch nichts zurückgezahlt hat
-  ) AS Balance
+  SELECT
+    sp.SalesPersonID,
+    (sp.BaseBalance
+      - COALESCE(SPChargeSum.Charge, 0) -- is NULL, if the staff member has never accepted any charges
+      + COALESCE(SPRepaymentSum.RepaidAmount, 0) -- is NULL, if the staff member has no acknowledged repayments
+    ) AS Balance,
+    COALESCE(SPOpenRepaymentSum.OpenRepaymentAmount, 0) AS OpenRepaymentAmount -- is NULL, if the staff member has no open repayments
   
   FROM SalesPerson AS sp
   
-  LEFT OUTER JOIN ( -- Summe aller Aufladungen
-    SELECT ch.SalesPersonID, SUM( ch.ChargeAmount ) AS Charge
+  LEFT OUTER JOIN ( -- sum of all charges
+    SELECT
+      ch.SalesPersonID,
+      SUM( ch.ChargeAmount ) AS Charge
     FROM Charge AS ch
-    -- Hier nicht nach Donation filtern wie bei Customer, Das Verkäuferkonto wird auch für Spenden belastet
+    -- Do not filter out donations, as the stuff balance is charged for donations, too
     GROUP BY ch.SalesPersonID
   ) AS SPChargeSum ON SPChargeSum.SalesPersonID = sp.SalesPersonID
   
-  LEFT OUTER JOIN ( -- Summe aller vollständig bestätigten Geldrückzahlungen
-    SELECT rp.SalesPersonID, SUM( rp.Amount) AS RepaidAmount
+  LEFT OUTER JOIN ( -- sum of all completely redempted repayments
+    SELECT
+      rp.SalesPersonID,
+      SUM( rp.Amount) AS RepaidAmount
     FROM Repayment AS rp
-    WHERE rp.RequiredAmountRedeemers <= ( -- Die Anzahl Bestätigungen muss größer/gleich dem Wert RequiredAmountRedeemers sein
-      -- SELECT COUNT(*) ist ein sicheres Aggregat für eine solche Subanfrage,
-      -- weil es garantiert immer exakt einen Wert liefert.
+    WHERE rp.RequiredAmountRedeemers <= ( -- The number of acknowledges must be greater or equal to RequiredAmountRedeemers
+      -- SELECT COUNT(*) is a safe aggregate function for subqueries,
+      -- as it guarantees to always return exactly one value.
       SELECT COUNT(*) 
       FROM RedeemerFor AS rf
       WHERE rf.RepaymentID = rp.RepaymentID
     )
     GROUP BY rp.SalesPersonID
   ) AS SPRepaymentSum ON SPRepaymentSum.SalesPersonID = sp.SalesPersonID
+  LEFT OUTER JOIN ( -- sum of still open repayments
+    SELECT
+      rp.SalesPersonID,
+      SUM( rp.Amount) AS OpenRepaymentAmount
+    FROM Repayment AS rp
+    WHERE rp.RequiredAmountRedeemers > ( -- If the number of acknowledges is lesser than RequiredAmountRedeemers, the repayment is still open
+      -- SELECT COUNT(*) is a safe aggregate function for subqueries,
+      -- as it guarantees to always return exactly one value.
+      SELECT COUNT(*) 
+      FROM RedeemerFor AS rf
+      WHERE rf.RepaymentID = rp.RepaymentID
+    )
+    GROUP BY rp.SalesPersonID
+  ) AS SPOpenRepaymentSum ON SPOpenRepaymentSum.SalesPersonID = sp.SalesPersonID
+  
 ;
-COMMENT ON VIEW SalesPersonBalance IS 'Berechnet den aktuellen Kontostand des Verkäufers als Summe aller Kundenkontoaufladungen und Geldrückzahlungen';
+COMMENT ON VIEW SalesPersonBalance IS 'Calculates the staff member balance as a sum of all charges and acknowleded repayments. It also supplies the sum of all still open repayments';
+
+
+CREATE VIEW ProductsInStock AS
+  SELECT
+    p.ProductID,
+    p.Name,
+    p.Description,
+    p.Price,
+    p.TaxCategoryID,
+    p.CategoryID,
+    p.IsSaleAllowed,
+    p.IsDefaultRedemption,
+    COALESCE(InStock.InStockAmount, 0) AS InStockAmount
+  FROM Product AS p
+  LEFT OUTER JOIN (
+    SELECT
+      sc.ProductID,
+      SUM(sc.Amount) AS InStockAmount
+    FROM StorageContent AS sc
+    GROUP BY sc.ProductID
+  ) AS InStock ON p.ProductID = InStock.ProductID
+;
+COMMENT ON VIEW ProductsInStock IS 'Calculates the current product stock amounts for all products.';
+
+
 COMMIT;
