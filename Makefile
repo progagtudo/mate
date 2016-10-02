@@ -56,7 +56,7 @@ coverage:
 	$(BROWSER) htmlcov/index.html
 
 coverage-ci:
-    tox -e py35verbose
+	tox -e py35verbose
 
 docs:
 	rm -f docs/mate.rst
