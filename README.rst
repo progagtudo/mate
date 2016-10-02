@@ -1,9 +1,10 @@
 ===============================
 M.A.T.E - Another Trading Environment
 ===============================
-
-.. Insert CI Badges here.
-
+    .. image:: https://travis-ci.org/progagtudo/mate.svg?branch=develop
+       :target: https://travis-ci.org/progagtudo/mate
+    .. image:: https://coveralls.io/repos/github/progagtudo/mate/badge.svg?branch=develop
+       :target: https://coveralls.io/github/progagtudo/mate?branch=develop
 
 M.A.T.E - Another Trading Environment is the software you were dreaming of.
 
