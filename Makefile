@@ -1,4 +1,4 @@
-.PHONY: clean-pyc clean-build docs clean test
+.PHONY: clean-pyc clean-build docs clean test coverage coverage-ci
 define BROWSER_PYSCRIPT
 import os, webbrowser, sys
 try:
@@ -54,6 +54,9 @@ test:
 coverage:
 	tox -e py35verbose
 	$(BROWSER) htmlcov/index.html
+
+coverage-ci:
+    tox -e py35verbose
 
 docs:
 	rm -f docs/mate.rst
