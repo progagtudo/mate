@@ -1,6 +1,13 @@
 language: python
+cache: pip
 python:
   - "3.5"
+services:
+  - postgresql
+env:
+  - MATE_TEST_DB_CONFIG="user=postgres dbname=mate"
+before_script:
+- "psql -c 'create database mate;' -U postgres"
 # command to install dependencies
 install:
   - "pip install -r requirements_dev.txt"

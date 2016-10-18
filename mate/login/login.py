@@ -5,6 +5,7 @@ from typing import List
 
 import jwt
 from flask import request
+from mate import app
 
 # from mate.mate import get_db
 from mate.helper.config_holder import ConfigHolder
@@ -17,7 +18,7 @@ stub_login_type_holder = StubLoginTypeHolder()
 class AuthType(Enum):
     client = 1
     customer = 2
-    salesp = 3
+    staff = 3
 
 
 class ValidationError(Exception):
@@ -36,17 +37,17 @@ def auth(authtype: AuthType, rights: List[str] = None):
                 if authtype == AuthType.client:
                     validate_client(request.headers.get(ConfigHolder.jwt_header_client))
                 elif authtype == AuthType.customer:
-                    pass
-                elif authtype == AuthType.salesp:
-                    pass
+                    validate_customer(request.headers.get(ConfigHolder.jwt_header_customer))
+                elif authtype == AuthType.staff:
+                    validate_staff(request.headers.get(ConfigHolder.jwt_header_staff))
             except jwt.ExpiredSignatureError:
-                print("Der Token ist abgelaufen")
+                app.logger.warning("Der Token ist abgelaufen")
                 return "Authentication error", 401
             except jwt.DecodeError:
-                print("Irgendwas ist kaputt")
+                app.logger.warning("Irgendwas ist kaputt")
                 return "Authentication error", 401
             except:
-                print("Irgendwas ist kaputt")
+                app.logger.warning("Irgendwas ist kaputt")
                 return "Authentication error", 401
             return func(*args, **kwargs)
 
@@ -63,15 +64,30 @@ def validate_client(authkey: str):
     if payload.get("sub") != "clnt":
         raise ValidationError
     # TODO: check permissions?
-    print("Client ", payload.get("mate.tpe"), " validiert.")
+    app.logger.info("Client ", payload.get("mate.tpe"), " validiert.")
 
 
 def validate_client_login(client_name: str) -> bool:
     # This only checks for client existence in the database for now.
     # TODO: check for some kind of secret
-    print("WARNING: validate_client_login(): Not doing anything useful!")
+    app.logger.warning("validate_client_login(): Not doing anything useful!")
     # TODO: Uncomment when it is possible to import the db…
     db = get_db()
     result = db.get_does_client_exist_with_name(client_name=client_name)
     return result
-    # return True
+
+
+def validate_staff(authkey: str):
+    payload = jwt.decode(authkey, key=ConfigHolder.jwt_secret_staff)  # type: Dict
+    if payload.get("sub") != "staff":
+        raise ValidationError
+    # TODO: check permissions?
+    app.logger.info("Staff ", payload.get("mate.tpe"), " validiert.")
+
+
+def validate_customer(authkey: str):
+    payload = jwt.decode(authkey, key=ConfigHolder.jwt_secret_customer)  # type: Dict
+    if payload.get("sub") != "cust":
+        raise ValidationError
+    # TODO: check permissions?
+    app.logger.info("Customer ", payload.get("mate.tpe"), " validiert.")

@@ -8,11 +8,11 @@ from mate.model.storage.storage import Storage
 
 
 def check_storage_id(storage_id):
-    print("test")
-    print(type(storage_id))
+    app.logger.info("test")
+    app.logger.info(type(storage_id))
     assert storage_id is int
     if storage_id < 0:
-        print("storage_id is to low")
+        app.logger.warning("storage_id is to low")
         return "storage_id is to low", 500
     else:
         pass
@@ -54,11 +54,11 @@ def add_storage():
     :return: new storage
     """
     data = request.json
-    print("test12")
+    app.logger.info("test12")
     a_storage = Storage.from_json_new_object(json.loads(data))
     # TODO: create storage in DB
     a_storage.storage_id = 12 # TODO: add id from DB to Object.
-    print("added stub id to storage") # remove print when ToDo is done
+    app.logger.warning("added stub id to storage") # remove print when ToDo is done
     return jsonify(a_storage)
 
 
@@ -75,15 +75,18 @@ def get_storage_info(storage_id: int):
 
 @app.route("/storage/<int:storage_id>", methods=["PATCH"])
 # @auth #TODO
-def update_storage(storage_id):
-    #check_storage_id(storage_id)
-    print("test")
+def update_storage(storage_id: int):
     data = request.data
-    #validate(data, storage_modul.json_scheme_new_object)
+    update_description = None
+    if "description" in data:
+        update_description = False
+    else:
+        update_description = True
+
     a_storage = Storage.from_json_new_object(json.loads(data))
     a_storage.storage_id = storage_id
     # TODO: check if storage exists in DB
-    # TODO: update storage
+    Storage.update_in_db(storage=a_storage, update_description=update_description)
     return jsonify(a_storage)
 
 
@@ -107,7 +110,6 @@ def product_storage(storage_id: int):
     product_type = request.args.get("product_type", "", type=str)  # TODO: find reasonable standard value
     limit = request.args.get("limit", 20, type=int)
     offset = request.args.get("offset", 0, type=int)
-
 
     next_link = "/storage/{0}/products?product_type={1}&limit={2}&offset={3}".format(
         storage_id, product_type, limit, (offset + limit))

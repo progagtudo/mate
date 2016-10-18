@@ -52,7 +52,7 @@ test:
 	tox
 
 coverage:
-	tox -e py35verbose
+	-tox -e py35verbose
 	$(BROWSER) htmlcov/index.html
 
 coverage-ci:
