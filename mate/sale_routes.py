@@ -58,8 +58,12 @@ def get_balance(customer_id):
 @auth(AuthType.staff)
 @auth(AuthType.customer)
 def get_sellcart():
-    success = False
+    success = True
     cart = request.json
+    # print(cart)
+    for product in cart["products"]:
+        print(str(product['id']) + " " + str(product['price']) + "x" + str(product['amount']) + "=" + str(product['price']*product['amount']))
+    return '', 200
     # TODO get auth and cart from JWT
     if not success:
         # TODO return fixed cart on error
