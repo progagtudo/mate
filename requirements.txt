@@ -7,3 +7,5 @@ wheel==0.29.0
 pyjwt==1.4.2
 schematics==2.0.0a1
 psycopg2==2.6.2
+Flask-SQLAlchemy==2.1
+
